@@ -1,14 +1,12 @@
-<<<<<<< HEAD
 # PortfolioApplication
-Andriod and ios Application
-=======
-# mynewapp
 
-A new Flutter project.
+A Flutter-based portfolio application for Android and iOS platforms.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+This project is a starting point for a Flutter portfolio application that showcases personal or professional work across mobile platforms.
+
+## Development Resources
 
 A few resources to get you started if this is your first Flutter project:
 
@@ -18,4 +16,3 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
->>>>>>> 56ba349 (Initial commit)
