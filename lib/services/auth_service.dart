@@ -5,7 +5,8 @@ import '../models/auth_response_model.dart';
 import '../models/user_model.dart';
 
 class AuthService {
-  static const String _baseUrl = 'https://mobile-dev-api.boldpreciousmetals.com/api';
+  static const String _baseUrl =
+      'https://mobile-dev-api.boldpreciousmetals.com/api';
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'user_data';
 
@@ -13,12 +14,13 @@ class AuthService {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/Authentication/authenticate'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'username': username,
+          'emailId': username,
           'password': password,
+          'screenSize': '1536, 390',
+          'sessionId': "",
+          'token': "",
         }),
       );
 
