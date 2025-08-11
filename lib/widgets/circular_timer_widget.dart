@@ -96,7 +96,7 @@ class _CircularTimerWidgetState extends State<CircularTimerWidget>
           Text(
             '$_currentSeconds',
             style: const TextStyle(
-              color: Colors.white,
+              color: Colors.black,
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
