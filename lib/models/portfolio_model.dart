@@ -1,3 +1,5 @@
+import 'spot_price_model.dart';
+
 class PortfolioData {
   final double totalInvestment;
   final double currentValue;
@@ -8,6 +10,7 @@ class PortfolioData {
   final MetalData silver;
   final MetalData gold;
   final List<ChartData> chartData;
+  final SpotPriceData? spotPrices;
 
   PortfolioData({
     required this.totalInvestment,
@@ -19,6 +22,7 @@ class PortfolioData {
     required this.silver,
     required this.gold,
     required this.chartData,
+    this.spotPrices,
   });
 }
 

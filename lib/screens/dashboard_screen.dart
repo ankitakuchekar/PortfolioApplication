@@ -6,6 +6,8 @@ import '../utils/app_colors.dart';
 import '../widgets/portfolio_summary_card.dart';
 import '../widgets/metal_breakdown_card.dart';
 import '../widgets/asset_allocation_chart.dart';
+import '../widgets/circular_timer_widget.dart';
+import '../widgets/spot_price_display.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -23,6 +25,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  void _onTimerComplete() {
+    Provider.of<PortfolioProvider>(context, listen: false).refreshDataFromAPIs();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,6 +38,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: CircularTimerWidget(
+              durationSeconds: 45,
+              onTimerComplete: _onTimerComplete,
+            ),
+          ),
+        ],
       ),
       body: Consumer<PortfolioProvider>(
         builder: (context, portfolioProvider, child) {
@@ -79,6 +94,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Consumer<PortfolioProvider>(
+                  builder: (context, provider, child) {
+                    return SpotPriceDisplay(spotPrices: provider.spotPrices);
+                  },
+                ),
+                const SizedBox(height: 16),
                 PortfolioSummaryCard(portfolioData: portfolioData),
                 const SizedBox(height: 16),
                 Row(
