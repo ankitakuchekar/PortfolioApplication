@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/auth_response_model.dart';
 import '../models/user_model.dart';
 
-r
   static const String _baseUrl =
       'https://mobile-dev-api.boldpreciousmetals.com/api';
   static const String _tokenKey = 'auth_token';
