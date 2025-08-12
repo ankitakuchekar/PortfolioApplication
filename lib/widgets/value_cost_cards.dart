@@ -53,21 +53,26 @@ class ValueCostCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final investment = portfolioData.data[0].investment;
+
+    final double totalCurrentValue =
+        investment.totalGoldCurrent + investment.totalSilverCurrent;
+
+    final double totalAcquisitionCost =
+        investment.totalGoldInvested + investment.totalSilverInvested;
     return Row(
       children: [
         _buildCard(
           title: 'Current Value',
-          value:
-              '\$${portfolioData.data.investment.customerId.toStringAsFixed(2)}',
-          backgroundColor: const Color(0xFF8B5CF6),
+          value: '\$${totalCurrentValue.toStringAsFixed(2)}',
+          backgroundColor: const Color(0xFF6A4CAF),
           icon: Icons.info_outline,
         ),
         const SizedBox(width: 12),
         _buildCard(
           title: 'Purchase Cost',
-          value:
-              '\$${portfolioData.data.investment.customerId.toStringAsFixed(2)}',
-          backgroundColor: const Color(0xFF3B82F6),
+          value: '\$${totalAcquisitionCost.toStringAsFixed(2)}',
+          backgroundColor: const Color(0xFF3F51B5),
           icon: Icons.info_outline,
         ),
       ],

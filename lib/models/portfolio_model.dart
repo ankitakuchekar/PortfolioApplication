@@ -1,76 +1,94 @@
 class PortfolioData {
   final bool success;
-  final CustomerData data;
+  final List<CustomerData> data;
 
   PortfolioData({required this.success, required this.data});
 
+  // Access the first CustomerData object from the list
+  CustomerData get customerData =>
+      data.isNotEmpty ? data[0] : throw Exception('CustomerData list is empty');
+
   // Computed getters for backward compatibility with UI components
-  double get totalInvestment => data.investment.totalGoldInvested + data.investment.totalSilverInvested;
-  double get currentValue => data.investment.totalGoldCurrent + data.investment.totalSilverCurrent;
+  double get totalInvestment =>
+      customerData.investment.totalGoldInvested +
+      customerData.investment.totalSilverInvested;
+  double get currentValue =>
+      customerData.investment.totalGoldCurrent +
+      customerData.investment.totalSilverCurrent;
   double get totalProfitLoss => currentValue - totalInvestment;
-  double get totalProfitLossPercentage => totalInvestment > 0 ? (totalProfitLoss / totalInvestment) * 100 : 0.0;
-  double get dayProfitLoss => data.investment.dayGold + data.investment.daySilver;
-  double get dayProfitLossPercentage => data.investment.dayChangePercentage;
+  double get totalProfitLossPercentage =>
+      totalInvestment > 0 ? (totalProfitLoss / totalInvestment) * 100 : 0.0;
+  double get dayProfitLoss =>
+      customerData.investment.dayGold + customerData.investment.daySilver;
+  double get dayProfitLossPercentage =>
+      customerData.investment.dayChangePercentage;
 
   // Metal data getters for backward compatibility
   MetalData get silver => MetalData(
     name: 'Silver',
-    value: data.investment.totalSilverCurrent,
-    ounces: data.investment.totalSilverOunces,
-    profit: data.investment.totalSilverCurrent - data.investment.totalSilverInvested,
-    profitPercentage: data.investment.totalSilverInvested > 0 
-        ? ((data.investment.totalSilverCurrent - data.investment.totalSilverInvested) / data.investment.totalSilverInvested) * 100 
+    value: customerData.investment.totalSilverCurrent,
+    ounces: customerData.investment.totalSilverOunces,
+    profit:
+        customerData.investment.totalSilverCurrent -
+        customerData.investment.totalSilverInvested,
+    profitPercentage: customerData.investment.totalSilverInvested > 0
+        ? ((customerData.investment.totalSilverCurrent -
+                      customerData.investment.totalSilverInvested) /
+                  customerData.investment.totalSilverInvested) *
+              100
         : 0.0,
   );
 
   MetalData get gold => MetalData(
     name: 'Gold',
-    value: data.investment.totalGoldCurrent,
-    ounces: data.investment.totalGoldOunces,
-    profit: data.investment.totalGoldCurrent - data.investment.totalGoldInvested,
-    profitPercentage: data.investment.totalGoldInvested > 0 
-        ? ((data.investment.totalGoldCurrent - data.investment.totalGoldInvested) / data.investment.totalGoldInvested) * 100 
+    value: customerData.investment.totalGoldCurrent,
+    ounces: customerData.investment.totalGoldOunces,
+    profit:
+        customerData.investment.totalGoldCurrent -
+        customerData.investment.totalGoldInvested,
+    profitPercentage: customerData.investment.totalGoldInvested > 0
+        ? ((customerData.investment.totalGoldCurrent -
+                      customerData.investment.totalGoldInvested) /
+                  customerData.investment.totalGoldInvested) *
+              100
         : 0.0,
   );
 
   factory PortfolioData.fromJson(Map<String, dynamic> json) {
-    // Handle if 'data' is a List or Map
-    var dataJson = json['data'];
+    // The top-level 'data' field is a map, not a list.
+    // The lists are inside the 'data' map.
+    var rawData = json['data'];
 
-    // If 'data' is a List, we are assuming the first item contains the needed data
-    if (dataJson is List && dataJson.isNotEmpty) {
-      dataJson = dataJson[0];
-    }
-
+    // For simplicity, we'll assume there's only one customer and one investment record.
     return PortfolioData(
       success: json['success'],
-      data: CustomerData.fromJson(dataJson),
+      data: [CustomerData.fromJson(rawData)],
     );
   }
 }
 
 class CustomerData {
   final InvestmentData investment;
-  // final MetalCandleCart metalCandleCart;
-  // final MetalInOunces metalInOunces;
-  // final PortFolioSetting portFolioSetting;
-  // final ProductsForPortfolio productsForPortfolio;
+  // ... (other fields)
 
-  CustomerData({
-    required this.investment,
-    // required this.metalCandleCart,
-    // required this.metalInOunces,
-    // required this.portFolioSetting,
-    // required this.productsForPortfolio,
-  });
+  CustomerData({required this.investment});
 
   factory CustomerData.fromJson(Map<String, dynamic> json) {
+    // Corrected logic to handle 'investment' as a list and get the first item
+    final investmentList = json['investment'] as List<dynamic>;
+    final investmentData = investmentList.isNotEmpty
+        ? InvestmentData.fromJson(investmentList[0] as Map<String, dynamic>)
+        : null;
+
+    if (investmentData == null) {
+      throw Exception(
+        'Investment data is missing or empty in the API response.',
+      );
+    }
+
     return CustomerData(
-      investment: InvestmentData.fromJson(json['investment']),
-      // metalCandleCart: MetalCandleCart.fromJson(json['metalCandleCart']),
-      // metalInOunces: MetalInOunces.fromJson(json['metalInOunces']),
-      // portFolioSetting: PortFolioSetting.fromJson(json['portFolioSetting']),
-      // productsForPortfolio: ProductsForPortfolio.fromJson(json['productsForPortfolio']),
+      investment: investmentData,
+      // Uncomment and correct the parsing for other fields as needed
     );
   }
 }

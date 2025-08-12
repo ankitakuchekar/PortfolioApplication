@@ -105,7 +105,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     if (spotPriceData == null) {
                       return const Center(child: Text('No data available'));
                     }
-                    print('Spot Prices: ${spotPriceData}');
                     return AssetAllocationSection(spotPrices: spotPriceData);
                   },
                 ),

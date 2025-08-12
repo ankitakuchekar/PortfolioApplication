@@ -65,21 +65,13 @@ class ProfitLossCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final investment = portfolioData.data.investment is List
-        ? (portfolioData.data.investment
-              as List)[0] // Access the first element of the list
-        : null;
-
-    if (investment == null) {
-      return Center(child: Text("No investment data available"));
-    }
+    final investment = portfolioData.data[0].investment;
 
     final double totalCurrentValue =
         investment.totalGoldCurrent + investment.totalSilverCurrent;
-    print("Total Current Value: ${investment.totalGoldCurrent}");
+
     final double totalAcquisitionCost =
-        portfolioData.data.investment.totalGoldInvested +
-        portfolioData.data.investment.totalSilverInvested;
+        investment.totalGoldInvested + investment.totalSilverInvested;
     final double difference = totalCurrentValue - totalAcquisitionCost;
     final double totalProfitDifference = (difference < 0)
         ? -difference
@@ -87,24 +79,28 @@ class ProfitLossCards extends StatelessWidget {
     final double percentDifference = totalAcquisitionCost > 0
         ? (totalProfitDifference / totalAcquisitionCost) * 100
         : 0;
-    final double dayProfitLoss =
-        portfolioData.data.investment.dayGold +
-        portfolioData.data.investment.daySilver;
-    final double percentDayProfitLossPage =
-        portfolioData.data.investment.dayChangePercentage;
+
+    final double dayProfitLoss = investment.dayGold + investment.daySilver;
+
+    final double percentDayProfitLossPage = investment.dayChangePercentage;
 
     final double percentDayProfitLoss =
         totalAcquisitionCost > 0 && !percentDayProfitLossPage.isNaN
         ? percentDayProfitLossPage.abs()
         : 0;
-    print('Total Current Value: ${totalProfitDifference}');
     return Row(
       children: [
         _buildCard(
           title: 'Total Profit & Loss',
-          value: '+\$${totalProfitDifference.toStringAsFixed(2)}',
-          percentage: '+${percentDifference.toStringAsFixed(2)}%',
-          backgroundColor: AppColors.profitGreen,
+          value: totalProfitDifference > 0
+              ? '+\$${totalProfitDifference.toStringAsFixed(2)}'
+              : '-\$${totalProfitDifference.abs().toStringAsFixed(2)}',
+          percentage: percentDifference > 0
+              ? '+${percentDifference.toStringAsFixed(2)}%'
+              : '-${percentDifference.abs().toStringAsFixed(2)}%',
+          backgroundColor: totalProfitDifference > 0
+              ? const Color(0xFF16A34A)
+              : const Color(0xFFDC2626),
           textColor: Colors.white,
           icon: Icons.info_outline,
         ),
@@ -114,10 +110,12 @@ class ProfitLossCards extends StatelessWidget {
           value: dayProfitLoss >= 0
               ? '+\$${dayProfitLoss.toStringAsFixed(2)}'
               : '-\$${dayProfitLoss.abs().toStringAsFixed(2)}',
-          percentage: '${percentDayProfitLoss.toStringAsFixed(2)}%',
+          percentage: percentDayProfitLoss > 0
+              ? '+${percentDayProfitLoss.toStringAsFixed(2)}%'
+              : '-${percentDayProfitLoss.abs().toStringAsFixed(2)}%',
           backgroundColor: dayProfitLoss >= 0
-              ? AppColors.profitGreen
-              : AppColors.lossRed,
+              ? const Color(0xFF16A34A)
+              : const Color(0xFFDC2626),
           textColor: Colors.white,
           icon: Icons.info_outline,
         ),
