@@ -85,7 +85,6 @@ class PortfolioService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
-        print('Fetched Customer Portfolio: ${response.body}');
         return PortfolioData.fromJson(responseData);
       } else {
         throw Exception(
