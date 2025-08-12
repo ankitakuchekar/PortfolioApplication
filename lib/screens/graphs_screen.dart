@@ -31,7 +31,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
       body: Consumer<PortfolioProvider>(
         builder: (context, portfolioProvider, child) {
           final portfolioData = portfolioProvider.portfolioData;
-          
+
           if (portfolioData == null) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -61,7 +61,9 @@ class _GraphsScreenState extends State<GraphsScreen> {
                             final isSelected = selectedTimeRange == range;
                             return Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 2,
+                                ),
                                 child: ElevatedButton(
                                   onPressed: () {
                                     setState(() {
@@ -69,14 +71,16 @@ class _GraphsScreenState extends State<GraphsScreen> {
                                     });
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: isSelected 
-                                        ? AppColors.primary 
+                                    backgroundColor: isSelected
+                                        ? AppColors.primary
                                         : Colors.grey[200],
-                                    foregroundColor: isSelected 
-                                        ? Colors.white 
+                                    foregroundColor: isSelected
+                                        ? Colors.white
                                         : AppColors.textSecondary,
                                     elevation: isSelected ? 2 : 0,
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
                                   ),
                                   child: Text(
                                     range,
@@ -102,7 +106,9 @@ class _GraphsScreenState extends State<GraphsScreen> {
                             final isSelected = selectedMetalType == type;
                             return Expanded(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 2,
+                                ),
                                 child: ElevatedButton(
                                   onPressed: () {
                                     setState(() {
@@ -110,14 +116,16 @@ class _GraphsScreenState extends State<GraphsScreen> {
                                     });
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: isSelected 
-                                        ? AppColors.primary 
+                                    backgroundColor: isSelected
+                                        ? AppColors.primary
                                         : Colors.grey[200],
-                                    foregroundColor: isSelected 
-                                        ? Colors.white 
+                                    foregroundColor: isSelected
+                                        ? Colors.white
                                         : AppColors.textSecondary,
                                     elevation: isSelected ? 2 : 0,
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
                                   ),
                                   child: Text(
                                     type,
@@ -148,23 +156,23 @@ class _GraphsScreenState extends State<GraphsScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          '\$${portfolioData.currentValue.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        Text(
-                          '+${portfolioData.totalProfitLossPercentage.toStringAsFixed(2)}%',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: portfolioData.totalProfitLoss >= 0 
-                                ? AppColors.profitGreen 
-                                : AppColors.lossRed,
-                          ),
-                        ),
+                        // Text(
+                        //   '\$${portfolioData.currentValue.toStringAsFixed(2)}',
+                        //   style: const TextStyle(
+                        //     fontSize: 24,
+                        //     fontWeight: FontWeight.bold,
+                        //     color: AppColors.primary,
+                        //   ),
+                        // ),
+                        // Text(
+                        //   '+${portfolioData.totalProfitLossPercentage.toStringAsFixed(2)}%',
+                        //   style: TextStyle(
+                        //     fontSize: 16,
+                        //     color: portfolioData.totalProfitLoss >= 0
+                        //         ? AppColors.profitGreen
+                        //         : AppColors.lossRed,
+                        //   ),
+                        // ),
                         const SizedBox(height: 20),
                         SizedBox(
                           height: 250,
@@ -214,27 +222,27 @@ class _GraphsScreenState extends State<GraphsScreen> {
                                   left: BorderSide(color: Colors.grey[300]!),
                                 ),
                               ),
-                              lineBarsData: [
-                                LineChartBarData(
-                                  spots: portfolioData.chartData
-                                      .asMap()
-                                      .entries
-                                      .map((entry) => FlSpot(
-                                            entry.key.toDouble(),
-                                            entry.value.value,
-                                          ))
-                                      .toList(),
-                                  isCurved: true,
-                                  color: AppColors.profitGreen,
-                                  barWidth: 3,
-                                  dotData: const FlDotData(show: false),
-                                  belowBarData: BarAreaData(
-                                    show: true,
-                                    color: AppColors.profitGreen.withValues(alpha: 0.1),
-                                  ),
-                                ),
-                              ],
-                              minY: 1400,
+                              // lineBarsData: [
+                              //   LineChartBarData(
+                              //     spots: portfolioData.chartData
+                              //         .asMap()
+                              //         .entries
+                              //         .map((entry) => FlSpot(
+                              //               entry.key.toDouble(),
+                              //               entry.value.value,
+                              //             ))
+                              //         .toList(),
+                              //     isCurved: true,
+                              //     color: AppColors.profitGreen,
+                              //     barWidth: 3,
+                              //     dotData: const FlDotData(show: false),
+                              //     belowBarData: BarAreaData(
+                              //       show: true,
+                              //       color: AppColors.profitGreen.withValues(alpha: 0.1),
+                              //     ),
+                              //   ),
+                              // ],
+                              // minY: 1400,
                               maxY: 1800,
                             ),
                           ),

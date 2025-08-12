@@ -26,9 +26,7 @@ class PortfolioProvider with ChangeNotifier {
     try {
       // Fetch Spot Prices and Customer Portfolio Data in Parallel
       final spotPricesFuture = PortfolioService.fetchSpotPrices();
-      final portfolioFuture = PortfolioService.fetchCustomerPortfolio(
-        0,
-      ); // Replace with actual customerId if needed
+      final portfolioFuture = PortfolioService.fetchCustomerPortfolio(0);
 
       final results = await Future.wait([spotPricesFuture, portfolioFuture]);
 
@@ -37,24 +35,18 @@ class PortfolioProvider with ChangeNotifier {
         print('Fetched Spot Prices: ${results[0]}');
       }
 
-      // Assign spot prices and portfolio data
-      _spotPrices = results[0] as SpotPriceData;
-      final newPortfolioData = results[1] as PortfolioData;
+      // Ensure the results are the correct type
+      final spotPrices = results[0];
+      final portfolioData = results[1];
 
-      _portfolioData = PortfolioData(
-        totalInvestment: newPortfolioData.totalInvestment,
-        currentValue: newPortfolioData.currentValue,
-        totalProfitLoss: newPortfolioData.totalProfitLoss,
-        totalProfitLossPercentage: newPortfolioData.totalProfitLossPercentage,
-        dayProfitLoss: newPortfolioData.dayProfitLoss,
-        dayProfitLossPercentage: newPortfolioData.dayProfitLossPercentage,
-        silver: newPortfolioData.silver,
-        gold: newPortfolioData.gold,
-        chartData: newPortfolioData.chartData,
-        spotPrices: _spotPrices, // Store fetched spot price data
-      );
-
-      _errorMessage = null;
+      if (spotPrices is SpotPriceData && portfolioData is PortfolioData) {
+        _spotPrices = spotPrices;
+        _portfolioData = portfolioData;
+        _errorMessage = null;
+      } else {
+        _errorMessage = 'Invalid data format';
+        print('Error: Invalid data format');
+      }
     } catch (e) {
       _errorMessage = 'Failed to load data: ${e.toString()}';
       if (kDebugMode) {
@@ -73,9 +65,7 @@ class PortfolioProvider with ChangeNotifier {
 
     try {
       final spotPricesFuture = PortfolioService.fetchSpotPrices();
-      final portfolioFuture = PortfolioService.fetchCustomerPortfolio(
-        0,
-      ); // Replace with actual customerId if needed
+      final portfolioFuture = PortfolioService.fetchCustomerPortfolio(0);
 
       final results = await Future.wait([spotPricesFuture, portfolioFuture]);
 
@@ -84,24 +74,18 @@ class PortfolioProvider with ChangeNotifier {
         print('Refreshed Spot Prices: ${results[0]}');
       }
 
-      // Assign spot prices and portfolio data
-      _spotPrices = results[0] as SpotPriceData;
-      final newPortfolioData = results[1] as PortfolioData;
+      // Ensure the results are the correct type
+      final spotPrices = results[0];
+      final portfolioData = results[1];
 
-      _portfolioData = PortfolioData(
-        totalInvestment: newPortfolioData.totalInvestment,
-        currentValue: newPortfolioData.currentValue,
-        totalProfitLoss: newPortfolioData.totalProfitLoss,
-        totalProfitLossPercentage: newPortfolioData.totalProfitLossPercentage,
-        dayProfitLoss: newPortfolioData.dayProfitLoss,
-        dayProfitLossPercentage: newPortfolioData.dayProfitLossPercentage,
-        silver: newPortfolioData.silver,
-        gold: newPortfolioData.gold,
-        chartData: newPortfolioData.chartData,
-        spotPrices: _spotPrices, // Store fetched spot price data
-      );
-
-      _errorMessage = null;
+      if (spotPrices is SpotPriceData && portfolioData is PortfolioData) {
+        _spotPrices = spotPrices;
+        _portfolioData = portfolioData;
+        _errorMessage = null;
+      } else {
+        _errorMessage = 'Invalid data format';
+        print('Error: Invalid data format');
+      }
     } catch (e) {
       _errorMessage = 'Failed to refresh data: ${e.toString()}';
       if (kDebugMode) {

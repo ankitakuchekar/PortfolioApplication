@@ -4,10 +4,7 @@ import '../models/portfolio_model.dart';
 class ValueCostCards extends StatelessWidget {
   final PortfolioData portfolioData;
 
-  const ValueCostCards({
-    super.key,
-    required this.portfolioData,
-  });
+  const ValueCostCards({super.key, required this.portfolioData});
 
   Widget _buildCard({
     required String title,
@@ -36,11 +33,7 @@ class ValueCostCards extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                Icon(
-                  icon,
-                  size: 16,
-                  color: Colors.white,
-                ),
+                Icon(icon, size: 16, color: Colors.white),
               ],
             ),
             const SizedBox(height: 8),
@@ -64,14 +57,16 @@ class ValueCostCards extends StatelessWidget {
       children: [
         _buildCard(
           title: 'Current Value',
-          value: '\$${portfolioData.currentValue.toStringAsFixed(2)}',
+          value:
+              '\$${portfolioData.data.investment.customerId.toStringAsFixed(2)}',
           backgroundColor: const Color(0xFF8B5CF6),
           icon: Icons.info_outline,
         ),
         const SizedBox(width: 12),
         _buildCard(
           title: 'Purchase Cost',
-          value: '\$${portfolioData.totalInvestment.toStringAsFixed(2)}',
+          value:
+              '\$${portfolioData.data.investment.customerId.toStringAsFixed(2)}',
           backgroundColor: const Color(0xFF3B82F6),
           icon: Icons.info_outline,
         ),
