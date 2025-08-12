@@ -20,12 +20,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<PortfolioProvider>(context, listen: false).loadPortfolioData();
+      Provider.of<PortfolioProvider>(
+        context,
+        listen: false,
+      ).loadPortfolioData();
     });
   }
 
   void _onTimerComplete() {
-    Provider.of<PortfolioProvider>(context, listen: false).refreshDataFromAPIs();
+    Provider.of<PortfolioProvider>(
+      context,
+      listen: false,
+    ).refreshDataFromAPIs();
   }
 
   @override
@@ -34,7 +40,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Portfolio'),
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.black,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -95,7 +101,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Consumer<PortfolioProvider>(
                   builder: (context, provider, child) {
-                    return AssetAllocationSection(spotPrices: provider.spotPrices);
+                    final spotPriceData = provider.spotPrices;
+                    if (spotPriceData == null) {
+                      return const Center(child: Text('No data available'));
+                    }
+                    print('Spot Prices: ${spotPriceData}');
+                    return AssetAllocationSection(spotPrices: spotPriceData);
                   },
                 ),
                 const SizedBox(height: 16),

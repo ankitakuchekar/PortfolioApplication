@@ -12,9 +12,10 @@ class AppColors {
   static const Color textPrimary = Color(0xFF2D3748);
   static const Color textSecondary = Color(0xFF718096);
   static const Color border = Color(0xFFE2E8F0);
-  
+
   static const Color profitGreen = Color(0xFF179900);
   static const Color lossRed = Color(0xFFF21515);
   static const Color goldColor = Color(0xFFD4AF37);
   static const Color silverColor = Color(0xFFC0C0C0);
+  static const Color black = Color.fromARGB(255, 6, 6, 6);
 }

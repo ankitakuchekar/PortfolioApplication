@@ -5,10 +5,7 @@ import '../utils/app_colors.dart';
 class SpotPriceDisplay extends StatelessWidget {
   final SpotPriceData? spotPrices;
 
-  const SpotPriceDisplay({
-    super.key,
-    this.spotPrices,
-  });
+  const SpotPriceDisplay({super.key, this.spotPrices});
 
   String _formatCurrency(double value) {
     return value.toStringAsFixed(2);
@@ -27,10 +24,7 @@ class SpotPriceDisplay extends StatelessWidget {
       children: [
         Text(
           '$label: ',
-          style: const TextStyle(
-            fontSize: 12,
-            color: AppColors.textSecondary,
-          ),
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
         ),
         Text(
           '\$${_formatCurrency(price)} USD',
@@ -91,16 +85,16 @@ class SpotPriceDisplay extends StatelessWidget {
         children: [
           _buildPriceItem(
             label: 'Silver',
-            price: spotPrices!.silverAsk,
-            change: spotPrices!.silverChange,
-            changePercent: spotPrices!.silverChangePercent,
+            price: spotPrices!.data.silverAsk,
+            change: spotPrices!.data.silverChange,
+            changePercent: spotPrices!.data.silverChangePercent,
           ),
           const SizedBox(height: 4),
           _buildPriceItem(
             label: 'Gold',
-            price: spotPrices!.goldAsk,
-            change: spotPrices!.goldChange,
-            changePercent: spotPrices!.goldChangePercent,
+            price: spotPrices!.data.goldAsk,
+            change: spotPrices!.data.goldChange,
+            changePercent: spotPrices!.data.goldChangePercent,
           ),
         ],
       ),

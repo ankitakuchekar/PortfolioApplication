@@ -5,10 +5,7 @@ import '../utils/app_colors.dart';
 class AssetAllocationSection extends StatelessWidget {
   final SpotPriceData? spotPrices;
 
-  const AssetAllocationSection({
-    super.key,
-    this.spotPrices,
-  });
+  const AssetAllocationSection({super.key, this.spotPrices});
 
   Widget _buildPriceRow({
     required String label,
@@ -18,15 +15,18 @@ class AssetAllocationSection extends StatelessWidget {
     required bool isPositive,
   }) {
     final changeColor = isPositive ? AppColors.profitGreen : AppColors.lossRed;
-    final backgroundColor = label == 'Silver' 
-        ? const Color(0xFFE8F5E8) 
-        : const Color(0xFFFFF8DC);
-
+    final backgroundColor = label == 'Silver'
+        ? const Color(0xFFE8F5F3)
+        : const Color(0xFFFFF8E6);
+    final borderColor = label == 'Silver'
+        ? Border.all(color: Colors.greenAccent, width: 2)
+        : Border.all(color: Colors.amberAccent, width: 2);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(8),
+        border: borderColor,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -35,7 +35,7 @@ class AssetAllocationSection extends StatelessWidget {
             '$label: $price USD',
             style: const TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
             ),
           ),
@@ -69,6 +69,7 @@ class AssetAllocationSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Row with title and icon with tooltip
             Row(
               children: [
                 const Text(
@@ -79,11 +80,20 @@ class AssetAllocationSection extends StatelessWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.info_outline,
+                const Icon(
+                  Icons.bar_chart, // Chart icon
                   size: 20,
-                  color: Colors.grey[600],
+                  color: Colors.orange, // Icon color (change as needed)
+                ),
+                const SizedBox(width: 8),
+                Tooltip(
+                  message:
+                      'View a quick summary of your total holdings, including metal types and estimated values based on live market prices.',
+                  child: Icon(
+                    Icons.info_outline,
+                    size: 20,
+                    color: Colors.grey[600],
+                  ),
                 ),
               ],
             ),
@@ -91,18 +101,20 @@ class AssetAllocationSection extends StatelessWidget {
             if (spotPrices != null) ...[
               _buildPriceRow(
                 label: 'Silver',
-                price: '\$${spotPrices!.silverAsk.toStringAsFixed(2)}',
-                change: '\$${spotPrices!.silverChange.toStringAsFixed(2)}',
-                changePercent: '${spotPrices!.silverChangePercent.toStringAsFixed(2)}%',
-                isPositive: spotPrices!.silverChange >= 0,
+                price: '\$${spotPrices!.data.silverAsk.toStringAsFixed(2)}',
+                change: '\$${spotPrices!.data.silverChange.toStringAsFixed(2)}',
+                changePercent:
+                    '${spotPrices!.data.silverChangePercent.toStringAsFixed(2)}%',
+                isPositive: spotPrices!.data.silverChange >= 0,
               ),
               const SizedBox(height: 8),
               _buildPriceRow(
                 label: 'Gold',
-                price: '\$${spotPrices!.goldAsk.toStringAsFixed(2)}',
-                change: '\$${spotPrices!.goldChange.toStringAsFixed(2)}',
-                changePercent: '${spotPrices!.goldChangePercent.toStringAsFixed(2)}%',
-                isPositive: spotPrices!.goldChange >= 0,
+                price: '\$${spotPrices!.data.goldAsk.toStringAsFixed(2)}',
+                change: '\$${spotPrices!.data.goldChange.toStringAsFixed(2)}',
+                changePercent:
+                    '${spotPrices!.data.goldChangePercent.toStringAsFixed(2)}%',
+                isPositive: spotPrices!.data.goldChange >= 0,
               ),
             ] else ...[
               _buildPriceRow(
