@@ -48,8 +48,21 @@ class PortfolioService {
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        return PortfolioData.fromJson(responseData);
+        final dynamic rawResponse = jsonDecode(response.body);
+        
+        // Handle if the response is a List instead of Map
+        if (rawResponse is List) {
+          if (rawResponse.isNotEmpty) {
+            final Map<String, dynamic> responseData = rawResponse[0];
+            return PortfolioData.fromJson(responseData);
+          } else {
+            throw Exception('Empty list response from API');
+          }
+        } else if (rawResponse is Map<String, dynamic>) {
+          return PortfolioData.fromJson(rawResponse);
+        } else {
+          throw Exception('Unexpected response type: ${rawResponse.runtimeType}');
+        }
       } else {
         throw Exception(
           'Failed to fetch customer portfolio: ${response.statusCode}',

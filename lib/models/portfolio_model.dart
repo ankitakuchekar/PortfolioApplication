@@ -4,6 +4,35 @@ class PortfolioData {
 
   PortfolioData({required this.success, required this.data});
 
+  // Computed getters for backward compatibility with UI components
+  double get totalInvestment => data.investment.totalGoldInvested + data.investment.totalSilverInvested;
+  double get currentValue => data.investment.totalGoldCurrent + data.investment.totalSilverCurrent;
+  double get totalProfitLoss => currentValue - totalInvestment;
+  double get totalProfitLossPercentage => totalInvestment > 0 ? (totalProfitLoss / totalInvestment) * 100 : 0.0;
+  double get dayProfitLoss => data.investment.dayGold + data.investment.daySilver;
+  double get dayProfitLossPercentage => data.investment.dayChangePercentage;
+
+  // Metal data getters for backward compatibility
+  MetalData get silver => MetalData(
+    name: 'Silver',
+    value: data.investment.totalSilverCurrent,
+    ounces: data.investment.totalSilverOunces,
+    profit: data.investment.totalSilverCurrent - data.investment.totalSilverInvested,
+    profitPercentage: data.investment.totalSilverInvested > 0 
+        ? ((data.investment.totalSilverCurrent - data.investment.totalSilverInvested) / data.investment.totalSilverInvested) * 100 
+        : 0.0,
+  );
+
+  MetalData get gold => MetalData(
+    name: 'Gold',
+    value: data.investment.totalGoldCurrent,
+    ounces: data.investment.totalGoldOunces,
+    profit: data.investment.totalGoldCurrent - data.investment.totalGoldInvested,
+    profitPercentage: data.investment.totalGoldInvested > 0 
+        ? ((data.investment.totalGoldCurrent - data.investment.totalGoldInvested) / data.investment.totalGoldInvested) * 100 
+        : 0.0,
+  );
+
   factory PortfolioData.fromJson(Map<String, dynamic> json) {
     // Handle if 'data' is a List or Map
     var dataJson = json['data'];
