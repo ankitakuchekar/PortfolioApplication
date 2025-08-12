@@ -27,7 +27,6 @@ class AuthService {
       final Map<String, dynamic> responseData = jsonDecode(response.body);
       if (response.statusCode == 200) {
         final authResponse = AuthResponse.fromJson(responseData);
-        print('authResponse: ${authResponse.token}');
         if (authResponse.success && authResponse.token != null) {
           await _saveToken(authResponse.token!);
           if (authResponse.user != null) {
