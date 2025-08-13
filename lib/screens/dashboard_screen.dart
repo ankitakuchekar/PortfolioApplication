@@ -1,3 +1,4 @@
+import 'package:bold_portfolio/widgets/premium_toggle_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/portfolio_provider.dart';
@@ -16,6 +17,8 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  bool isPremiumIncluded = true; // <-- Added state variable
+
   @override
   void initState() {
     super.initState();
@@ -99,6 +102,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 🌟 PREMIUM TOGGLE AT TOP
+                PremiumToggleWidget(
+                  value: isPremiumIncluded,
+                  onToggle: (newValue) {
+                    setState(() {
+                      isPremiumIncluded = newValue;
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
                 Consumer<PortfolioProvider>(
                   builder: (context, provider, child) {
                     final spotPriceData = provider.spotPrices;
