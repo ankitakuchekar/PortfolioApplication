@@ -8,6 +8,35 @@ class PortfolioData {
   CustomerData get customerData =>
       data.isNotEmpty ? data[0] : throw Exception('CustomerData list is empty');
 
+  // Computed getters for backward compatibility with UI components
+  double get totalInvestment => customerData.investment.totalGoldInvested + customerData.investment.totalSilverInvested;
+  double get currentValue => customerData.investment.totalGoldCurrent + customerData.investment.totalSilverCurrent;
+  double get totalProfitLoss => currentValue - totalInvestment;
+  double get totalProfitLossPercentage => totalInvestment > 0 ? (totalProfitLoss / totalInvestment) * 100 : 0.0;
+  double get dayProfitLoss => customerData.investment.dayGold + customerData.investment.daySilver;
+  double get dayProfitLossPercentage => customerData.investment.dayChangePercentage;
+
+  // Metal data getters for backward compatibility
+  MetalData get silver => MetalData(
+    name: 'Silver',
+    value: customerData.investment.totalSilverCurrent,
+    ounces: customerData.investment.totalSilverOunces,
+    profit: customerData.investment.totalSilverCurrent - customerData.investment.totalSilverInvested,
+    profitPercentage: customerData.investment.totalSilverInvested > 0 
+        ? ((customerData.investment.totalSilverCurrent - customerData.investment.totalSilverInvested) / customerData.investment.totalSilverInvested) * 100 
+        : 0.0,
+  );
+
+  MetalData get gold => MetalData(
+    name: 'Gold',
+    value: customerData.investment.totalGoldCurrent,
+    ounces: customerData.investment.totalGoldOunces,
+    profit: customerData.investment.totalGoldCurrent - customerData.investment.totalGoldInvested,
+    profitPercentage: customerData.investment.totalGoldInvested > 0 
+        ? ((customerData.investment.totalGoldCurrent - customerData.investment.totalGoldInvested) / customerData.investment.totalGoldInvested) * 100 
+        : 0.0,
+  );
+
   factory PortfolioData.fromJson(Map<String, dynamic> json) {
     // The top-level 'data' field is a map, not a list.
     // The lists are inside the 'data' map.
