@@ -12,75 +12,156 @@ class HoldingCard extends StatelessWidget {
     final profitColor = profit >= 0 ? Colors.green : Colors.red;
 
     return Container(
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade300),
         borderRadius: BorderRadius.circular(12),
         color: Colors.white,
       ),
-      padding: const EdgeInsets.all(16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Image on left
               Image.network(
                 holding.productImage,
-                height: 60,
-                width: 60,
+                height: 70,
+                width: 70,
                 fit: BoxFit.cover,
               ),
-              const SizedBox(width: 12),
+
+              const SizedBox(width: 10),
+
+              // Text details on right
               Expanded(
-                child: Text(
-                  holding.assetList,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    decoration: TextDecoration.underline,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Product name with underline
+                    Text(
+                      holding.assetList,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+
+                    const SizedBox(height: 6),
+
+                    // Qty and weight and date
+                    RichText(
+                      text: TextSpan(
+                        style: const TextStyle(color: Colors.black87),
+                        children: [
+                          TextSpan(
+                            text: "Qty: ${holding.totalQtyOrdered ?? 1}\n",
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          TextSpan(
+                            text:
+                                "Total Weight: ${holding.weight.toStringAsFixed(2)} oz\n",
+                          ),
+                          TextSpan(
+                            text:
+                                "${holding.orderDate.toIso8601String().split('T')[0]}",
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text("Qty: 1"),
-          Text("Total Weight: ${holding.weight.toStringAsFixed(2)} oz"),
-          Text("Date: ${holding.orderDate.toIso8601String().split('T')[0]}"),
-          const Divider(height: 20),
-          Text("Average Unit Price: \$${holding.avgPrice.toStringAsFixed(2)}"),
-          Text(
-            "Current Price: \$${holding.currentMetalValue.toStringAsFixed(2)}",
+
+          const SizedBox(height: 12),
+
+          // Price details in two columns
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Average Unit Price"),
+              Text("\$${holding.avgPrice.toStringAsFixed(2)}"),
+            ],
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Profit/Loss: "),
+              const Text("Actual Purchase Price"),
+              Text(
+                "\$${holding.avgPrice.toStringAsFixed(2)}",
+              ), // Assuming same as avgPrice
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Approx. Current Price"),
+              Text("\$${holding.currentMetalValue.toStringAsFixed(2)}"),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: const [
+                  Text("Profit/Loss "),
+                  Icon(Icons.swap_vert, size: 18),
+                ],
+              ),
               Text(
                 "\$${profit.toStringAsFixed(2)}",
-                style: TextStyle(color: profitColor),
+                style: TextStyle(
+                  color: profitColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+
+          const SizedBox(height: 16),
+
+          // Buttons row
           Row(
             children: [
-              ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.shopping_cart),
-                label: const Text("Buy"),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.arrow_upward),
+                  label: const Text("Buy"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
               ),
-              const SizedBox(width: 8),
-              ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.sell),
-                label: const Text("Sell/Exit"),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.arrow_downward),
+                  label: const Text("Sell/Exit"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
               ),
-              const Spacer(),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.delete),
-                color: Colors.red,
+              const SizedBox(width: 10),
+              Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  color: Colors.red.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.delete),
+                  color: Colors.red,
+                ),
               ),
             ],
           ),
