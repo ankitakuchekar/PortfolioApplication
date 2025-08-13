@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class PortfolioData {
   final bool success;
   final List<CustomerData> data;
@@ -9,21 +11,33 @@ class PortfolioData {
       data.isNotEmpty ? data[0] : throw Exception('CustomerData list is empty');
 
   // Computed getters for backward compatibility with UI components
-  double get totalInvestment => customerData.investment.totalGoldInvested + customerData.investment.totalSilverInvested;
-  double get currentValue => customerData.investment.totalGoldCurrent + customerData.investment.totalSilverCurrent;
+  double get totalInvestment =>
+      customerData.investment.totalGoldInvested +
+      customerData.investment.totalSilverInvested;
+  double get currentValue =>
+      customerData.investment.totalGoldCurrent +
+      customerData.investment.totalSilverCurrent;
   double get totalProfitLoss => currentValue - totalInvestment;
-  double get totalProfitLossPercentage => totalInvestment > 0 ? (totalProfitLoss / totalInvestment) * 100 : 0.0;
-  double get dayProfitLoss => customerData.investment.dayGold + customerData.investment.daySilver;
-  double get dayProfitLossPercentage => customerData.investment.dayChangePercentage;
+  double get totalProfitLossPercentage =>
+      totalInvestment > 0 ? (totalProfitLoss / totalInvestment) * 100 : 0.0;
+  double get dayProfitLoss =>
+      customerData.investment.dayGold + customerData.investment.daySilver;
+  double get dayProfitLossPercentage =>
+      customerData.investment.dayChangePercentage;
 
   // Metal data getters for backward compatibility
   MetalData get silver => MetalData(
     name: 'Silver',
     value: customerData.investment.totalSilverCurrent,
     ounces: customerData.investment.totalSilverOunces,
-    profit: customerData.investment.totalSilverCurrent - customerData.investment.totalSilverInvested,
-    profitPercentage: customerData.investment.totalSilverInvested > 0 
-        ? ((customerData.investment.totalSilverCurrent - customerData.investment.totalSilverInvested) / customerData.investment.totalSilverInvested) * 100 
+    profit:
+        customerData.investment.totalSilverCurrent -
+        customerData.investment.totalSilverInvested,
+    profitPercentage: customerData.investment.totalSilverInvested > 0
+        ? ((customerData.investment.totalSilverCurrent -
+                      customerData.investment.totalSilverInvested) /
+                  customerData.investment.totalSilverInvested) *
+              100
         : 0.0,
   );
 
@@ -31,9 +45,14 @@ class PortfolioData {
     name: 'Gold',
     value: customerData.investment.totalGoldCurrent,
     ounces: customerData.investment.totalGoldOunces,
-    profit: customerData.investment.totalGoldCurrent - customerData.investment.totalGoldInvested,
-    profitPercentage: customerData.investment.totalGoldInvested > 0 
-        ? ((customerData.investment.totalGoldCurrent - customerData.investment.totalGoldInvested) / customerData.investment.totalGoldInvested) * 100 
+    profit:
+        customerData.investment.totalGoldCurrent -
+        customerData.investment.totalGoldInvested,
+    profitPercentage: customerData.investment.totalGoldInvested > 0
+        ? ((customerData.investment.totalGoldCurrent -
+                      customerData.investment.totalGoldInvested) /
+                  customerData.investment.totalGoldInvested) *
+              100
         : 0.0,
   );
 
@@ -54,6 +73,7 @@ class CustomerData {
   final InvestmentData investment;
   final PortfolioSettings portfolioSettings;
   final List<MetalCandleChartEntry> metalCandleChart;
+  final List<ProductHolding> productHoldings;
 
   // ... (other fields)
 
@@ -61,6 +81,7 @@ class CustomerData {
     required this.investment,
     required this.portfolioSettings,
     required this.metalCandleChart,
+    required this.productHoldings,
   });
 
   factory CustomerData.fromJson(Map<String, dynamic> json) {
@@ -88,10 +109,17 @@ class CustomerData {
         .map((item) => MetalCandleChartEntry.fromJson(item))
         .toList();
 
+    final productHoldingsJson =
+        json['productsForPortfolio'] as List<dynamic>? ?? [];
+    final productHoldings = productHoldingsJson
+        .map((item) => ProductHolding.fromJson(item))
+        .toList();
+
     return CustomerData(
       investment: investmentData,
       portfolioSettings: portfolioSettingsData,
       metalCandleChart: metalCandleChartData,
+      productHoldings: productHoldings,
       // Uncomment and correct the parsing for other fields as needed
     );
   }
@@ -291,4 +319,54 @@ class CandleData {
     required this.low,
     required this.close,
   });
+}
+
+class ProductHolding {
+  final int productId;
+  final String name;
+  final String metal;
+  final double weight;
+  final double avgPrice;
+  final double currentPrice;
+  final bool isSold;
+  final DateTime orderDate;
+  final double currentMetalValue;
+  final String productImage;
+  final String assetList;
+
+  ProductHolding({
+    required this.productId,
+    required this.name,
+    required this.metal,
+    required this.weight,
+    required this.avgPrice,
+    required this.currentPrice,
+    required this.isSold,
+    required this.orderDate,
+    required this.currentMetalValue,
+    required this.productImage,
+    required this.assetList,
+  });
+
+  double get profit => (currentMetalValue - avgPrice) * weight;
+  double get profitPercentage =>
+      avgPrice > 0 ? ((currentMetalValue - avgPrice) / avgPrice) * 100 : 0;
+
+  factory ProductHolding.fromJson(Map<String, dynamic> json) {
+    final dateFormat = DateFormat("MM/dd/yyyy HH:mm:ss");
+
+    return ProductHolding(
+      productId: json['productId'],
+      name: json['assetList'] ?? '',
+      metal: json['metal'] ?? '',
+      weight: (json['weight'] ?? 0).toDouble(),
+      avgPrice: (json['avgPrice'] ?? 0).toDouble(),
+      currentPrice: (json['currentPrice'] ?? 0).toDouble(),
+      currentMetalValue: (json['currentMetalValue'] ?? 0).toDouble(),
+      isSold: json['isSold'] ?? false,
+      orderDate: dateFormat.parse(json['orderDate']), // 🔥 Parse properly
+      productImage: json['productImage'] ?? '',
+      assetList: json['assetList'] ?? '',
+    );
+  }
 }

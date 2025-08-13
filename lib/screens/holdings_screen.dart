@@ -1,11 +1,14 @@
+import 'package:bold_portfolio/models/portfolio_model.dart';
+import 'package:bold_portfolio/widgets/holding_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/portfolio_provider.dart';
 import '../utils/app_colors.dart';
-import '../widgets/holding_card.dart';
 
 class HoldingsScreen extends StatefulWidget {
-  const HoldingsScreen({super.key});
+  final PortfolioData? portfolioData;
+
+  const HoldingsScreen({super.key, this.portfolioData});
 
   @override
   State<HoldingsScreen> createState() => _HoldingsScreenState();
@@ -33,7 +36,21 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
       ),
       body: Consumer<PortfolioProvider>(
         builder: (context, portfolioProvider, child) {
-          final holdings = portfolioProvider.holdings;
+          final holdingData =
+              portfolioProvider.portfolioData?.data[0].productHoldings;
+          // final holdings = portfolioProvider.holdings;
+          print("holdings: $holdingData");
+          // Apply search & filter
+          final filteredHoldings = holdingData?.where((holding) {
+            final query = _searchController.text.toLowerCase();
+            final matchesSearch = holding.assetList.toLowerCase().contains(
+              query,
+            );
+            final matchesFilter =
+                selectedFilter == 'All' ||
+                holding.metal.toLowerCase() == selectedFilter.toLowerCase();
+            return matchesSearch && matchesFilter;
+          }).toList();
 
           return Column(
             children: [
@@ -48,7 +65,9 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Add New Holdings feature coming soon!'),
+                              content: Text(
+                                'Add New Holdings feature coming soon!',
+                              ),
                             ),
                           );
                         },
@@ -93,7 +112,9 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                           child: DropdownButton<String>(
                             value: selectedFilter,
                             underline: const SizedBox(),
-                            items: ['All', 'Gold', 'Silver'].map((String value) {
+                            items: ['All', 'Gold', 'Silver'].map((
+                              String value,
+                            ) {
                               return DropdownMenuItem<String>(
                                 value: value,
                                 child: Text(value),
@@ -112,7 +133,7 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                 ),
               ),
               Expanded(
-                child: holdings.isEmpty
+                child: filteredHoldings?.isEmpty ?? true
                     ? const Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -135,9 +156,9 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        itemCount: holdings.length,
+                        itemCount: filteredHoldings?.length ?? 0,
                         itemBuilder: (context, index) {
-                          final holding = holdings[index];
+                          final holding = filteredHoldings![index];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: HoldingCard(holding: holding),

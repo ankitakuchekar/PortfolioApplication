@@ -5,14 +5,14 @@ import '../services/portfolio_service.dart';
 
 class PortfolioProvider with ChangeNotifier {
   PortfolioData? _portfolioData;
-  List<Holding> _holdings = [];
+  List<ProductHolding> _holdings = [];
   SpotPriceData? _spotPrices;
   bool _isLoading = false;
   bool _isRefreshing = false;
   String? _errorMessage;
 
   PortfolioData? get portfolioData => _portfolioData;
-  List<Holding> get holdings => _holdings;
+  List<ProductHolding> get holdings => _holdings;
   SpotPriceData? get spotPrices => _spotPrices;
   bool get isLoading => _isLoading;
   bool get isRefreshing => _isRefreshing;

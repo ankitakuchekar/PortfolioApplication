@@ -1,178 +1,91 @@
+import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:flutter/material.dart';
-import '../models/portfolio_model.dart';
-import '../utils/app_colors.dart';
 
 class HoldingCard extends StatelessWidget {
-  final Holding holding;
+  final ProductHolding holding;
 
-  const HoldingCard({
-    super.key,
-    required this.holding,
-  });
+  const HoldingCard({super.key, required this.holding});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: holding.type == 'Gold' 
-                        ? AppColors.goldColor.withValues(alpha: 0.2)
-                        : AppColors.silverColor.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.monetization_on,
-                    color: holding.type == 'Gold' 
-                        ? AppColors.goldColor
-                        : AppColors.silverColor,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        holding.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        '${holding.quantity} ${holding.type == 'Gold' ? 'gram' : 'oz'}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Text(
-                  '${holding.profitPercentage >= 0 ? '+' : ''}${holding.profitPercentage.toStringAsFixed(1)}%',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: holding.profit >= 0 
-                        ? AppColors.profitGreen 
-                        : AppColors.lossRed,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildPriceItem(
-                    'Actual Purchase Price',
-                    '\$${holding.purchasePrice.toStringAsFixed(2)}',
-                  ),
-                ),
-                Expanded(
-                  child: _buildPriceItem(
-                    'Approx. Current Price',
-                    '\$${holding.currentPrice.toStringAsFixed(2)}',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            _buildPriceItem(
-              'Profit/Loss',
-              '\$${holding.profit.toStringAsFixed(2)}',
-              color: holding.profit >= 0 
-                  ? AppColors.profitGreen 
-                  : AppColors.lossRed,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Buy feature coming soon!')),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.profitGreen,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                    ),
-                    child: const Text('Buy'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Sell feature coming soon!')),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.lossRed,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                    ),
-                    child: const Text('Sell'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Edit feature coming soon!')),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.textSecondary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  ),
-                  child: const Text('Edit'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+    final profit = holding.currentMetalValue - holding.avgPrice;
+    final profitColor = profit >= 0 ? Colors.green : Colors.red;
 
-  Widget _buildPriceItem(String label, String value, {Color? color}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: AppColors.textSecondary,
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Image.network(
+                holding.productImage,
+                height: 60,
+                width: 60,
+                fit: BoxFit.cover,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  holding.assetList,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: color ?? AppColors.textPrimary,
+          const SizedBox(height: 8),
+          Text("Qty: 1"),
+          Text("Total Weight: ${holding.weight.toStringAsFixed(2)} oz"),
+          Text("Date: ${holding.orderDate.toIso8601String().split('T')[0]}"),
+          const Divider(height: 20),
+          Text("Average Unit Price: \$${holding.avgPrice.toStringAsFixed(2)}"),
+          Text(
+            "Current Price: \$${holding.currentMetalValue.toStringAsFixed(2)}",
           ),
-        ),
-      ],
+          Row(
+            children: [
+              const Text("Profit/Loss: "),
+              Text(
+                "\$${profit.toStringAsFixed(2)}",
+                style: TextStyle(color: profitColor),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.shopping_cart),
+                label: const Text("Buy"),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.sell),
+                label: const Text("Sell/Exit"),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+              ),
+              const Spacer(),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.delete),
+                color: Colors.red,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
