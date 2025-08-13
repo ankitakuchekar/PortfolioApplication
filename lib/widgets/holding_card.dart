@@ -48,27 +48,40 @@ class HoldingCard extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 10),
 
-                    // Qty and weight and date
-                    RichText(
-                      text: TextSpan(
-                        style: const TextStyle(color: Colors.black87),
-                        children: [
-                          TextSpan(
-                            text: "Qty: ${holding.totalQtyOrdered ?? 1}\n",
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                    // Qty, weight, and date using Column instead of RichText
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Qty: ${holding.totalQtyOrdered ?? 1}",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            height: 1.4,
+                            color: Colors.black87,
                           ),
-                          TextSpan(
-                            text:
-                                "Total Weight: ${holding.weight.toStringAsFixed(2)} oz\n",
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "Total Weight: ${holding.weight.toStringAsFixed(2)} oz",
+                          style: const TextStyle(
+                            fontSize: 14,
+                            height: 1.4,
+                            color: Colors.black87,
                           ),
-                          TextSpan(
-                            text:
-                                "${holding.orderDate.toIso8601String().split('T')[0]}",
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "${holding.orderDate.toIso8601String().split('T')[0]}",
+                          style: const TextStyle(
+                            fontSize: 14,
+                            height: 1.4,
+                            color: Colors.black87,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -76,7 +89,7 @@ class HoldingCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
           // Price details in two columns
           Row(
@@ -90,9 +103,7 @@ class HoldingCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text("Actual Purchase Price"),
-              Text(
-                "\$${holding.avgPrice.toStringAsFixed(2)}",
-              ), // Assuming same as avgPrice
+              Text("\$${holding.avgPrice.toStringAsFixed(2)}"),
             ],
           ),
           Row(
