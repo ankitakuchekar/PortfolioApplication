@@ -1,4 +1,5 @@
-import 'package:bold_portfolio/widgets/premium_toggle_widget.dart';
+import 'package:bold_portfolio/services/auth_service.dart';
+import 'package:bold_portfolio/widgets/ActualPriceBanner.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/portfolio_provider.dart';
@@ -18,10 +19,13 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   bool isPremiumIncluded = true; // <-- Added state variable
-
+  String? token;
+  String? userId;
   @override
   void initState() {
     super.initState();
+    _loadToken();
+    _loadUserId();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<PortfolioProvider>(
         context,
@@ -30,11 +34,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  Future<void> _loadToken() async {
+    final authService = AuthService();
+    final fetchedToken = await authService.getToken();
+    setState(() {
+      token = fetchedToken;
+    });
+  }
+
+  Future<void> _loadUserId() async {
+    final authService = AuthService();
+    final fetchedUserId = await authService.getUser();
+    setState(() {
+      userId = fetchedUserId?.id;
+    });
+  }
+
   void _onTimerComplete() {
     Provider.of<PortfolioProvider>(
       context,
       listen: false,
     ).refreshDataFromAPIs();
+  }
+
+  Future<void> fetchChartData() async {
+    try {
+      final provider = Provider.of<PortfolioProvider>(context, listen: false);
+      await provider
+          .loadPortfolioData(); // Or refreshDataFromAPIs() depending on what you want
+    } catch (error) {
+      debugPrint('Error fetching chart data: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to fetch chart data')),
+      );
+    }
   }
 
   @override
@@ -96,19 +129,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
           if (portfolioData == null) {
             return const Center(child: Text('No data available'));
           }
-
+          final portfolioSettings = portfolioData.data[0].portfolioSettings;
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 🌟 PREMIUM TOGGLE AT TOP
-                PremiumToggleWidget(
-                  value: isPremiumIncluded,
-                  onToggle: (newValue) {
-                    setState(() {
-                      isPremiumIncluded = newValue;
-                    });
+                ActualPriceBanner(
+                  customerId: int.tryParse(userId ?? '') ?? 0,
+                  settings: portfolioSettings,
+                  token: token!,
+                  fetchChartData: () async {
+                    await fetchChartData(); // This must be defined somewhere
                   },
                 ),
 

@@ -1,8 +1,137 @@
+// Add this import
+import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:intl/intl.dart';
+
 import '../providers/portfolio_provider.dart';
 import '../utils/app_colors.dart';
+
+class MetalCandleChartEntry {
+  final DateTime intervalStart;
+  final double open;
+  final double high;
+  final double low;
+  final double close;
+
+  MetalCandleChartEntry({
+    required this.intervalStart,
+    required this.open,
+    required this.high,
+    required this.low,
+    required this.close,
+  });
+}
+
+class ApexChartFlutter extends StatefulWidget {
+  final List<MetalCandleChartEntry> chartData;
+  final bool isGold;
+
+  const ApexChartFlutter({
+    super.key,
+    required this.chartData,
+    required this.isGold,
+  });
+
+  @override
+  State<ApexChartFlutter> createState() => _ApexChartFlutterState();
+}
+
+class _ApexChartFlutterState extends State<ApexChartFlutter> {
+  late ZoomPanBehavior _zoomPanBehavior;
+  late TooltipBehavior _tooltipBehavior;
+
+  @override
+  void initState() {
+    _zoomPanBehavior = ZoomPanBehavior(
+      enablePinching: true,
+      enablePanning: true,
+      enableDoubleTapZooming: true,
+      zoomMode: ZoomMode.x,
+      enableMouseWheelZooming: true,
+    );
+
+    _tooltipBehavior = TooltipBehavior(
+      enable: true,
+      format: 'point.x : point.y',
+      tooltipPosition: TooltipPosition.pointer,
+    );
+
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
+    return Column(
+      children: [
+        if (!isMobile)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.zoom_in, color: Colors.white),
+                  onPressed: () => _zoomPanBehavior.zoomIn(),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.zoom_out, color: Colors.white),
+                  onPressed: () => _zoomPanBehavior.zoomOut(),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.refresh, color: Colors.white),
+                  onPressed: () => _zoomPanBehavior.reset(),
+                ),
+              ],
+            ),
+          ),
+        SfCartesianChart(
+          backgroundColor: Colors.black,
+          plotAreaBackgroundColor: Colors.black,
+          title: ChartTitle(
+            text: widget.isGold ? 'Live Gold Holdings' : 'Live Silver Holdings',
+            textStyle: const TextStyle(color: Colors.white, fontSize: 18),
+            alignment: ChartAlignment.near,
+          ),
+          primaryXAxis: DateTimeAxis(
+            intervalType: DateTimeIntervalType.hours,
+            dateFormat: DateFormat.jm(),
+            labelStyle: const TextStyle(color: Colors.grey, fontSize: 12),
+            majorGridLines: MajorGridLines(color: Colors.grey.shade800),
+            axisLine: AxisLine(color: Colors.grey.shade700),
+            edgeLabelPlacement: EdgeLabelPlacement.shift,
+          ),
+          primaryYAxis: NumericAxis(
+            labelStyle: const TextStyle(color: Colors.grey, fontSize: 12),
+            majorGridLines: MajorGridLines(color: Colors.grey.shade800),
+            axisLine: AxisLine(color: Colors.grey.shade700),
+            numberFormat: NumberFormat.simpleCurrency(decimalDigits: 2),
+          ),
+          tooltipBehavior: _tooltipBehavior,
+          zoomPanBehavior: _zoomPanBehavior,
+          series: <CandleSeries<MetalCandleChartEntry, DateTime>>[
+            CandleSeries<MetalCandleChartEntry, DateTime>(
+              dataSource: widget.chartData,
+              xValueMapper: (entry, _) => entry.intervalStart,
+              lowValueMapper: (entry, _) => entry.low,
+              highValueMapper: (entry, _) => entry.high,
+              openValueMapper: (entry, _) => entry.open,
+              closeValueMapper: (entry, _) => entry.close,
+              bearColor: Colors.red,
+              bullColor: Colors.green,
+              width: 0.8,
+              enableTooltip: true,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
 
 class GraphsScreen extends StatefulWidget {
   const GraphsScreen({super.key});
@@ -23,231 +152,154 @@ class _GraphsScreenState extends State<GraphsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Portfolio Performance'),
-        backgroundColor: AppColors.primary,
+        title: const Text('Portfolio Charts'),
+        backgroundColor: AppColors.black,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: Consumer<PortfolioProvider>(
         builder: (context, portfolioProvider, child) {
           final portfolioData = portfolioProvider.portfolioData;
-
           if (portfolioData == null) {
             return const Center(child: CircularProgressIndicator());
+          }
+
+          final metalCandleCharts = portfolioData.customerData.metalCandleChart;
+
+          List<MetalCandleChartEntry> filteredMetalData = [];
+
+          if (selectedMetalType == 'Gold') {
+            filteredMetalData = metalCandleCharts
+                .where(
+                  (entry) =>
+                      entry.openGold != null &&
+                      entry.highGold != null &&
+                      entry.lowGold != null &&
+                      entry.closeGold != null,
+                )
+                .map(
+                  (entry) => MetalCandleChartEntry(
+                    intervalStart: entry.intervalStart,
+                    open: entry.openGold,
+                    close: entry.closeGold,
+                    high: entry.highGold,
+                    low: entry.lowGold,
+                  ),
+                )
+                .toList();
+          } else if (selectedMetalType == 'Silver') {
+            filteredMetalData = metalCandleCharts
+                .where(
+                  (entry) =>
+                      entry.openSilver != null &&
+                      entry.highSilver != null &&
+                      entry.lowSilver != null &&
+                      entry.closeSilver != null,
+                )
+                .map(
+                  (entry) => MetalCandleChartEntry(
+                    intervalStart: entry.intervalStart,
+                    open: entry.openSilver,
+                    close: entry.closeSilver,
+                    high: entry.highSilver,
+                    low: entry.lowSilver,
+                  ),
+                )
+                .toList();
+
+            // 🔁 Fallback to Gold if Silver data is not available
+            if (filteredMetalData.isEmpty) {
+              filteredMetalData = metalCandleCharts
+                  .where(
+                    (entry) =>
+                        entry.openGold != null &&
+                        entry.highGold != null &&
+                        entry.lowGold != null &&
+                        entry.closeGold != null,
+                  )
+                  .map(
+                    (entry) => MetalCandleChartEntry(
+                      intervalStart: entry.intervalStart,
+                      open: entry.openGold,
+                      close: entry.closeGold,
+                      high: entry.highGold,
+                      low: entry.lowGold,
+                    ),
+                  )
+                  .toList();
+              selectedMetalType = 'Gold';
+            }
+          } else {
+            filteredMetalData = metalCandleCharts
+                .map(
+                  (entry) => MetalCandleChartEntry(
+                    intervalStart: entry.intervalStart,
+                    open: entry.openGold,
+                    close: entry.closeGold,
+                    high: entry.highGold,
+                    low: entry.lowGold,
+                  ),
+                )
+                .toList();
           }
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Card(
+                  color: AppColors.black,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Time Range',
+                          'Metal Price Candlestick Chart',
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
                         const SizedBox(height: 12),
-                        Row(
-                          children: timeRanges.map((range) {
-                            final isSelected = selectedTimeRange == range;
-                            return Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 2,
-                                ),
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      selectedTimeRange = range;
-                                    });
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: isSelected
-                                        ? AppColors.primary
-                                        : Colors.grey[200],
-                                    foregroundColor: isSelected
-                                        ? Colors.white
-                                        : AppColors.textSecondary,
-                                    elevation: isSelected ? 2 : 0,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 8,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    range,
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Metal Type',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                        SizedBox(
+                          height: 300,
+                          child: ApexChartFlutter(
+                            chartData: filteredMetalData,
+                            isGold: selectedMetalType != 'Silver',
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: metalTypes.map((type) {
-                            final isSelected = selectedMetalType == type;
-                            return Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 2,
-                                ),
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      selectedMetalType = type;
-                                    });
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: isSelected
-                                        ? AppColors.primary
-                                        : Colors.grey[200],
-                                    foregroundColor: isSelected
-                                        ? Colors.white
-                                        : AppColors.textSecondary,
-                                    elevation: isSelected ? 2 : 0,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 8,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    type,
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
                         ),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+
+                /// Metal Type Selector
                 Card(
+                  color: AppColors.black,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Portfolio Value Over Time',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                      children: metalTypes.map((type) {
+                        final isSelected = selectedMetalType == type;
+                        return ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              selectedMetalType = type;
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isSelected
+                                ? AppColors.primary
+                                : Colors.grey,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        // Text(
-                        //   '\$${portfolioData.currentValue.toStringAsFixed(2)}',
-                        //   style: const TextStyle(
-                        //     fontSize: 24,
-                        //     fontWeight: FontWeight.bold,
-                        //     color: AppColors.primary,
-                        //   ),
-                        // ),
-                        // Text(
-                        //   '+${portfolioData.totalProfitLossPercentage.toStringAsFixed(2)}%',
-                        //   style: TextStyle(
-                        //     fontSize: 16,
-                        //     color: portfolioData.totalProfitLoss >= 0
-                        //         ? AppColors.profitGreen
-                        //         : AppColors.lossRed,
-                        //   ),
-                        // ),
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          height: 250,
-                          child: LineChart(
-                            LineChartData(
-                              gridData: FlGridData(
-                                show: true,
-                                drawVerticalLine: false,
-                                horizontalInterval: 100,
-                                getDrawingHorizontalLine: (value) {
-                                  return FlLine(
-                                    color: Colors.grey[300]!,
-                                    strokeWidth: 1,
-                                  );
-                                },
-                              ),
-                              titlesData: FlTitlesData(
-                                leftTitles: AxisTitles(
-                                  sideTitles: SideTitles(
-                                    showTitles: true,
-                                    reservedSize: 60,
-                                    getTitlesWidget: (value, meta) {
-                                      return Text(
-                                        '\$${value.toInt()}',
-                                        style: const TextStyle(
-                                          color: AppColors.textSecondary,
-                                          fontSize: 12,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                                bottomTitles: const AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                                topTitles: const AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                                rightTitles: const AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false),
-                                ),
-                              ),
-                              borderData: FlBorderData(
-                                show: true,
-                                border: Border(
-                                  bottom: BorderSide(color: Colors.grey[300]!),
-                                  left: BorderSide(color: Colors.grey[300]!),
-                                ),
-                              ),
-                              // lineBarsData: [
-                              //   LineChartBarData(
-                              //     spots: portfolioData.chartData
-                              //         .asMap()
-                              //         .entries
-                              //         .map((entry) => FlSpot(
-                              //               entry.key.toDouble(),
-                              //               entry.value.value,
-                              //             ))
-                              //         .toList(),
-                              //     isCurved: true,
-                              //     color: AppColors.profitGreen,
-                              //     barWidth: 3,
-                              //     dotData: const FlDotData(show: false),
-                              //     belowBarData: BarAreaData(
-                              //       show: true,
-                              //       color: AppColors.profitGreen.withValues(alpha: 0.1),
-                              //     ),
-                              //   ),
-                              // ],
-                              // minY: 1400,
-                              maxY: 1800,
-                            ),
+                          child: Text(
+                            type,
+                            style: const TextStyle(color: Colors.white),
                           ),
-                        ),
-                      ],
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),
