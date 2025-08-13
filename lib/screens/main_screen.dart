@@ -70,8 +70,8 @@ class _MainScreenState extends State<MainScreen> {
             });
           },
           type: BottomNavigationBarType.fixed,
-          backgroundColor: AppColors.primary,
-          selectedItemColor: Colors.white,
+          backgroundColor: AppColors.black,
+          selectedItemColor: Colors.orangeAccent,
           unselectedItemColor: Colors.white.withValues(alpha: 0.6),
           items: const [
             BottomNavigationBarItem(
