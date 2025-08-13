@@ -113,9 +113,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 16),
                 ValueCostCards(portfolioData: portfolioData),
                 const SizedBox(height: 16),
-                // MetalPortfolioSection(metalData: portfolioData, isGold: false),
+                MetalPortfolioSection(
+                  portfolioData: portfolioData,
+                  metalType: "Silver",
+                ),
                 const SizedBox(height: 16),
-                // MetalPortfolioSection(metalData: portfolioData, isGold: true),
+                MetalPortfolioSection(
+                  portfolioData: portfolioData,
+                  metalType: "Gold",
+                ),
               ],
             ),
           );
