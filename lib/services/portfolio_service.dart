@@ -25,7 +25,10 @@ class PortfolioService {
     }
   }
 
-  static Future<PortfolioData> fetchCustomerPortfolio(int customerId) async {
+  static Future<PortfolioData> fetchCustomerPortfolio(
+    int customerId,
+    String frequency,
+  ) async {
     try {
       final authService = AuthService();
       final token = await authService.getToken();
@@ -40,7 +43,7 @@ class PortfolioService {
         },
         body: jsonEncode({
           'customerId': customerId,
-          'frequency': '3M',
+          'frequency': frequency,
           'metal': null,
           'productType': null,
           'productId': 0,
@@ -49,7 +52,7 @@ class PortfolioService {
 
       if (response.statusCode == 200) {
         final dynamic rawResponse = jsonDecode(response.body);
-        
+
         // Handle if the response is a List instead of Map
         if (rawResponse is List) {
           if (rawResponse.isNotEmpty) {
@@ -61,7 +64,9 @@ class PortfolioService {
         } else if (rawResponse is Map<String, dynamic>) {
           return PortfolioData.fromJson(rawResponse);
         } else {
-          throw Exception('Unexpected response type: ${rawResponse.runtimeType}');
+          throw Exception(
+            'Unexpected response type: ${rawResponse.runtimeType}',
+          );
         }
       } else {
         throw Exception(

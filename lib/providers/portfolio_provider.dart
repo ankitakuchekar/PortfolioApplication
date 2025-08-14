@@ -26,7 +26,7 @@ class PortfolioProvider with ChangeNotifier {
     try {
       // Fetch Spot Prices and Customer Portfolio Data in Parallel
       final spotPricesFuture = PortfolioService.fetchSpotPrices();
-      final portfolioFuture = PortfolioService.fetchCustomerPortfolio(0);
+      final portfolioFuture = PortfolioService.fetchCustomerPortfolio(0, '3M');
 
       final results = await Future.wait([spotPricesFuture, portfolioFuture]);
 
@@ -58,6 +58,11 @@ class PortfolioProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void updatePortfolioData(PortfolioData data) {
+    _portfolioData = data;
+    notifyListeners(); // Notify UI to rebuild
+  }
+
   // Refresh Data from APIs
   Future<void> refreshDataFromAPIs() async {
     _isRefreshing = true;
@@ -65,7 +70,7 @@ class PortfolioProvider with ChangeNotifier {
 
     try {
       final spotPricesFuture = PortfolioService.fetchSpotPrices();
-      final portfolioFuture = PortfolioService.fetchCustomerPortfolio(0);
+      final portfolioFuture = PortfolioService.fetchCustomerPortfolio(0, '3M');
 
       final results = await Future.wait([spotPricesFuture, portfolioFuture]);
 
