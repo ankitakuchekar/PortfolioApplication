@@ -8,6 +8,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
   final ValueChanged<bool> onToggleView;
   final bool isPredictionView;
   final bool isGoldView; // Flag to distinguish between gold and silver
+  final bool isTotalHoldingsView; // Flag for total holdings
 
   const MetalHoldingsLineChart({
     super.key,
@@ -15,6 +16,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
     required this.onToggleView,
     required this.isPredictionView,
     required this.isGoldView, // Flag to determine if it's gold or silver
+    required this.isTotalHoldingsView, // Flag to handle total holdings
   });
 
   @override
@@ -35,8 +37,11 @@ class MetalHoldingsLineChart extends StatelessWidget {
     final minValue = combinedData.isNotEmpty
         ? combinedData
               .map(
-                (data) =>
-                    isGoldView ? data.totalGoldOunces : data.totalSilverOunces,
+                (data) => isTotalHoldingsView
+                    ? data.totalOunces
+                    : isGoldView
+                    ? data.totalGoldOunces
+                    : data.totalSilverOunces,
               )
               .reduce((a, b) => a < b ? a : b)
         : 0.0;
@@ -44,8 +49,11 @@ class MetalHoldingsLineChart extends StatelessWidget {
     final maxValue = combinedData.isNotEmpty
         ? combinedData
               .map(
-                (data) =>
-                    isGoldView ? data.totalGoldOunces : data.totalSilverOunces,
+                (data) => isTotalHoldingsView
+                    ? data.totalOunces
+                    : isGoldView
+                    ? data.totalGoldOunces
+                    : data.totalSilverOunces,
               )
               .reduce((a, b) => a > b ? a : b)
         : 100.0;
@@ -54,11 +62,8 @@ class MetalHoldingsLineChart extends StatelessWidget {
     Color predictionLineColor = const Color(
       0xFF97FF00,
     ); // Green for predictions
-    Color actualLineColor = isGoldView
-        ? const Color(0xFFFFD700)
-        : const Color(
-            0xFF808080,
-          ); // Gold for actual gold data, Gray for actual silver data
+    Color actualLineColor = const Color(0xFF808080); // Gray for actual data
+    Color totalLineColor = const Color(0xFF0000FF); // Blue for total holdings
 
     return Card(
       elevation: 4,
@@ -71,7 +76,11 @@ class MetalHoldingsLineChart extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  isGoldView ? 'Gold Holdings' : 'Silver Holdings',
+                  isTotalHoldingsView
+                      ? 'Total Holdings'
+                      : isGoldView
+                      ? 'Gold Holdings'
+                      : 'Silver Holdings',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -115,37 +124,49 @@ class MetalHoldingsLineChart extends StatelessWidget {
                   maximum: maxValue,
                   axisLabelFormatter: (AxisLabelRenderDetails args) {
                     return ChartAxisLabel(
-                      '\$ ${args.value.toStringAsFixed(0)}',
+                      '${args.value.toStringAsFixed(0)} oz',
                       args.textStyle,
                     );
                   },
                 ),
                 tooltipBehavior: TooltipBehavior(enable: true),
                 series: <CartesianSeries<MetalInOunces, DateTime>>[
-                  // Area series for actual data with gray color
+                  // Area series for actual data with gray color for gold/silver
                   AreaSeries<MetalInOunces, DateTime>(
                     dataSource: actualData,
                     xValueMapper: (MetalInOunces data, _) => data.orderDate,
-                    yValueMapper: (MetalInOunces data, _) => isGoldView
+                    yValueMapper: (MetalInOunces data, _) => isTotalHoldingsView
+                        ? data.totalOunces
+                        : isGoldView
                         ? data.totalGoldOunces
                         : data.totalSilverOunces,
-                    color: actualLineColor, // Gray for actual data
+                    color: isTotalHoldingsView
+                        ? totalLineColor
+                        : actualLineColor, // Line color
                     borderWidth: 2, // Border width for the area series
                     gradient: LinearGradient(
                       colors: [
-                        actualLineColor.withOpacity(0.7),
-                        actualLineColor.withOpacity(0.3),
+                        (isTotalHoldingsView ? totalLineColor : actualLineColor)
+                            .withOpacity(0.7),
+                        (isTotalHoldingsView ? totalLineColor : actualLineColor)
+                            .withOpacity(0.3),
                       ], // Gradient color for actual data
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
                     markerSettings: MarkerSettings(
                       isVisible: true,
-                      color: actualLineColor, // Marker color for actual data
+                      color: isTotalHoldingsView
+                          ? totalLineColor
+                          : actualLineColor, // Marker color for actual data
                       width: 1,
                       height: 1,
                     ),
-                    name: isGoldView ? 'Gold Holdings' : 'Silver Holdings',
+                    name: isGoldView
+                        ? 'Gold Holdings'
+                        : isTotalHoldingsView
+                        ? 'Total Holdings'
+                        : 'Silver Holdings',
                     enableTooltip: true, // Enable tooltip for actual data
                     enableTrackball:
                         true, // Enable trackball behavior for actual data
@@ -155,7 +176,10 @@ class MetalHoldingsLineChart extends StatelessWidget {
                     AreaSeries<MetalInOunces, DateTime>(
                       dataSource: predictionData,
                       xValueMapper: (MetalInOunces data, _) => data.orderDate,
-                      yValueMapper: (MetalInOunces data, _) => isGoldView
+                      yValueMapper: (MetalInOunces data, _) =>
+                          isTotalHoldingsView
+                          ? data.totalOunces
+                          : isGoldView
                           ? data.totalGoldOunces
                           : data.totalSilverOunces,
                       color: predictionLineColor, // Green for prediction
@@ -177,6 +201,8 @@ class MetalHoldingsLineChart extends StatelessWidget {
                       ),
                       name: isGoldView
                           ? 'Gold Predictions'
+                          : isTotalHoldingsView
+                          ? 'Total Predictions'
                           : 'Silver Predictions',
                       enableTooltip: true, // Enable tooltip for predictions
                       enableTrackball:
