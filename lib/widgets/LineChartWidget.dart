@@ -30,38 +30,22 @@ class SilverHoldingsLineChart extends StatelessWidget {
     print("Prediction Data: $predictionData");
 
     // Calculate dynamic min and max for Y-axis
-    // Combine actual and prediction data to calculate the min and max values if prediction view is on.
     final List<MetalInOunces> combinedData = isPredictionView
         ? [...actualData, ...predictionData]
         : actualData;
 
-    // Calculate dynamic min and max for Y-axis from the combined data
     final minValue = combinedData.isNotEmpty
         ? combinedData
               .map((data) => data.totalSilverOunces)
               .reduce((a, b) => a < b ? a : b)
-        : 0.0; // Default value if no data
+        : 0.0;
 
     final maxValue = combinedData.isNotEmpty
         ? combinedData
               .map((data) => data.totalSilverOunces)
               .reduce((a, b) => a > b ? a : b)
-        : 100.0; // Default value if no data
+        : 100.0;
 
-    // This formatter function is now part of the widget
-    String formatYValue(num value) {
-      if (value.abs() >= 1e9) {
-        return '\$${(value / 1e9).toStringAsFixed(1)}B';
-      } else if (value.abs() >= 1e6) {
-        return '\$${(value / 1e6).toStringAsFixed(1)}M';
-      } else if (value.abs() >= 1e3) {
-        return '\$${(value / 1e3).toStringAsFixed(1)}K';
-      } else {
-        return '\$${value.toStringAsFixed(0)}';
-      }
-    }
-
-    // Line colors for prediction and actual data
     Color predictionLineColor = const Color(
       0xFF97FF00,
     ); // Green for predictions
@@ -76,7 +60,6 @@ class SilverHoldingsLineChart extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            // Header for the Card
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -84,7 +67,6 @@ class SilverHoldingsLineChart extends StatelessWidget {
                   'Silver Holdings',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                // Custom Toggle with Text
                 Row(
                   children: [
                     Text(
@@ -104,10 +86,11 @@ class SilverHoldingsLineChart extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            // The chart itself
             Expanded(
               child: SfCartesianChart(
-                backgroundColor: Colors.transparent,
+                backgroundColor:
+                    Colors.transparent, // Set the plot area border color
+                plotAreaBorderWidth: 1.0, // Set the plot area border width
                 primaryXAxis: DateTimeAxis(
                   dateFormat: DateFormat.MMMd(),
                   intervalType: DateTimeIntervalType.days,
@@ -121,7 +104,6 @@ class SilverHoldingsLineChart extends StatelessWidget {
                   minimum: minValue,
                   maximum: maxValue,
                   axisLabelFormatter: (AxisLabelRenderDetails args) {
-                    // Correctly return a ChartAxisLabel with the formatted string
                     return ChartAxisLabel(
                       '${args.value.toStringAsFixed(0)} oz',
                       args.textStyle,
@@ -130,28 +112,60 @@ class SilverHoldingsLineChart extends StatelessWidget {
                 ),
                 tooltipBehavior: TooltipBehavior(enable: true),
                 series: <CartesianSeries<MetalInOunces, DateTime>>[
-                  // Always display "Silver Holdings" line (actual data)
-                  LineSeries<MetalInOunces, DateTime>(
+                  // Area series for actual data with gradient
+                  AreaSeries<MetalInOunces, DateTime>(
                     dataSource: actualData,
                     xValueMapper: (MetalInOunces data, _) => data.orderDate,
                     yValueMapper: (MetalInOunces data, _) =>
                         data.totalSilverOunces,
-                    markerSettings: const MarkerSettings(isVisible: true),
-                    color: actualLineColor,
+                    color: actualLineColor, // Line color
+                    borderWidth: 2, // Border width for the area series
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.grey.shade700,
+                        Colors.grey.shade300,
+                      ], // Gradient from dark gray to light gray
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    markerSettings: MarkerSettings(
+                      isVisible: true,
+                      color: Colors.blue, // Marker color for actual data
+                      width: 1,
+                      height: 1,
+                    ),
                     name: 'Silver Holdings',
-                    width: 2,
+                    enableTooltip: true, // Enable tooltip for actual data
+                    enableTrackball:
+                        true, // Enable trackball behavior for actual data
                   ),
-                  // Display "Market Analyst Predictions" line (prediction data) only when toggle is on
+                  // Area series for prediction data (only when prediction view is enabled)
                   if (isPredictionView)
-                    LineSeries<MetalInOunces, DateTime>(
+                    AreaSeries<MetalInOunces, DateTime>(
                       dataSource: predictionData,
                       xValueMapper: (MetalInOunces data, _) => data.orderDate,
                       yValueMapper: (MetalInOunces data, _) =>
-                          data.totalSilverOunces, // Prediction data
-                      markerSettings: const MarkerSettings(isVisible: true),
-                      color: predictionLineColor,
+                          data.totalSilverOunces,
+                      color: predictionLineColor, // Line color for predictions
+                      borderWidth: 2, // Border width for the area series
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.green.shade500,
+                          Colors.green.shade200,
+                        ], // Gradient from dark green to light green
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      markerSettings: MarkerSettings(
+                        isVisible: true,
+                        color: Colors.green, // Marker color for predictions
+                        width: 1,
+                        height: 1,
+                      ),
                       name: 'Market Analyst Predictions',
-                      width: 2,
+                      enableTooltip: true, // Enable tooltip for predictions
+                      enableTrackball:
+                          true, // Enable trackball behavior for predictions
                     ),
                 ],
               ),
