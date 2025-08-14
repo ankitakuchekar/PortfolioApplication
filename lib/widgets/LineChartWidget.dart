@@ -3,16 +3,18 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart'; // For DateFormat
 import '../models/portfolio_model.dart'; // Adjust the path accordingly
 
-class SilverHoldingsLineChart extends StatelessWidget {
+class MetalHoldingsLineChart extends StatelessWidget {
   final List<MetalInOunces> metalInOuncesData;
-  final ValueChanged<bool> onToggleView; // Callback for the toggle button
-  final bool isPredictionView; // To determine the current view
+  final ValueChanged<bool> onToggleView;
+  final bool isPredictionView;
+  final bool isGoldView; // Flag to distinguish between gold and silver
 
-  const SilverHoldingsLineChart({
+  const MetalHoldingsLineChart({
     super.key,
     required this.metalInOuncesData,
     required this.onToggleView,
     required this.isPredictionView,
+    required this.isGoldView, // Flag to determine if it's gold or silver
   });
 
   @override
@@ -25,33 +27,38 @@ class SilverHoldingsLineChart extends StatelessWidget {
         .where((data) => data.type == 'Prediction')
         .toList();
 
-    // Check if data is being passed correctly
-    print("Actual Data: $actualData");
-    print("Prediction Data: $predictionData");
-
-    // Calculate dynamic min and max for Y-axis
+    // Calculate dynamic min and max for Y-axis based on selected metal (gold or silver)
     final List<MetalInOunces> combinedData = isPredictionView
         ? [...actualData, ...predictionData]
         : actualData;
 
     final minValue = combinedData.isNotEmpty
         ? combinedData
-              .map((data) => data.totalSilverOunces)
+              .map(
+                (data) =>
+                    isGoldView ? data.totalGoldOunces : data.totalSilverOunces,
+              )
               .reduce((a, b) => a < b ? a : b)
         : 0.0;
 
     final maxValue = combinedData.isNotEmpty
         ? combinedData
-              .map((data) => data.totalSilverOunces)
+              .map(
+                (data) =>
+                    isGoldView ? data.totalGoldOunces : data.totalSilverOunces,
+              )
               .reduce((a, b) => a > b ? a : b)
         : 100.0;
 
+    // Define colors based on the selected metal type
     Color predictionLineColor = const Color(
       0xFF97FF00,
     ); // Green for predictions
-    Color actualLineColor = const Color(
-      0xFF808080,
-    ); // Gray for actual silver holdings
+    Color actualLineColor = isGoldView
+        ? const Color(0xFFFFD700)
+        : const Color(
+            0xFF808080,
+          ); // Gold for actual gold data, Gray for actual silver data
 
     return Card(
       elevation: 4,
@@ -63,9 +70,12 @@ class SilverHoldingsLineChart extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Silver Holdings',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Text(
+                  isGoldView ? 'Gold Holdings' : 'Silver Holdings',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Row(
                   children: [
@@ -105,36 +115,37 @@ class SilverHoldingsLineChart extends StatelessWidget {
                   maximum: maxValue,
                   axisLabelFormatter: (AxisLabelRenderDetails args) {
                     return ChartAxisLabel(
-                      '${args.value.toStringAsFixed(0)} oz',
+                      '\$ ${args.value.toStringAsFixed(0)}',
                       args.textStyle,
                     );
                   },
                 ),
                 tooltipBehavior: TooltipBehavior(enable: true),
                 series: <CartesianSeries<MetalInOunces, DateTime>>[
-                  // Area series for actual data with gradient
+                  // Area series for actual data with gray color
                   AreaSeries<MetalInOunces, DateTime>(
                     dataSource: actualData,
                     xValueMapper: (MetalInOunces data, _) => data.orderDate,
-                    yValueMapper: (MetalInOunces data, _) =>
-                        data.totalSilverOunces,
-                    color: actualLineColor, // Line color
+                    yValueMapper: (MetalInOunces data, _) => isGoldView
+                        ? data.totalGoldOunces
+                        : data.totalSilverOunces,
+                    color: actualLineColor, // Gray for actual data
                     borderWidth: 2, // Border width for the area series
                     gradient: LinearGradient(
                       colors: [
-                        Colors.grey.shade700,
-                        Colors.grey.shade300,
-                      ], // Gradient from dark gray to light gray
+                        actualLineColor.withOpacity(0.7),
+                        actualLineColor.withOpacity(0.3),
+                      ], // Gradient color for actual data
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
                     markerSettings: MarkerSettings(
                       isVisible: true,
-                      color: Colors.blue, // Marker color for actual data
+                      color: actualLineColor, // Marker color for actual data
                       width: 1,
                       height: 1,
                     ),
-                    name: 'Silver Holdings',
+                    name: isGoldView ? 'Gold Holdings' : 'Silver Holdings',
                     enableTooltip: true, // Enable tooltip for actual data
                     enableTrackball:
                         true, // Enable trackball behavior for actual data
@@ -144,25 +155,29 @@ class SilverHoldingsLineChart extends StatelessWidget {
                     AreaSeries<MetalInOunces, DateTime>(
                       dataSource: predictionData,
                       xValueMapper: (MetalInOunces data, _) => data.orderDate,
-                      yValueMapper: (MetalInOunces data, _) =>
-                          data.totalSilverOunces,
-                      color: predictionLineColor, // Line color for predictions
+                      yValueMapper: (MetalInOunces data, _) => isGoldView
+                          ? data.totalGoldOunces
+                          : data.totalSilverOunces,
+                      color: predictionLineColor, // Green for prediction
                       borderWidth: 2, // Border width for the area series
                       gradient: LinearGradient(
                         colors: [
-                          Colors.green.shade500,
-                          Colors.green.shade200,
-                        ], // Gradient from dark green to light green
+                          predictionLineColor.withOpacity(0.7),
+                          predictionLineColor.withOpacity(0.3),
+                        ], // Gradient color for predictions
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
                       markerSettings: MarkerSettings(
                         isVisible: true,
-                        color: Colors.green, // Marker color for predictions
+                        color:
+                            predictionLineColor, // Marker color for predictions
                         width: 1,
                         height: 1,
                       ),
-                      name: 'Market Analyst Predictions',
+                      name: isGoldView
+                          ? 'Gold Predictions'
+                          : 'Silver Predictions',
                       enableTooltip: true, // Enable tooltip for predictions
                       enableTrackball:
                           true, // Enable trackball behavior for predictions
