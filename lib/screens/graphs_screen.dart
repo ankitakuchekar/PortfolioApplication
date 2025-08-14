@@ -1,3 +1,4 @@
+import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/services/portfolio_service.dart';
 import 'package:bold_portfolio/widgets/LineChartWidget.dart';
@@ -5,11 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http; // For making HTTP requests
 import 'dart:convert'; // To handle JSON data
-
-import '../models/portfolio_model.dart';
 import '../providers/portfolio_provider.dart';
 import '../utils/app_colors.dart';
 import '../widgets/AssetAllocationPie.dart';
+import '../widgets/CandlestickChartWidget.dart'; // Import the new widget
 
 class GraphsScreen extends StatefulWidget {
   const GraphsScreen({super.key});
@@ -58,6 +58,24 @@ class _GraphsScreenState extends State<GraphsScreen> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  late List<CandleData> seriesData;
+  bool isGoldView = true;
+
+  void formatChartData(List<MetalCandleChartEntry> candleChartData) {
+    seriesData = [];
+    for (var candle in candleChartData) {
+      seriesData.add(
+        CandleData(
+          time: candle.intervalStart,
+          open: isGoldView ? candle.openGold : candle.openSilver,
+          high: isGoldView ? candle.highGold : candle.highSilver,
+          low: isGoldView ? candle.lowGold : candle.lowSilver,
+          close: isGoldView ? candle.closeGold : candle.closeSilver,
+        ),
+      );
     }
   }
 
@@ -158,6 +176,9 @@ class _GraphsScreenState extends State<GraphsScreen> {
           final metalInOuncesData = portfolioData.data[0].metalInOunces ?? [];
           print("Metal In Ounces Data: $metalInOuncesData");
 
+          final metalCandleChartData = portfolioData.data[0].metalCandleChart;
+          formatChartData(metalCandleChartData);
+
           return Column(
             children: [
               Padding(
@@ -220,6 +241,12 @@ class _GraphsScreenState extends State<GraphsScreen> {
                         ),
                 ),
               ),
+
+              // const SizedBox(height: 20),
+              // SizedBox(
+              //   height: 300,
+              //   child: CandlestickChartWidget(seriesData: seriesData),
+              // ),
             ],
           );
         },

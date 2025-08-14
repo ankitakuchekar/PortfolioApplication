@@ -62,7 +62,9 @@ class MetalHoldingsLineChart extends StatelessWidget {
     Color predictionLineColor = const Color(
       0xFF97FF00,
     ); // Green for predictions
-    Color actualLineColor = const Color(0xFF808080); // Gray for actual data
+    Color actualLineColor = isGoldView
+        ? Colors.orangeAccent
+        : const Color(0xFF808080); // Gray for actual data
     Color totalLineColor = const Color(0xFF0000FF); // Blue for total holdings
 
     return Card(
