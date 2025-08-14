@@ -5,8 +5,15 @@ import '../models/portfolio_model.dart'; // Adjust the path accordingly
 
 class SilverHoldingsLineChart extends StatelessWidget {
   final List<MetalInOunces> metalInOuncesData;
+  final ValueChanged<bool> onToggleView; // Callback for the toggle button
+  final bool isPredictionView; // To determine the current view
 
-  const SilverHoldingsLineChart({super.key, required this.metalInOuncesData});
+  const SilverHoldingsLineChart({
+    super.key,
+    required this.metalInOuncesData,
+    required this.onToggleView,
+    required this.isPredictionView,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,62 +30,94 @@ class SilverHoldingsLineChart extends StatelessWidget {
         .map((data) => data.totalSilverOunces)
         .reduce((a, b) => a > b ? a : b);
 
-    ChartAxisLabel formatValue(num value) {
-      String formattedValue;
-
+    // This formatter function is now part of the widget
+    String formatYValue(num value) {
       if (value.abs() >= 1e9) {
-        formattedValue = '\$${(value / 1e9).toStringAsFixed(1)}B';
+        return '\$${(value / 1e9).toStringAsFixed(1)}B';
       } else if (value.abs() >= 1e6) {
-        formattedValue = '\$${(value / 1e6).toStringAsFixed(1)}M';
+        return '\$${(value / 1e6).toStringAsFixed(1)}M';
       } else if (value.abs() >= 1e3) {
-        formattedValue = '\$${(value / 1e3).toStringAsFixed(1)}K';
+        return '\$${(value / 1e3).toStringAsFixed(1)}K';
       } else {
-        formattedValue = '\$${value.toStringAsFixed(0)}';
+        return '\$${value.toStringAsFixed(0)}';
       }
-
-      // Return a ChartAxisLabel instead of just a String
-      return ChartAxisLabel(formattedValue, null);
     }
 
-    return Expanded(
-      child: SfCartesianChart(
-        backgroundColor: Colors.transparent,
-        primaryXAxis: DateTimeAxis(
-          dateFormat: DateFormat.MMMd(), // Format the date
-          intervalType: DateTimeIntervalType.days, // Set interval to days
-          majorGridLines: MajorGridLines(width: 0), // Hide grid lines
-          edgeLabelPlacement: EdgeLabelPlacement.shift, // Prevent overlap
-          interval:
-              5, // Adjust interval for tick marks (you can make this dynamic)
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.all(16.0),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            // Header for the Card
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Silver Holdings',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                // Custom Toggle with Text
+                Row(
+                  children: [
+                    Text(
+                      isPredictionView ? 'View Prediction' : 'View Historical',
+                      style: const TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Switch(
+                      value: isPredictionView,
+                      onChanged: onToggleView,
+                      activeColor: Colors.blue,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // The chart itself
+            Expanded(
+              child: SfCartesianChart(
+                backgroundColor: Colors.transparent,
+                primaryXAxis: DateTimeAxis(
+                  dateFormat: DateFormat.MMMd(),
+                  intervalType: DateTimeIntervalType.days,
+                  majorGridLines: const MajorGridLines(width: 0),
+                  edgeLabelPlacement: EdgeLabelPlacement.shift,
+                  interval: 5,
+                ),
+                primaryYAxis: NumericAxis(
+                  labelFormat: '{value} oz',
+                  majorGridLines: const MajorGridLines(width: 0.5),
+                  minimum: minValue,
+                  maximum: maxValue,
+                  axisLabelFormatter: (AxisLabelRenderDetails args) {
+                    // Correctly return a ChartAxisLabel with the formatted string
+                    return ChartAxisLabel(
+                      formatYValue(args.value),
+                      args.textStyle,
+                    );
+                  },
+                ),
+                tooltipBehavior: TooltipBehavior(enable: true),
+                series: <CartesianSeries<MetalInOunces, DateTime>>[
+                  LineSeries<MetalInOunces, DateTime>(
+                    dataSource: chartData,
+                    xValueMapper: (MetalInOunces data, _) => data.orderDate,
+                    yValueMapper: (MetalInOunces data, _) =>
+                        data.totalSilverOunces,
+                    markerSettings: const MarkerSettings(isVisible: true),
+                    color: Colors.blue,
+                    name: 'Silver Holdings',
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-
-        primaryYAxis: NumericAxis(
-          labelFormat: '{value} oz', // Default format for values
-          majorGridLines: MajorGridLines(width: 0.5),
-          minimum: minValue, // Set dynamic minimum Y-axis value
-          maximum: maxValue, // Set dynamic maximum Y-axis value
-          axisLabelFormatter: (AxisLabelRenderDetails args) {
-            final num value = args.value;
-
-            // Apply formatting logic
-            return formatValue(value);
-          },
-        ),
-        tooltipBehavior: TooltipBehavior(enable: true),
-        series: <CartesianSeries<MetalInOunces, DateTime>>[
-          LineSeries<MetalInOunces, DateTime>(
-            dataSource: chartData,
-            xValueMapper: (MetalInOunces data, _) =>
-                data.orderDate, // X-axis value
-            yValueMapper: (MetalInOunces data, _) =>
-                data.totalSilverOunces, // Y-axis value
-            markerSettings: MarkerSettings(
-              isVisible: true,
-            ), // Enable markers for data points
-            color: Colors.blue, // Set line color for visibility
-            name: 'Silver Holdings',
-          ),
-        ],
       ),
     );
   }

@@ -1,12 +1,15 @@
+import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/services/portfolio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http; // For making HTTP requests
+import 'dart:convert'; // To handle JSON data
 
 import '../models/portfolio_model.dart';
 import '../providers/portfolio_provider.dart';
 import '../utils/app_colors.dart';
 import '../widgets/AssetAllocationPie.dart';
-import '../widgets/LineChartWidget.dart';
+import '../widgets/LineChartWidget.dart'; // Make sure to import the correct widget
 
 class GraphsScreen extends StatefulWidget {
   const GraphsScreen({super.key});
@@ -19,6 +22,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
   String selectedTab = 'Asset Allocation';
   String frequency = '3M'; // Default frequency set to '3M'
   bool isLoading = false; // Flag to show loading indicator
+  bool _isPredictionView = false; // Add state to manage the chart view
 
   final List<String> tabOptions = [
     'Asset Allocation',
@@ -54,6 +58,62 @@ class _GraphsScreenState extends State<GraphsScreen> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  // Method to toggle the chart view and call the API
+  void _toggleChartType(bool value) async {
+    setState(() {
+      _isPredictionView = value;
+    });
+
+    // API request data based on the current toggle state
+    final requestData = {
+      "customerId": 98937,
+      "showPrediction": value, // Toggle prediction view
+      "showActualPrice": true,
+      "showMetalPrice": false,
+      "showVdo": false,
+      "doNotShowAgain": false,
+      "showGoldPrediction": value
+          ? false
+          : true, // Set to false when toggle is on
+      "showSilverPrediction": value
+          ? false
+          : true, // Set to false when toggle is on
+    };
+
+    // Make the API call
+    try {
+      final authService = AuthService();
+      final token = await authService.getToken();
+
+      final response = await http.post(
+        Uri.parse(
+          'https://mobile-dev-api.boldpreciousmetals.com/api/Portfolio/UpdateCustomerPortfolioSettings',
+        ),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(requestData),
+      );
+
+      if (response.statusCode == 200) {
+        // If the response is successful, handle it here
+        print("API call successful");
+
+        // Call the fetchPortfolioData after a successful response
+        fetchPortfolioData();
+      } else {
+        // If the response is not successful, handle the error
+        throw Exception('Failed to update portfolio settings');
+      }
+    } catch (error) {
+      // If an error occurs during the API call
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${error.toString()}')));
     }
   }
 
@@ -182,6 +242,8 @@ class _GraphsScreenState extends State<GraphsScreen> {
                       : selectedTab == 'Silver Holdings'
                       ? SilverHoldingsLineChart(
                           metalInOuncesData: metalInOuncesData,
+                          onToggleView: _toggleChartType,
+                          isPredictionView: _isPredictionView,
                         )
                       : Text(
                           '$selectedTab View Coming Soon',
