@@ -1,6 +1,6 @@
+import 'package:bold_portfolio/widgets/LineChartWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../providers/portfolio_provider.dart';
 import '../utils/app_colors.dart';
@@ -38,7 +38,6 @@ class _GraphsScreenState extends State<GraphsScreen> {
           final portfolioData = portfolioProvider.portfolioData;
 
           if (portfolioData == null ||
-              portfolioData.data == null ||
               portfolioData.data.isEmpty ||
               portfolioData.data[0].investment == null) {
             return const Center(child: CircularProgressIndicator());
@@ -46,19 +45,22 @@ class _GraphsScreenState extends State<GraphsScreen> {
 
           final investment = portfolioData.data[0].investment;
 
-          // Avoid divide by zero
           final totalInvestment =
-              (investment.totalGoldInvested + investment.totalSilverInvested);
+              investment.totalGoldInvested + investment.totalSilverInvested;
+
           final goldPercentage = totalInvestment == 0
               ? 0
               : (investment.totalGoldInvested / totalInvestment) * 100;
+
           final silverPercentage = totalInvestment == 0
               ? 0
               : (investment.totalSilverInvested / totalInvestment) * 100;
 
+          // Use the actual metalInOunces data from API response
+          final metalInOuncesData = portfolioData.data[0].metalInOunces ?? [];
+          print("Metal In Ounces Data: $metalInOuncesData");
           return Column(
             children: [
-              // Tab Buttons
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Wrap(
@@ -92,16 +94,17 @@ class _GraphsScreenState extends State<GraphsScreen> {
                   }).toList(),
                 ),
               ),
-
               const SizedBox(height: 20),
-
-              // Chart or Placeholder
               Expanded(
                 child: Center(
                   child: selectedTab == 'Asset Allocation'
                       ? AssetAllocationPieChart(
                           goldPercentage: goldPercentage.toDouble(),
                           silverPercentage: silverPercentage.toDouble(),
+                        )
+                      : selectedTab == 'Silver Holdings'
+                      ? SilverHoldingsLineChart(
+                          metalInOuncesData: metalInOuncesData,
                         )
                       : Text(
                           '$selectedTab View Coming Soon',

@@ -74,7 +74,7 @@ class CustomerData {
   final PortfolioSettings portfolioSettings;
   final List<MetalCandleChartEntry> metalCandleChart;
   final List<ProductHolding> productHoldings;
-
+  final List<MetalInOunces> metalInOunces;
   // ... (other fields)
 
   CustomerData({
@@ -82,6 +82,7 @@ class CustomerData {
     required this.portfolioSettings,
     required this.metalCandleChart,
     required this.productHoldings,
+    required this.metalInOunces,
   });
 
   factory CustomerData.fromJson(Map<String, dynamic> json) {
@@ -115,11 +116,17 @@ class CustomerData {
         .map((item) => ProductHolding.fromJson(item))
         .toList();
 
+    final metalOuncesJson = json['metalInounces'] as List<dynamic>? ?? [];
+    final metalInOunces = metalOuncesJson
+        .map((item) => MetalInOunces.fromJson(item))
+        .toList();
+
     return CustomerData(
       investment: investmentData,
       portfolioSettings: portfolioSettingsData,
       metalCandleChart: metalCandleChartData,
       productHoldings: productHoldings,
+      metalInOunces: metalInOunces,
       // Uncomment and correct the parsing for other fields as needed
     );
   }
@@ -319,6 +326,46 @@ class CandleData {
     required this.low,
     required this.close,
   });
+}
+
+class MetalInOunces {
+  final DateTime orderDate;
+  final double totalGoldOptimalPrediction;
+  final double totalGoldOunces;
+  final double totalGoldWorstPrediction;
+  final double totalOunces;
+  final double totalSilverOptimalPrediction;
+  final double totalSilverOunces;
+  final double totalSilverWorstPrediction;
+  final String type;
+
+  MetalInOunces(
+    this.orderDate,
+    this.totalGoldOptimalPrediction,
+    this.totalGoldOunces,
+    this.totalGoldWorstPrediction,
+    this.totalOunces,
+    this.totalSilverOptimalPrediction,
+    this.totalSilverOunces,
+    this.totalSilverWorstPrediction,
+    this.type,
+  );
+
+  factory MetalInOunces.fromJson(Map<String, dynamic> json) {
+    final dateFormat = DateFormat("MM/dd/yyyy HH:mm:ss");
+
+    return MetalInOunces(
+      dateFormat.parse(json['orderDate']), // 🔥 Parse properly
+      (json['totalGoldOptimalPrediction'] ?? 0).toDouble(),
+      (json['totalGoldOunces'] ?? 0).toDouble(),
+      (json['totalGoldWorstPrediction'] ?? 0).toDouble(),
+      (json['totalOunces'] ?? 0).toDouble(),
+      (json['totalSilverOptimalPrediction'] ?? 0).toDouble(),
+      (json['totalSilverOunces'] ?? 0).toDouble(),
+      (json['totalSilverWorstPrediction'] ?? 0).toDouble(),
+      (json['type'] ?? '').toString(),
+    );
+  }
 }
 
 class ProductHolding {
