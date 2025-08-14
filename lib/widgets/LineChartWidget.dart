@@ -17,18 +17,36 @@ class SilverHoldingsLineChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chartData = metalInOuncesData;
+    // Filter data based on 'type'
+    final List<MetalInOunces> actualData = metalInOuncesData
+        .where((data) => data.type == 'Actual')
+        .toList();
+    final List<MetalInOunces> predictionData = metalInOuncesData
+        .where((data) => data.type == 'Prediction')
+        .toList();
 
     // Check if data is being passed correctly
-    print(chartData);
+    print("Actual Data: $actualData");
+    print("Prediction Data: $predictionData");
 
     // Calculate dynamic min and max for Y-axis
-    final minValue = chartData
-        .map((data) => data.totalSilverOunces)
-        .reduce((a, b) => a < b ? a : b);
-    final maxValue = chartData
-        .map((data) => data.totalSilverOunces)
-        .reduce((a, b) => a > b ? a : b);
+    // Combine actual and prediction data to calculate the min and max values if prediction view is on.
+    final List<MetalInOunces> combinedData = isPredictionView
+        ? [...actualData, ...predictionData]
+        : actualData;
+
+    // Calculate dynamic min and max for Y-axis from the combined data
+    final minValue = combinedData.isNotEmpty
+        ? combinedData
+              .map((data) => data.totalSilverOunces)
+              .reduce((a, b) => a < b ? a : b)
+        : 0.0; // Default value if no data
+
+    final maxValue = combinedData.isNotEmpty
+        ? combinedData
+              .map((data) => data.totalSilverOunces)
+              .reduce((a, b) => a > b ? a : b)
+        : 100.0; // Default value if no data
 
     // This formatter function is now part of the widget
     String formatYValue(num value) {
@@ -42,6 +60,14 @@ class SilverHoldingsLineChart extends StatelessWidget {
         return '\$${value.toStringAsFixed(0)}';
       }
     }
+
+    // Line colors for prediction and actual data
+    Color predictionLineColor = const Color(
+      0xFF97FF00,
+    ); // Green for predictions
+    Color actualLineColor = const Color(
+      0xFF808080,
+    ); // Gray for actual silver holdings
 
     return Card(
       elevation: 4,
@@ -62,7 +88,7 @@ class SilverHoldingsLineChart extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      isPredictionView ? 'View Prediction' : 'View Historical',
+                      isPredictionView ? 'View Historical' : 'View Prediction',
                       style: const TextStyle(
                         color: Colors.blue,
                         fontWeight: FontWeight.bold,
@@ -97,22 +123,36 @@ class SilverHoldingsLineChart extends StatelessWidget {
                   axisLabelFormatter: (AxisLabelRenderDetails args) {
                     // Correctly return a ChartAxisLabel with the formatted string
                     return ChartAxisLabel(
-                      formatYValue(args.value),
+                      '${args.value.toStringAsFixed(0)} oz',
                       args.textStyle,
                     );
                   },
                 ),
                 tooltipBehavior: TooltipBehavior(enable: true),
                 series: <CartesianSeries<MetalInOunces, DateTime>>[
+                  // Always display "Silver Holdings" line (actual data)
                   LineSeries<MetalInOunces, DateTime>(
-                    dataSource: chartData,
+                    dataSource: actualData,
                     xValueMapper: (MetalInOunces data, _) => data.orderDate,
                     yValueMapper: (MetalInOunces data, _) =>
                         data.totalSilverOunces,
                     markerSettings: const MarkerSettings(isVisible: true),
-                    color: Colors.blue,
+                    color: actualLineColor,
                     name: 'Silver Holdings',
+                    width: 2,
                   ),
+                  // Display "Market Analyst Predictions" line (prediction data) only when toggle is on
+                  if (isPredictionView)
+                    LineSeries<MetalInOunces, DateTime>(
+                      dataSource: predictionData,
+                      xValueMapper: (MetalInOunces data, _) => data.orderDate,
+                      yValueMapper: (MetalInOunces data, _) =>
+                          data.totalSilverOunces, // Prediction data
+                      markerSettings: const MarkerSettings(isVisible: true),
+                      color: predictionLineColor,
+                      name: 'Market Analyst Predictions',
+                      width: 2,
+                    ),
                 ],
               ),
             ),
