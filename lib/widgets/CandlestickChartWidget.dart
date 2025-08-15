@@ -2,7 +2,6 @@ import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
-import 'dart:ui';
 
 class CandleData {
   final DateTime x;
@@ -32,13 +31,14 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
   List<CandleData> _groupedData = [];
   late TooltipBehavior _tooltipBehavior;
   late ZoomPanBehavior _zoomPanBehavior;
+  late CrosshairBehavior _crosshairBehavior;
 
   @override
   void initState() {
     super.initState();
     _groupedData = _groupCandles(
       widget.candleChartData,
-      1,
+      5,
       widget.selectedMetal == 'Gold',
     );
 
@@ -54,8 +54,9 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
             int seriesIndex,
           ) {
             final CandleData candle = data as CandleData;
-            final formattedDate =
-                '${candle.x.month}/${candle.x.day} ${candle.x.hour}:${candle.x.minute.toString().padLeft(2, '0')}';
+            final formattedDate = DateFormat(
+              'MMM dd, hh:mm a',
+            ).format(candle.x);
             return Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
@@ -63,8 +64,8 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     formattedDate,
@@ -102,7 +103,14 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
       enablePanning: true,
       enableMouseWheelZooming: true,
       zoomMode: ZoomMode.x,
-      // maximumZoomLevel: 0, // ❌ Removed to allow full zoom out
+    );
+
+    _crosshairBehavior = CrosshairBehavior(
+      enable: true,
+      activationMode: ActivationMode.singleTap,
+      lineColor: Colors.white,
+      lineDashArray: [4, 4],
+      shouldAlwaysShow: true,
     );
   }
 
@@ -188,22 +196,13 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
       ),
       tooltipBehavior: _tooltipBehavior,
       zoomPanBehavior: _zoomPanBehavior,
-      crosshairBehavior: CrosshairBehavior(
-        enable: true,
-        lineColor: const Color(0xFFb3b3b3),
-        lineWidth: 1,
-        lineDashArray: [3, 3],
-      ),
-
+      crosshairBehavior: _crosshairBehavior,
       primaryXAxis: DateTimeAxis(
-        intervalType:
-            DateTimeIntervalType.minutes, // or .hours based on your data
-        interval: 35, // 🔁 increase to 30, 60, etc. for wider spacing
+        intervalType: DateTimeIntervalType.minutes,
+        interval: 35,
         dateFormat: MediaQuery.of(context).size.width < 768
             ? DateFormat('hh:mm a')
             : DateFormat('MMM dd hh:mm a'),
-        // plotOffset: 20, // 👈 Ad
-        // edgeLabelPlacement: EdgeLabelPlacement.shift,
         majorGridLines: const MajorGridLines(
           color: Color(0xFF333333),
           dashArray: [4, 4],
@@ -215,7 +214,6 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
           fontSize: MediaQuery.of(context).size.width < 768 ? 10 : 12,
         ),
       ),
-
       primaryYAxis: NumericAxis(
         numberFormat: NumberFormat.currency(symbol: '\$', decimalDigits: 2),
         majorGridLines: const MajorGridLines(
