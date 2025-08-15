@@ -196,10 +196,14 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
       ),
 
       primaryXAxis: DateTimeAxis(
-        intervalType: DateTimeIntervalType.auto,
+        intervalType:
+            DateTimeIntervalType.minutes, // or .hours based on your data
+        interval: 35, // 🔁 increase to 30, 60, etc. for wider spacing
         dateFormat: MediaQuery.of(context).size.width < 768
             ? DateFormat('hh:mm a')
             : DateFormat('MMM dd hh:mm a'),
+        // plotOffset: 20, // 👈 Ad
+        // edgeLabelPlacement: EdgeLabelPlacement.shift,
         majorGridLines: const MajorGridLines(
           color: Color(0xFF333333),
           dashArray: [4, 4],
