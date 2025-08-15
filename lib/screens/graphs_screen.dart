@@ -1,7 +1,9 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/services/portfolio_service.dart';
+import 'package:bold_portfolio/widgets/CandlestickChartWidget.dart';
 import 'package:bold_portfolio/widgets/LineChartWidget.dart';
+import 'package:bold_portfolio/widgets/apex_chart_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http; // For making HTTP requests
@@ -9,7 +11,12 @@ import 'dart:convert'; // To handle JSON data
 import '../providers/portfolio_provider.dart';
 import '../utils/app_colors.dart';
 import '../widgets/AssetAllocationPie.dart';
-import '../widgets/CandlestickChartWidget.dart'; // Import the new widget
+// Import the updated MetalCandleChart widget
+import 'package:syncfusion_flutter_charts/charts.dart';
+
+// The data models and the widget for the candlestick chart.
+// Assuming these are in a separate file like 'metal_candle_chart.dart'
+// If they are in the same file, you don't need this import.
 
 class GraphsScreen extends StatefulWidget {
   const GraphsScreen({super.key});
@@ -61,49 +68,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
     }
   }
 
-  late List<CandleData> seriesData = [];
-
-  bool isGoldView = false;
-  String metalFilter = 'Gold'; // Default filter
-
-  void formatChartData(List<MetalCandleChartEntry> candleChartData) {
-    seriesData.clear();
-
-    for (var candle in candleChartData) {
-      if (metalFilter == 'Gold') {
-        seriesData.add(
-          CandleData(
-            time: candle.intervalStart,
-            open: candle.openGold,
-            high: candle.highGold,
-            low: candle.lowGold,
-            close: candle.closeGold,
-          ),
-        );
-      } else if (metalFilter == 'Silver') {
-        seriesData.add(
-          CandleData(
-            time: candle.intervalStart,
-            open: candle.openSilver,
-            high: candle.highSilver,
-            low: candle.lowSilver,
-            close: candle.closeSilver,
-          ),
-        );
-      } else if (metalFilter == 'All') {
-        // Optionally, show Gold first
-        seriesData.add(
-          CandleData(
-            time: candle.intervalStart,
-            open: candle.openGold,
-            high: candle.highGold,
-            low: candle.lowGold,
-            close: candle.closeGold,
-          ),
-        );
-      }
-    }
-  }
+  String metalFilter = 'Gold'; // Default filter for candlestick chart
 
   void detectMetalData(List<MetalCandleChartEntry> data) {
     final hasGoldData = data.any(
@@ -226,7 +191,6 @@ class _GraphsScreenState extends State<GraphsScreen> {
           final metalInOuncesData = portfolioData.data[0].metalInOunces ?? [];
           final metalCandleChartData = portfolioData.data[0].metalCandleChart;
           detectMetalData(metalCandleChartData);
-          formatChartData(metalCandleChartData);
 
           return SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 20),
@@ -246,7 +210,8 @@ class _GraphsScreenState extends State<GraphsScreen> {
                         onPressed: () {
                           setState(() {
                             metalFilter = type;
-                            formatChartData(metalCandleChartData);
+                            // The MetalCandleChart widget will handle the data change
+                            // no need to call formatChartData here
                           });
                         },
                         style: ElevatedButton.styleFrom(
@@ -270,8 +235,22 @@ class _GraphsScreenState extends State<GraphsScreen> {
                 const SizedBox(height: 10),
                 SizedBox(
                   height: 400,
-                  child: CandlestickChartWidget(seriesData: seriesData),
+                  // Use the MetalCandleChart widget with the provided data
+                  child: MetalCandleChart(
+                    candleChartData: metalCandleChartData,
+                    selectedMetal: metalFilter,
+                  ),
                 ),
+
+                // The following sections are left as-is from your original code.
+                // const SizedBox(height: 10),
+                // SizedBox(
+                //   height: 400,
+                //   child: ApexChartFlutter(
+                //     chartData: metalCandleChartData,
+                //     isGold: true,
+                //   ),
+                // ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Wrap(

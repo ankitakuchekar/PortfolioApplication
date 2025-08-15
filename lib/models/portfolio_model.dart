@@ -280,6 +280,8 @@ class MetalCandleChartEntry {
   final double lowSilver;
   final double openMetal;
   final double closeMetal;
+  final double highMetal;
+  final double lowMetal;
 
   MetalCandleChartEntry({
     required this.intervalStart,
@@ -293,6 +295,8 @@ class MetalCandleChartEntry {
     required this.lowSilver,
     required this.openMetal,
     required this.closeMetal,
+    required this.highMetal,
+    required this.lowMetal,
   });
 
   factory MetalCandleChartEntry.fromJson(Map<String, dynamic> json) {
@@ -308,24 +312,10 @@ class MetalCandleChartEntry {
       lowSilver: (json['lowSilver'] ?? 0).toDouble(),
       openMetal: (json['openMetal'] ?? 0).toDouble(),
       closeMetal: (json['closeMetal'] ?? 0).toDouble(),
+      highMetal: (json['highMetal'] ?? 0).toDouble(),
+      lowMetal: (json['lowMetal'] ?? 0).toDouble(),
     );
   }
-}
-
-class CandleData {
-  final DateTime time;
-  final double open;
-  final double high;
-  final double low;
-  final double close;
-
-  CandleData({
-    required this.time,
-    required this.open,
-    required this.high,
-    required this.low,
-    required this.close,
-  });
 }
 
 class MetalInOunces {
@@ -419,4 +409,20 @@ class ProductHolding {
       totalQtyOrdered: json['totalQtyOrdered'] ?? 0,
     );
   }
+}
+
+class CandleData {
+  final DateTime time;
+  final double open;
+  final double high;
+  final double low;
+  final double close;
+
+  CandleData({
+    required this.time,
+    required this.open,
+    required this.high,
+    required this.low,
+    required this.close,
+  });
 }
