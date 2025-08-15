@@ -68,9 +68,9 @@ class _GraphsScreenState extends State<GraphsScreen> {
     }
   }
 
-  String metalFilter = 'Gold'; // Default filter for candlestick chart
+  String metalFilter = 'Silver'; // Default filter for candlestick chart
 
-  void detectMetalData(List<MetalCandleChartEntry> data) {
+  String detectMetalData(List<MetalCandleChartEntry> data) {
     final hasGoldData = data.any(
       (d) =>
           d.openGold != 0 ||
@@ -86,12 +86,12 @@ class _GraphsScreenState extends State<GraphsScreen> {
           d.closeSilver != 0,
     );
 
-    if (hasGoldData && !hasSilverData) {
-      metalFilter = 'Gold';
-    } else if (!hasGoldData && hasSilverData) {
-      metalFilter = 'Silver';
+    if (!hasGoldData && hasSilverData) {
+      return 'Silver';
+    } else if (hasGoldData && !hasSilverData) {
+      return 'Gold';
     } else {
-      metalFilter = 'Gold'; // Default fallback
+      return 'Gold'; // Default fallback
     }
   }
 
