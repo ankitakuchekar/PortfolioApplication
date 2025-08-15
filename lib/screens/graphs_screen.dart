@@ -61,21 +61,72 @@ class _GraphsScreenState extends State<GraphsScreen> {
     }
   }
 
-  late List<CandleData> seriesData;
-  bool isGoldView = true;
+  late List<CandleData> seriesData = [];
+
+  bool isGoldView = false;
+  String metalFilter = 'Gold'; // Default filter
 
   void formatChartData(List<MetalCandleChartEntry> candleChartData) {
-    seriesData = [];
+    seriesData.clear();
+
     for (var candle in candleChartData) {
-      seriesData.add(
-        CandleData(
-          time: candle.intervalStart,
-          open: isGoldView ? candle.openGold : candle.openSilver,
-          high: isGoldView ? candle.highGold : candle.highSilver,
-          low: isGoldView ? candle.lowGold : candle.lowSilver,
-          close: isGoldView ? candle.closeGold : candle.closeSilver,
-        ),
-      );
+      if (metalFilter == 'Gold') {
+        seriesData.add(
+          CandleData(
+            time: candle.intervalStart,
+            open: candle.openGold,
+            high: candle.highGold,
+            low: candle.lowGold,
+            close: candle.closeGold,
+          ),
+        );
+      } else if (metalFilter == 'Silver') {
+        seriesData.add(
+          CandleData(
+            time: candle.intervalStart,
+            open: candle.openSilver,
+            high: candle.highSilver,
+            low: candle.lowSilver,
+            close: candle.closeSilver,
+          ),
+        );
+      } else if (metalFilter == 'All') {
+        // Optionally, show Gold first
+        seriesData.add(
+          CandleData(
+            time: candle.intervalStart,
+            open: candle.openGold,
+            high: candle.highGold,
+            low: candle.lowGold,
+            close: candle.closeGold,
+          ),
+        );
+      }
+    }
+  }
+
+  void detectMetalData(List<MetalCandleChartEntry> data) {
+    final hasGoldData = data.any(
+      (d) =>
+          d.openGold != 0 ||
+          d.highGold != 0 ||
+          d.lowGold != 0 ||
+          d.closeGold != 0,
+    );
+    final hasSilverData = data.any(
+      (d) =>
+          d.openSilver != 0 ||
+          d.highSilver != 0 ||
+          d.lowSilver != 0 ||
+          d.closeSilver != 0,
+    );
+
+    if (hasGoldData && !hasSilverData) {
+      metalFilter = 'Gold';
+    } else if (!hasGoldData && hasSilverData) {
+      metalFilter = 'Silver';
+    } else {
+      metalFilter = 'Gold'; // Default fallback
     }
   }
 
@@ -172,82 +223,122 @@ class _GraphsScreenState extends State<GraphsScreen> {
               ? 0
               : (investment.totalSilverInvested / totalInvestment) * 100;
 
-          // Use the actual metalInOunces data from API response
           final metalInOuncesData = portfolioData.data[0].metalInOunces ?? [];
-          print("Metal In Ounces Data: $metalInOuncesData");
-
           final metalCandleChartData = portfolioData.data[0].metalCandleChart;
+          detectMetalData(metalCandleChartData);
           formatChartData(metalCandleChartData);
 
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Wrap(
-                  spacing: 10,
-                  children: tabOptions.map((label) {
-                    final isSelected = selectedTab == label;
-                    return ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          selectedTab = label;
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isSelected
-                            ? Colors.black
-                            : Colors.white,
-                        foregroundColor: isSelected
-                            ? Colors.white
-                            : Colors.black,
-                        side: const BorderSide(color: Colors.black),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(label),
-                    );
-                  }).toList(),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: Center(
-                  child: selectedTab == 'Asset Allocation'
-                      ? AssetAllocationPieChart(
-                          goldPercentage: goldPercentage.toDouble(),
-                          silverPercentage: silverPercentage.toDouble(),
-                        )
-                      : selectedTab == 'Silver Holdings' ||
-                            selectedTab == 'Gold Holdings' ||
-                            selectedTab == 'Total Holdings'
-                      ? MetalHoldingsLineChart(
-                          metalInOuncesData: metalInOuncesData,
-                          onToggleView: _toggleChartType,
-                          isPredictionView: _isPredictionView,
-                          isGoldView: selectedTab == 'Gold Holdings',
-                          isTotalHoldingsView: selectedTab == 'Total Holdings',
-                        )
-                      : Text(
-                          '$selectedTab View Coming Soon',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
+          return SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 20),
+
+                // 🔘 Metal Type Toggle Buttons
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: ['Gold', 'Silver', 'All'].map((type) {
+                      final isSelected = metalFilter == type;
+                      return ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            metalFilter = type;
+                            formatChartData(metalCandleChartData);
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isSelected
+                              ? Colors.white
+                              : Colors.black,
+                          foregroundColor: isSelected
+                              ? Colors.black
+                              : Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
                           ),
                         ),
+                        child: Text(type),
+                      );
+                    }).toList(),
+                  ),
                 ),
-              ),
 
-              // const SizedBox(height: 20),
-              // SizedBox(
-              //   height: 300,
-              //   child: CandlestickChartWidget(seriesData: seriesData),
-              // ),
-            ],
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 400,
+                  child: CandlestickChartWidget(seriesData: seriesData),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Wrap(
+                    spacing: 10,
+                    alignment: WrapAlignment.center,
+                    children: tabOptions.map((label) {
+                      final isSelected = selectedTab == label;
+                      return ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            selectedTab = label;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isSelected
+                              ? Colors.black
+                              : Colors.white,
+                          foregroundColor: isSelected
+                              ? Colors.white
+                              : Colors.black,
+                          side: const BorderSide(color: Colors.black),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(label),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // ✅ FIXED: Remove Expanded, use fixed-height container
+                Container(
+                  height: 400, // Set as needed
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Center(
+                    child: selectedTab == 'Asset Allocation'
+                        ? AssetAllocationPieChart(
+                            goldPercentage: goldPercentage.toDouble(),
+                            silverPercentage: silverPercentage.toDouble(),
+                          )
+                        : (selectedTab == 'Silver Holdings' ||
+                              selectedTab == 'Gold Holdings' ||
+                              selectedTab == 'Total Holdings')
+                        ? MetalHoldingsLineChart(
+                            metalInOuncesData: metalInOuncesData,
+                            onToggleView: _toggleChartType,
+                            isPredictionView: _isPredictionView,
+                            isGoldView: selectedTab == 'Gold Holdings',
+                            isTotalHoldingsView:
+                                selectedTab == 'Total Holdings',
+                          )
+                        : Text(
+                            '$selectedTab View Coming Soon',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),
