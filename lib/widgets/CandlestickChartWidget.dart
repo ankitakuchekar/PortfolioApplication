@@ -2,6 +2,7 @@ import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
+import 'dart:ui';
 
 class CandleData {
   final DateTime x;
@@ -37,7 +38,7 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
     super.initState();
     _groupedData = _groupCandles(
       widget.candleChartData,
-      5,
+      1,
       widget.selectedMetal == 'Gold',
     );
 
@@ -189,30 +190,40 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
       zoomPanBehavior: _zoomPanBehavior,
       crosshairBehavior: CrosshairBehavior(
         enable: true,
-        lineColor: Colors.white, // ⚪ White crosshair lines
+        lineColor: const Color(0xFFb3b3b3),
         lineWidth: 1,
-        lineDashArray: [4, 4], // 🔲 Dotted lines
+        lineDashArray: [3, 3],
       ),
+
       primaryXAxis: DateTimeAxis(
-        initialZoomFactor: 1.0, // ✅ Full zoom out on X-axis
-        initialZoomPosition: 0.0,
+        intervalType: DateTimeIntervalType.auto,
+        dateFormat: MediaQuery.of(context).size.width < 768
+            ? DateFormat('hh:mm a')
+            : DateFormat('MMM dd hh:mm a'),
         majorGridLines: const MajorGridLines(
           color: Color(0xFF333333),
           dashArray: [4, 4],
         ),
         axisLine: const AxisLine(color: Color(0xFF404040)),
         majorTickLines: const MajorTickLines(color: Color(0xFF404040)),
-        labelStyle: const TextStyle(color: Color(0xFF8c8c8c), fontSize: 12),
+        labelStyle: TextStyle(
+          color: const Color(0xFF8c8c8c),
+          fontSize: MediaQuery.of(context).size.width < 768 ? 10 : 12,
+        ),
       ),
+
       primaryYAxis: NumericAxis(
-        numberFormat: NumberFormat('R\$#,##0.00'),
+        numberFormat: NumberFormat.currency(symbol: '\$', decimalDigits: 2),
         majorGridLines: const MajorGridLines(
           color: Color(0xFF333333),
           dashArray: [4, 4],
         ),
         axisLine: const AxisLine(color: Color(0xFF404040)),
         majorTickLines: const MajorTickLines(color: Color(0xFF404040)),
-        labelStyle: const TextStyle(color: Color(0xFF8c8c8c), fontSize: 12),
+        labelStyle: TextStyle(
+          color: const Color(0xFF8c8c8c),
+          fontSize: MediaQuery.of(context).size.width < 768 ? 10 : 12,
+        ),
       ),
       series: <CartesianSeries>[
         CandleSeries<CandleData, DateTime>(
@@ -224,6 +235,7 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
           closeValueMapper: (CandleData data, _) => data.close,
           bearColor: const Color(0xFFff3333),
           bullColor: const Color(0xFF00cc00),
+          enableSolidCandles: true,
         ),
       ],
     );
