@@ -1,8 +1,12 @@
+// Your existing imports
 import 'dart:async';
 import 'dart:convert';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import '../providers/portfolio_provider.dart';
+import '../services/portfolio_service.dart';
 
 class AddHoldingForm extends StatefulWidget {
   final VoidCallback onClose;
@@ -24,6 +28,8 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
   final TextEditingController qtyController = TextEditingController(text: '1');
   final TextEditingController spotPriceController = TextEditingController();
   final TextEditingController premiumCostController = TextEditingController();
+  final TextEditingController dealerNameController = TextEditingController();
+
   final FocusNode _productFocusNode = FocusNode();
 
   DateTime? purchaseDate;
@@ -33,8 +39,30 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
 
   Timer? _debounce;
   Map<String, dynamic>? selectedProduct;
-  // New flag to manage programmatic text changes
   bool _isSelectingProduct = false;
+
+  final List<Map<String, String>> steps = [
+    {
+      "title": "Type the product name.",
+      "image":
+          "https://res.cloudinary.com/bold-pm/image/upload/v1739187199/Graphics/product-5.webp",
+    },
+    {
+      "title": "Select it from the suggestions or enter the full name.",
+      "image":
+          "https://res.cloudinary.com/bold-pm/image/upload/v1739187200/Graphics/product-6.webp",
+    },
+    {
+      "title": "List appears—select the first option if product isn't found.",
+      "image":
+          "https://res.cloudinary.com/bold-pm/image/upload/v1739187200/Graphics/product-4.webp",
+    },
+    {
+      "title": "Selected product name will be displayed.",
+      "image":
+          "https://res.cloudinary.com/bold-pm/image/upload/v1739187199/Graphics/product-7.webp",
+    },
+  ];
 
   @override
   void initState() {
@@ -44,34 +72,23 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
   }
 
   void _onProductChanged() {
-    // If we are programmatically setting the text, do not search
-    if (_isSelectingProduct) {
-      return;
-    }
-    // Clear selected product when the user starts typing again
-    setState(() {
-      selectedProduct = null;
-    });
+    if (_isSelectingProduct) return;
+    setState(() => selectedProduct = null);
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
       if (productController.text.isNotEmpty) {
         searchProducts(productController.text);
       } else {
-        setState(() {
-          searchResults.clear();
-        });
+        setState(() => searchResults.clear());
       }
     });
   }
 
   void _onFocusChange() {
     if (!_productFocusNode.hasFocus) {
-      // Delay clearing search results to allow for onTap to fire
       Future.delayed(const Duration(milliseconds: 100), () {
         if (!_productFocusNode.hasFocus) {
-          setState(() {
-            searchResults.clear();
-          });
+          setState(() => searchResults.clear());
         }
       });
     }
@@ -116,7 +133,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
           isSearching = false;
         });
       }
-    } catch (e) {
+    } catch (_) {
       setState(() {
         searchResults = [];
         isSearching = false;
@@ -124,10 +141,59 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
     }
   }
 
+  void _showStepsPopup() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Add any product to your portfolio outside of BOLD',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                for (int i = 0; i < steps.length; i++) ...[
+                  Text(
+                    'Step ${i + 1}: ${steps[i]['title']}',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      steps[i]['image']!,
+                      height: 200,
+                      width: double.infinity,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Close'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _addHolding() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     if (selectedProduct == null && selectedDealer == 'Bold Precious Metals') {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -136,7 +202,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
       return;
     }
 
-    final String transactionDate = purchaseDate != null
+    final transactionDate = purchaseDate != null
         ? '${purchaseDate!.month.toString().padLeft(2, '0')}/${purchaseDate!.day.toString().padLeft(2, '0')}/${purchaseDate!.year}'
         : '';
 
@@ -153,7 +219,9 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
       "metal": selectedProduct?['metal'] ?? "N/A",
       "ouncesPerUnit": selectedProduct?['ouncesPerUnit'] ?? 0,
       "productName": productController.text,
-      "sourceName": selectedDealer.split(' ').first,
+      "sourceName": selectedDealer == 'Not Purchased on Bold'
+          ? dealerNameController.text
+          : selectedDealer.split(' ').first,
       "userSpot": double.tryParse(spotPriceController.text) ?? 0.0,
       "userPremium": double.tryParse(premiumCostController.text) ?? 0.0,
     };
@@ -161,6 +229,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
     try {
       final authService = AuthService();
       final token = await authService.getToken();
+
       final response = await http.post(
         Uri.parse(
           'https://mobile-dev-api.boldpreciousmetals.com/api/Portfolio/AddCustomerHoldings',
@@ -173,6 +242,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
       );
 
       if (response.statusCode == 200) {
+        await PortfolioService.fetchCustomerPortfolio(0, '3M');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Holding added successfully!')),
         );
@@ -199,6 +269,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
     qtyController.dispose();
     spotPriceController.dispose();
     premiumCostController.dispose();
+    dealerNameController.dispose();
     _productFocusNode.dispose();
     super.dispose();
   }
@@ -231,6 +302,8 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                         ),
                       ),
                       const SizedBox(height: 16),
+
+                      // Dealer Dropdown
                       DropdownButtonFormField<String>(
                         value: selectedDealer,
                         items: dealers.map((dealer) {
@@ -241,70 +314,109 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                         }).toList(),
                         onChanged: (value) =>
                             setState(() => selectedDealer = value!),
-                        decoration: const InputDecoration(labelText: 'Dealer'),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: productController,
-                        focusNode: _productFocusNode,
-                        decoration: InputDecoration(
-                          labelText: 'Product *',
-                          suffixIcon: isSearching
-                              ? const Padding(
-                                  padding: EdgeInsets.all(10),
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : null,
+                        decoration: const InputDecoration(
+                          labelText: 'Dealer *',
                         ),
                       ),
+                      // Product Field ( ALWAYS )
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Text.rich(
+                                TextSpan(
+                                  text: 'Product ',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: '*',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (selectedDealer == 'Not Purchased on Bold')
+                                GestureDetector(
+                                  onTap: _showStepsPopup,
+                                  child: const Padding(
+                                    padding: EdgeInsets.only(left: 6),
+                                    child: Text(
+                                      '(What if you didn’t find the product?)',
+                                      style: TextStyle(
+                                        color: Colors.blue,
+                                        decoration: TextDecoration.underline,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: productController,
+                            focusNode: _productFocusNode,
+                            decoration: InputDecoration(
+                              hintText: 'Product name',
+                              suffixIcon: isSearching
+                                  ? const Padding(
+                                      padding: EdgeInsets.all(10),
+                                      child: SizedBox(
+                                        height: 14,
+                                        width: 14,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Autocomplete suggestions
                       if (searchResults.isNotEmpty &&
                           _productFocusNode.hasFocus)
                         Container(
-                          constraints: const BoxConstraints(maxHeight: 200),
+                          constraints: const BoxConstraints(maxHeight: 180),
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(4),
                             color: Colors.white,
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: Colors.grey.shade300),
                           ),
                           child: ListView.builder(
-                            shrinkWrap: true,
                             itemCount: searchResults.length,
+                            shrinkWrap: true,
                             itemBuilder: (context, index) {
-                              final product = searchResults[index];
+                              final prod = searchResults[index];
                               return ListTile(
-                                leading: product['imagePath'] != null
+                                leading: prod['imagePath'] != null
                                     ? Image.network(
-                                        product['imagePath'],
-                                        width: 32,
+                                        prod['imagePath'],
                                         height: 32,
+                                        width: 32,
                                         errorBuilder: (_, __, ___) =>
                                             const Icon(Icons.image),
                                       )
                                     : const Icon(Icons.image),
-                                title: Text(
-                                  product['name'] ?? 'Unnamed Product',
-                                ),
+                                title: Text(prod['name'] ?? 'Unnamed Product'),
                                 onTap: () {
-                                  // Set flag to prevent search on programmatic text change
                                   setState(() {
                                     _isSelectingProduct = true;
-                                  });
-                                  productController.text =
-                                      product['name'] ?? '';
-                                  setState(() {
-                                    selectedProduct = product;
+                                    productController.text = prod['name'] ?? '';
+                                    selectedProduct = prod;
                                     searchResults.clear();
                                     isSearching = false;
                                   });
                                   _productFocusNode.unfocus();
-                                  // Reset the flag after a short delay
                                   Future.delayed(
                                     const Duration(milliseconds: 50),
-                                    () {
-                                      _isSelectingProduct = false;
-                                    },
+                                    () => _isSelectingProduct = false,
                                   );
                                 },
                               );
@@ -312,28 +424,115 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                           ),
                         ),
                       const SizedBox(height: 12),
+
+                      // Purchase Cost (Per Unit) * - always shown
                       TextFormField(
                         controller: purchaseCostController,
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
                           labelText: 'Purchase Cost (Per Unit) *',
                         ),
-                        validator: (value) => (value == null || value.isEmpty)
-                            ? 'Required'
-                            : null,
+                        validator: (value) =>
+                            value == null || value.isEmpty ? 'Required' : null,
                       ),
                       const SizedBox(height: 12),
+
+                      // Dealer Name field if NOT from Bold
+                      if (selectedDealer == 'Not Purchased on Bold') ...[
+                        TextFormField(
+                          controller: dealerNameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Dealer Name *',
+                          ),
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Required'
+                              : null,
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Metal
+                        DropdownButtonFormField<String>(
+                          value: selectedProduct?['metal'] ?? 'Silver',
+                          items: ['Silver', 'Gold', 'Platinum', 'Palladium']
+                              .map(
+                                (m) =>
+                                    DropdownMenuItem(value: m, child: Text(m)),
+                              )
+                              .toList(),
+                          onChanged: (val) {
+                            setState(() {
+                              selectedProduct = {
+                                ...?selectedProduct,
+                                'metal': val,
+                              };
+                            });
+                          },
+                          decoration: const InputDecoration(
+                            labelText: 'Metal *',
+                          ),
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Required'
+                              : null,
+                        ),
+                        const SizedBox(height: 12),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                initialValue:
+                                    selectedProduct?['ouncesPerUnit']
+                                        ?.toString() ??
+                                    '',
+                                decoration: const InputDecoration(
+                                  labelText: 'Ounces Per Unit *',
+                                ),
+                                keyboardType: TextInputType.number,
+                                onChanged: (val) {
+                                  setState(() {
+                                    selectedProduct = {
+                                      ...?selectedProduct,
+                                      'ouncesPerUnit':
+                                          double.tryParse(val) ?? 0,
+                                    };
+                                  });
+                                },
+                                validator: (value) =>
+                                    value == null || value.isEmpty
+                                    ? 'Required'
+                                    : null,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextFormField(
+                                controller: purchaseCostController,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(
+                                  labelText: 'Purchase Cost (Per Unit) *',
+                                ),
+                                validator: (value) =>
+                                    value == null || value.isEmpty
+                                    ? 'Required'
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+
+                      // Qty + Date Row
                       Row(
                         children: [
                           Expanded(
                             child: TextFormField(
                               controller: qtyController,
-                              keyboardType: TextInputType.number,
                               decoration: const InputDecoration(
                                 labelText: 'Qty *',
                               ),
-                              validator: (value) =>
-                                  (value == null || value.isEmpty)
+                              keyboardType: TextInputType.number,
+                              validator: (val) => val == null || val.isEmpty
                                   ? 'Required'
                                   : null,
                             ),
@@ -354,14 +553,14 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                               },
                               child: AbsorbPointer(
                                 child: TextFormField(
-                                  decoration: InputDecoration(
-                                    labelText: 'Purchase Date *',
-                                    hintText: 'MM/DD/YYYY',
-                                  ),
                                   controller: TextEditingController(
                                     text: purchaseDate == null
                                         ? ''
                                         : '${purchaseDate!.month.toString().padLeft(2, '0')}/${purchaseDate!.day.toString().padLeft(2, '0')}/${purchaseDate!.year}',
+                                  ),
+                                  decoration: const InputDecoration(
+                                    labelText: 'Purchase Date *',
+                                    hintText: 'MM/DD/YYYY',
                                   ),
                                   validator: (_) =>
                                       purchaseDate == null ? 'Required' : null,
@@ -372,9 +571,11 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                         ],
                       ),
                       const SizedBox(height: 8),
+
+                      // Spot / Premium
                       CheckboxListTile(
                         title: const Text(
-                          "Do you want to enter spot price and premium?",
+                          'Do you want to enter spot price and premium?',
                         ),
                         value: showSpotPremium,
                         onChanged: (value) =>
@@ -385,28 +586,30 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                       if (showSpotPremium) ...[
                         TextFormField(
                           controller: spotPriceController,
-                          keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
                             labelText: 'Spot Price',
                           ),
+                          keyboardType: TextInputType.number,
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: premiumCostController,
-                          keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
                             labelText: 'Premium Cost',
                           ),
+                          keyboardType: TextInputType.number,
                         ),
                       ],
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
+
+                      // Buttons
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           ElevatedButton(
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
-                                // Save & Add More logic here
+                                // Your “Save & Add more” logic here
                               }
                             },
                             child: const Text('Save & Add More'),
@@ -425,6 +628,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                   ),
                 ),
                 Positioned(
+                  top: 0,
                   right: 0,
                   child: IconButton(
                     icon: const Icon(Icons.close),

@@ -39,9 +39,6 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
         builder: (context, portfolioProvider, child) {
           final holdingData =
               portfolioProvider.portfolioData?.data[0].productHoldings;
-          // final holdings = portfolioProvider.holdings;
-          print("holdings: $holdingData");
-          // Apply search & filter
           final filteredHoldings = holdingData?.where((holding) {
             final query = _searchController.text.toLowerCase();
             final matchesSearch = holding.assetList.toLowerCase().contains(
@@ -71,7 +68,6 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                             ),
                           );
                         },
-
                         icon: const Icon(Icons.add),
                         label: const Text('Add New Holdings'),
                         style: ElevatedButton.styleFrom(
