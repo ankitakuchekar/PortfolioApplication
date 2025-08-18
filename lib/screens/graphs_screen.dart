@@ -3,7 +3,6 @@ import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/services/portfolio_service.dart';
 import 'package:bold_portfolio/widgets/CandlestickChartWidget.dart';
 import 'package:bold_portfolio/widgets/LineChartWidget.dart';
-import 'package:bold_portfolio/widgets/apex_chart_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http; // For making HTTP requests
@@ -14,8 +13,6 @@ import '../utils/app_colors.dart';
 import '../widgets/AssetAllocationPie.dart';
 import '../widgets/circular_timer_widget.dart';
 import 'login_screen.dart';
-// Import the updated MetalCandleChart widget
-import 'package:syncfusion_flutter_charts/charts.dart';
 
 // The data models and the widget for the candlestick chart.
 // Assuming these are in a separate file like 'metal_candle_chart.dart'
