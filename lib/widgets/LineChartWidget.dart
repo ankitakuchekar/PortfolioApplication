@@ -67,6 +67,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
         : const Color(0xFF808080); // Gray for actual data
     Color totalLineColor = const Color(0xFF0000FF); // Blue for total holdings
     print("isTotalHoldingsView: $isTotalHoldingsView");
+    print("isGoldView: $isGoldView");
     return Card(
       elevation: 4,
       margin: const EdgeInsets.all(16.0),

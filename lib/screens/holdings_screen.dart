@@ -1,4 +1,5 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
+import 'package:bold_portfolio/widgets/add_holding_form.dart';
 import 'package:bold_portfolio/widgets/holding_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -63,14 +64,14 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Add New Holdings feature coming soon!',
-                              ),
+                          showDialog(
+                            context: context,
+                            builder: (context) => AddHoldingForm(
+                              onClose: () => Navigator.of(context).pop(),
                             ),
                           );
                         },
+
                         icon: const Icon(Icons.add),
                         label: const Text('Add New Holdings'),
                         style: ElevatedButton.styleFrom(
