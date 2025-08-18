@@ -75,7 +75,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _handleLogout() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.logout();
-    
+
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -108,9 +108,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
-              ),
+              decoration: const BoxDecoration(color: AppColors.black),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

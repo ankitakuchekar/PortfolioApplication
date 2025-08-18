@@ -1,4 +1,3 @@
-// widgets/actual_price_banner.dart
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
@@ -63,18 +62,25 @@ class _ActualPriceBannerState extends State<ActualPriceBanner> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: active ? Colors.teal : Colors.grey,
-              fontWeight: FontWeight.bold,
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: active ? Colors.teal : Colors.grey,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
             ),
           ),
           const SizedBox(width: 4),
           Icon(
             Icons.info_outline,
-            size: 16,
+            size: 14,
             color: active ? Colors.teal : Colors.grey,
           ),
         ],
@@ -98,6 +104,7 @@ class _ActualPriceBannerState extends State<ActualPriceBanner> {
             borderRadius: BorderRadius.circular(50),
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 "Do you want to ${isActualPrice ? "Exclude" : "Include"} Premium Price?",
@@ -110,32 +117,42 @@ class _ActualPriceBannerState extends State<ActualPriceBanner> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: Container(
-                  height: 50,
+                  height: 60,
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   color: Colors.white,
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
-                        child: buildTooltipSection(
-                          "Exclude Premium",
-                          "Only metal price is considered.\nExample: \$30 × 1 × 1 = \$30",
-                          !isActualPrice,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: buildTooltipSection(
+                            "Exclude Premium",
+                            "Only metal price is considered.\nExample: \$30 × 1 × 1 = \$30",
+                            !isActualPrice,
+                          ),
                         ),
                       ),
-                      Switch(
-                        value: isActualPrice,
-                        onChanged: handleToggle,
-                        activeColor: Colors.white,
-                        activeTrackColor: Colors.grey,
-                        inactiveThumbColor: Colors.white,
-                        inactiveTrackColor: Colors.grey,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Switch(
+                          value: isActualPrice,
+                          onChanged: handleToggle,
+                          activeColor: Colors.white,
+                          activeTrackColor: Colors.grey,
+                          inactiveThumbColor: Colors.white,
+                          inactiveTrackColor: Colors.grey,
+                        ),
                       ),
                       Expanded(
-                        child: buildTooltipSection(
-                          "Include Premium",
-                          "Metal + premium considered.\nExample: (\$32 + \$5) × 1 × 1 = \$37",
-                          isActualPrice,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: buildTooltipSection(
+                            "Include Premium",
+                            "Metal + premium considered.\nExample: (\$32 + \$5) × 1 × 1 = \$37",
+                            isActualPrice,
+                          ),
                         ),
                       ),
                     ],
