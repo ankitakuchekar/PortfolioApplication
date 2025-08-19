@@ -231,8 +231,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   },
                 ),
 
-                const SizedBox(height: 16),
-
                 Consumer<PortfolioProvider>(
                   builder: (context, provider, child) {
                     final spotPriceData = provider.spotPrices;
