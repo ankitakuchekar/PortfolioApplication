@@ -2,6 +2,7 @@ import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/utils/mobileFormater.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_easy_recaptcha_v2/flutter_easy_recaptcha_v2.dart';
 import '../providers/auth_provider.dart';
 import 'main_screen.dart';
 
@@ -24,6 +25,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final _mobileController = TextEditingController();
   final _regPasswordController = TextEditingController();
 
+  // reCAPTCHA functionality
+  final _firstNameFocusNode = FocusNode();
+  String? _recaptchaToken;
+  bool _isRecaptchaVerified = false;
+
   bool _obscurePassword = true;
   int _selectedTab = 0; // 0 = login , 1 = register
 
@@ -36,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _mobileController.dispose();
     _regPasswordController.dispose();
+    _firstNameFocusNode.dispose();
     super.dispose();
   }
 
@@ -131,8 +138,79 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _showRecaptcha() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: const BoxDecoration(
+          color: Color(0xFF1A1E29),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Complete reCAPTCHA',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: RecaptchaV2(
+                apiKey: const String.fromEnvironment('RECAPTCHA_SITE_KEY', defaultValue: ''),
+                onVerifiedSuccessfully: (token) async {
+                  setState(() {
+                    _recaptchaToken = token;
+                    _isRecaptchaVerified = true;
+                  });
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('reCAPTCHA verified successfully!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _handleRegister() async {
     if (_formKey.currentState!.validate()) {
+      // Check reCAPTCHA verification
+      if (!_isRecaptchaVerified) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please complete reCAPTCHA verification'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
       final success = await authProvider.register(
@@ -311,13 +389,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       // REGISTER FORM
                       if (_selectedTab == 1) ...[
-                        _buildField(
+                        _buildFieldWithRecaptcha(
                           controller: _firstNameController,
+                          focusNode: _firstNameFocusNode,
                           label: 'First Name',
                           icon: Icons.person_outline,
                           validator: (value) => nameErrorText(value ?? ''),
+                          onFocusChange: (hasFocus) {
+                            if (hasFocus && !_isRecaptchaVerified) {
+                              _showRecaptcha();
+                            }
+                          },
                         ),
 
+                        const SizedBox(height: 8),
+                        if (_isRecaptchaVerified)
+                          const Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.green, size: 16),
+                              SizedBox(width: 8),
+                              Text(
+                                'reCAPTCHA verified',
+                                style: TextStyle(color: Colors.green, fontSize: 12),
+                              ),
+                            ],
+                          ),
                         const SizedBox(height: 16),
                         _buildField(
                           controller: _lastNameController,
@@ -585,6 +681,36 @@ class _LoginScreenState extends State<LoginScreen> {
         filled: true,
         fillColor: const Color(0xFF1A1E29),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  Widget _buildFieldWithRecaptcha({
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required String label,
+    required IconData icon,
+    String? Function(String?)? validator,
+    Function(bool)? onFocusChange,
+  }) {
+    return Focus(
+      onFocusChange: onFocusChange,
+      child: TextFormField(
+        controller: controller,
+        focusNode: focusNode,
+        validator: validator ?? (v) => (v == null || v.isEmpty) ? 'Required' : null,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: Colors.white70),
+          prefixIcon: Icon(icon, color: Colors.white70),
+          suffixIcon: _isRecaptchaVerified && focusNode == _firstNameFocusNode
+              ? const Icon(Icons.verified, color: Colors.green)
+              : null,
+          filled: true,
+          fillColor: const Color(0xFF1A1E29),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        ),
       ),
     );
   }
