@@ -3,8 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/auth_response_model.dart';
 import '../models/user_model.dart';
+import 'package:flutter/material.dart';
 
-class AuthService {
+class AuthService extends ChangeNotifier {
   static const String _baseUrl =
       'https://mobile-dev-api.boldpreciousmetals.com/api';
   static const String _tokenKey = 'auth_token';
@@ -82,5 +83,79 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_userKey);
+  }
+
+  bool isLoading = false;
+
+  Future<AuthResponse> register({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String mobile,
+    required String password,
+    required String screenSize,
+  }) async {
+    isLoading = true;
+    notifyListeners();
+
+    final url = Uri.parse(
+      'https://mobile-dev-api.boldpreciousmetals.com/api/Customer/register',
+    );
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({
+          "firstName": firstName,
+          "lastName": lastName,
+          "emailId": email,
+          "mobNo": mobile,
+          "password": password,
+          "screenSize": screenSize,
+          "sessionId": "",
+        }),
+      );
+
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      isLoading = false;
+      notifyListeners();
+
+      if (response.statusCode == 200 && responseData["success"] == true) {
+        final authResponse = AuthResponse.fromJson(responseData);
+
+        // ✅ Extract user data and token from `data`
+        final userData = responseData['data'];
+        final token = userData['token'];
+
+        if (userData != null) {
+          await _saveUser(userData); // Save user
+        }
+
+        if (token != null && token is String && token.isNotEmpty) {
+          await _saveToken(token); // Save token
+        }
+
+        return AuthResponse(
+          success: true,
+          token: token,
+          user: userData,
+          message: '',
+        );
+      } else {
+        return AuthResponse(
+          success: false,
+          message: responseData['errorMessage'] ?? 'Registration failed',
+        );
+      }
+    } catch (e) {
+      isLoading = false;
+      notifyListeners();
+      return AuthResponse(
+        success: false,
+        message: 'Network error: ${e.toString()}',
+      );
+    }
   }
 }

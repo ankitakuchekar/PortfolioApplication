@@ -67,4 +67,46 @@ class AuthProvider with ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
   }
+
+  Future<bool> register({
+    required String firstName,
+    required String lastName,
+    required String email,
+    required String mobile,
+    required String password,
+    required String screenSize,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _authService.register(
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        mobile: mobile,
+        password: password,
+        screenSize: screenSize,
+      );
+
+      if (response.success) {
+        _user = await _authService
+            .getUser(); // Or parse from response if needed
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = response.message;
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
 }
