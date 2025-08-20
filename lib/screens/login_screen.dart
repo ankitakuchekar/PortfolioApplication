@@ -1,4 +1,5 @@
 import 'package:bold_portfolio/services/auth_service.dart';
+import 'package:bold_portfolio/utils/mobileFormater.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -36,6 +37,82 @@ class _LoginScreenState extends State<LoginScreen> {
     _mobileController.dispose();
     _regPasswordController.dispose();
     super.dispose();
+  }
+
+  int? validateName(String name) {
+    final cleanedName = name.trim();
+
+    if (cleanedName.isEmpty) {
+      return 0; // Empty
+    } else if (!RegExp(r'^[a-zA-Z]+$').hasMatch(cleanedName)) {
+      return -1; // Invalid characters
+    } else if (name.contains(' ')) {
+      return 1; // Whitespace
+    }
+
+    return 2; // Valid
+  }
+
+  String? nameErrorText(String name) {
+    final result = validateName(name);
+
+    switch (result) {
+      case 0:
+        return 'First name is required';
+      case -1:
+        return 'First name must contain only letters';
+      case 1:
+        return 'Whitespace is not allowed';
+      case 2:
+        return null; // Valid
+      default:
+        return 'Invalid name';
+    }
+  }
+
+  int? validateEmail(String email) {
+    final cleanedEmail = email.trim();
+
+    if (cleanedEmail.isEmpty) {
+      return 0; // Empty email
+    }
+
+    // Stricter regex: ensures there's at least one character after @ and a valid domain
+    final regex = RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
+
+    if (!regex.hasMatch(cleanedEmail)) {
+      return -1; // Invalid email
+    }
+
+    return 1; // Valid
+  }
+
+  String? emailErrorText(String email) {
+    final result = validateEmail(email);
+
+    switch (result) {
+      case 0:
+        return 'Email is required';
+      case -1:
+        return 'Email must be a valid email address';
+      case 1:
+        return null;
+      default:
+        return 'Invalid email';
+    }
+  }
+
+  String? validateMobileNumber(String? input) {
+    if (input == null || input.trim().isEmpty) {
+      return "Mobile number is required";
+    }
+
+    final digitsOnly = input.replaceAll(RegExp(r'\D'), '');
+    if (digitsOnly.length != 10) {
+      return "Mobile number should be 10 digits.";
+    }
+
+    return null; // ✅ valid
   }
 
   Future<void> _handleLogin() async {
@@ -238,35 +315,85 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _firstNameController,
                           label: 'First Name',
                           icon: Icons.person_outline,
+                          validator: (value) => nameErrorText(value ?? ''),
                         ),
+
                         const SizedBox(height: 16),
                         _buildField(
                           controller: _lastNameController,
                           label: 'Last Name',
                           icon: Icons.person_outline,
+                          validator: (value) => nameErrorText(value ?? ''),
                         ),
                         const SizedBox(height: 16),
                         _buildField(
                           controller: _emailController,
                           label: 'E-mail',
                           icon: Icons.email_outlined,
-                          validator: (v) {
-                            if (v == null || v.isEmpty) return 'Required';
-                            if (!v.contains('@')) return 'Enter valid email';
-                            return null;
-                          },
+                          validator: (v) => emailErrorText(v ?? ''),
                         ),
                         const SizedBox(height: 16),
-                        _buildField(
+                        TextFormField(
                           controller: _mobileController,
-                          label: 'Mobile No.',
-                          icon: Icons.phone_outlined,
+                          keyboardType: TextInputType.phone,
+                          inputFormatters: [PhoneNumberFormatter()],
+                          validator: validateMobileNumber,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            labelText: 'Mobile No.',
+                            labelStyle: const TextStyle(color: Colors.white70),
+                            prefixIcon: const Icon(
+                              Icons.phone_outlined,
+                              color: Colors.white70,
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFF1A1E29),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
                         ),
+
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _regPasswordController,
                           obscureText: _obscurePassword,
                           style: const TextStyle(color: Colors.white),
+                          validator: (value) {
+                            // Password is required
+                            if (value == null || value.isEmpty) {
+                              return 'Password is required';
+                            }
+
+                            // Minimum 8 characters check
+                            if (value.length < 8) {
+                              return 'Password should be minimum 8 characters long';
+                            }
+
+                            // Check for at least 1 uppercase letter
+                            if (!RegExp(r'^(?=.*?[A-Z])').hasMatch(value)) {
+                              return 'Password should have minimum 1 uppercase letter';
+                            }
+
+                            // Check for at least 1 lowercase letter
+                            if (!RegExp(r'^(?=.*?[a-z])').hasMatch(value)) {
+                              return 'Password should have minimum 1 lowercase letter';
+                            }
+
+                            // Check for at least 1 digit
+                            if (!RegExp(r'^(?=.*?[0-9])').hasMatch(value)) {
+                              return 'Password should have minimum 1 digit';
+                            }
+
+                            // Check for at least 1 special character
+                            if (!RegExp(
+                              r'^(?=.*?[!@#$%^&*(),.?":{}|<>])',
+                            ).hasMatch(value)) {
+                              return 'Password should have minimum 1 special character';
+                            }
+
+                            return null; // Valid password
+                          },
                           decoration: InputDecoration(
                             labelText: 'Password',
                             labelStyle: const TextStyle(color: Colors.white70),
