@@ -176,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             Expanded(
               child: RecaptchaV2(
-                apiKey: const String.fromEnvironment('RECAPTCHA_SITE_KEY', defaultValue: ''),
+                apiKey: '6Ld321YdAAAAALuFjmWlaC57ilZQQ4Gp1yQeG8e0',
                 onVerifiedSuccessfully: (token) async {
                   setState(() {
                     _recaptchaToken = token;
@@ -395,22 +395,29 @@ class _LoginScreenState extends State<LoginScreen> {
                           label: 'First Name',
                           icon: Icons.person_outline,
                           validator: (value) => nameErrorText(value ?? ''),
-                          onFocusChange: (hasFocus) {
-                            if (hasFocus && !_isRecaptchaVerified) {
-                              _showRecaptcha();
-                            }
-                          },
+                          // onFocusChange: (hasFocus) {
+                          //   if (hasFocus && !_isRecaptchaVerified) {
+                          //     _showRecaptcha();
+                          //   }
+                          // },
                         ),
 
                         const SizedBox(height: 8),
                         if (_isRecaptchaVerified)
                           const Row(
                             children: [
-                              Icon(Icons.check_circle, color: Colors.green, size: 16),
+                              Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                                size: 16,
+                              ),
                               SizedBox(width: 8),
                               Text(
                                 'reCAPTCHA verified',
-                                style: TextStyle(color: Colors.green, fontSize: 12),
+                                style: TextStyle(
+                                  color: Colors.green,
+                                  fontSize: 12,
+                                ),
                               ),
                             ],
                           ),
@@ -698,7 +705,8 @@ class _LoginScreenState extends State<LoginScreen> {
       child: TextFormField(
         controller: controller,
         focusNode: focusNode,
-        validator: validator ?? (v) => (v == null || v.isEmpty) ? 'Required' : null,
+        validator:
+            validator ?? (v) => (v == null || v.isEmpty) ? 'Required' : null,
         style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,

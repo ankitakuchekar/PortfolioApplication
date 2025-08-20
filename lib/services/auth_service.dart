@@ -137,12 +137,7 @@ class AuthService extends ChangeNotifier {
           await _saveToken(token); // Save token
         }
 
-        return AuthResponse(
-          success: true,
-          token: token,
-          user: userData,
-          message: '',
-        );
+        return AuthResponse(success: true, users: userData, message: '');
       } else {
         return AuthResponse(
           success: false,

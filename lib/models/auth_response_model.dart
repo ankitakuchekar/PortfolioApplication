@@ -1,22 +1,30 @@
 class AuthResponse {
   final bool success;
   final String message;
-  final String? token;
-  final Map<String, dynamic>? user;
+  final Map<String, dynamic>? users;
 
-  AuthResponse({
-    required this.success,
-    required this.message,
-    this.token,
-    this.user,
-  });
+  AuthResponse({required this.success, required this.message, this.users});
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    final data = json['data'];
+
     return AuthResponse(
       success: json['success'] ?? false,
       message: json['message'] ?? '',
-      token: json['token'],
-      user: json['data'], // <-- Note: 'data' from register is user info
+      users: data is Map<String, dynamic> ? data : null,
     );
+  }
+
+  /// ✅ Getter for token
+  String? get token {
+    if (user != null && user!.containsKey('token')) {
+      return user!['token']?.toString();
+    }
+    return null;
+  }
+
+  /// ✅ Getter for user data (raw Map)
+  Map<String, dynamic>? get user {
+    return users;
   }
 }
