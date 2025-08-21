@@ -9,6 +9,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
   final bool isPredictionView;
   final bool isGoldView; // Flag to distinguish between gold and silver
   final bool isTotalHoldingsView; // Flag for total holdings
+  final String selectedTab;
 
   const MetalHoldingsLineChart({
     super.key,
@@ -17,7 +18,17 @@ class MetalHoldingsLineChart extends StatelessWidget {
     required this.isPredictionView,
     required this.isGoldView, // Flag to determine if it's gold or silver
     required this.isTotalHoldingsView, // Flag to handle total holdings
+    required this.selectedTab, // Selected tab for dynamic label
   });
+
+  // Helper function to build the legend circle
+  Widget _buildLegendDot({required Color color}) {
+    return Container(
+      width: 10,
+      height: 10,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,8 +77,30 @@ class MetalHoldingsLineChart extends StatelessWidget {
         ? Colors.orangeAccent
         : const Color(0xFF808080); // Gray for actual data
     Color totalLineColor = const Color(0xFF0000FF); // Blue for total holdings
-    print("isTotalHoldingsView: $isTotalHoldingsView");
-    print("isGoldView: $isGoldView");
+
+    // Define the text and color for each label based on the selected tab
+    String labelText = '';
+    Color labelColor = Colors.white;
+
+    switch (selectedTab) {
+      case 'Gold Holdings':
+        labelText = 'Gold';
+        labelColor = Colors.orangeAccent; // Color for gold
+        break;
+      case 'Silver Holdings':
+        labelText = 'Silver';
+        labelColor = const Color(0xFF808080); // Color for silver
+        break;
+      case 'Total Holdings':
+        labelText =
+            'Silver & Gold'; // Default label for total holdings (adjust as needed)
+        labelColor = const Color(0xFF0000FF); // Color for total holdings (blue)
+        break;
+      default:
+        labelText = ''; // No label for other tabs
+        labelColor = Colors.white;
+    }
+
     return Card(
       elevation: 4,
       margin: const EdgeInsets.all(16.0),
@@ -107,6 +140,33 @@ class MetalHoldingsLineChart extends StatelessWidget {
                 ),
               ],
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Metal type label
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: labelColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(labelText, style: TextStyle(fontWeight: FontWeight.w500)),
+                // Market Analyst Predictions label (only shown when the toggle is on)
+                if (isPredictionView) ...[
+                  const SizedBox(width: 16), // Add spacing between labels
+                  _buildLegendDot(color: predictionLineColor),
+                  const SizedBox(width: 8),
+                  const Text(
+                    "Market Analyst Predictions",
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ],
+            ),
+
             const SizedBox(height: 16),
             Expanded(
               child: SfCartesianChart(

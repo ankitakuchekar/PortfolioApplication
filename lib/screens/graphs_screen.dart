@@ -423,6 +423,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
                             isGoldView: selectedTab == 'Gold Holdings',
                             isTotalHoldingsView:
                                 selectedTab == 'Total Holdings',
+                            selectedTab: selectedTab,
                           )
                         : Text(
                             '$selectedTab View Coming Soon',
