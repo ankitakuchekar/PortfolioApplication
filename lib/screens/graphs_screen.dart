@@ -105,7 +105,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
   Future<void> _handleLogout() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.logout();
-    
+
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -194,9 +194,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
-              ),
+              decoration: const BoxDecoration(color: AppColors.primary),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -294,6 +292,26 @@ class _GraphsScreenState extends State<GraphsScreen> {
           final metalInOuncesData = portfolioData.data[0].metalInOunces ?? [];
           final metalCandleChartData = portfolioData.data[0].metalCandleChart;
           detectMetalData(metalCandleChartData);
+          final hasGoldData = metalCandleChartData.any(
+            (d) =>
+                d.openGold != 0 ||
+                d.highGold != 0 ||
+                d.lowGold != 0 ||
+                d.closeGold != 0,
+          );
+
+          final hasSilverData = metalCandleChartData.any(
+            (d) =>
+                d.openSilver != 0 ||
+                d.highSilver != 0 ||
+                d.lowSilver != 0 ||
+                d.closeSilver != 0,
+          );
+          // Dynamically build button list
+          final List<String> filterOptions = [];
+          if (hasGoldData) filterOptions.add('Gold');
+          if (hasSilverData) filterOptions.add('Silver');
+          if (hasGoldData && hasSilverData) filterOptions.add('All');
 
           return SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 20),
@@ -302,40 +320,47 @@ class _GraphsScreenState extends State<GraphsScreen> {
               children: [
                 const SizedBox(height: 20),
 
-                // 🔘 Metal Type Toggle Buttons
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: ['Gold', 'Silver', 'All'].map((type) {
-                      final isSelected = metalFilter == type;
-                      return ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            metalFilter = type;
-                            // The MetalCandleChart widget will handle the data change
-                            // no need to call formatChartData here
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isSelected
-                              ? Colors.white
-                              : Colors.black,
-                          foregroundColor: isSelected
-                              ? Colors.black
-                              : Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
-                          ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (filterOptions.isNotEmpty)
+                      Container(
+                        color: const Color(0xFF111827), // Tailwind gray-900
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 16,
                         ),
-                        child: Text(type),
-                      );
-                    }).toList(),
-                  ),
-                ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: filterOptions.map((type) {
+                            final isSelected = metalFilter == type;
+                            return ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  metalFilter = type;
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isSelected
+                                    ? Colors.white
+                                    : Colors.black,
+                                foregroundColor: isSelected
+                                    ? Colors.black
+                                    : Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
+                              ),
+                              child: Text(type),
+                            );
+                          }).toList(),
+                        ),
+                      ),
 
-                const SizedBox(height: 10),
+                    // ... title, zoom buttons, chart etc
+                  ],
+                ),
                 SizedBox(
                   height: 400,
                   // Use the MetalCandleChart widget with the provided data

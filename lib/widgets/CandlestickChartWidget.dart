@@ -180,64 +180,125 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
     return groupedData;
   }
 
+  Widget _buildChartButton(
+    IconData icon,
+    String tooltip,
+    VoidCallback onPressed,
+  ) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF2c2c2c),
+        shape: BoxShape.circle,
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: Colors.white, size: 20),
+        tooltip: tooltip,
+        onPressed: onPressed,
+        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+        padding: EdgeInsets.zero,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SfCartesianChart(
-      backgroundColor: const Color(0xFF1a1a1a),
-      title: ChartTitle(
-        text: widget.selectedMetal == 'Gold'
-            ? 'Live Gold Holdings'
-            : 'Live Silver Holdings',
-        textStyle: const TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Top Bar: Metal Selector + Title + Zoom Buttons
+        Container(
+          color: Colors.black, // Background for entire top section
+          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Left side: Chart Title
+              Text(
+                widget.selectedMetal == 'Gold'
+                    ? 'Live Gold Holdings'
+                    : 'Live Silver Holdings',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              // Right side: Zoom buttons
+              Row(
+                children: [
+                  _buildChartButton(Icons.add, 'Zoom In', () {
+                    _zoomPanBehavior.zoomIn();
+                  }),
+                  const SizedBox(width: 10),
+                  _buildChartButton(Icons.remove, 'Zoom Out', () {
+                    _zoomPanBehavior.zoomOut();
+                  }),
+                  const SizedBox(width: 10),
+                  _buildChartButton(Icons.home, 'Reset Zoom', () {
+                    _zoomPanBehavior.reset();
+                  }),
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
-      tooltipBehavior: _tooltipBehavior,
-      zoomPanBehavior: _zoomPanBehavior,
-      crosshairBehavior: _crosshairBehavior,
-      primaryXAxis: DateTimeAxis(
-        intervalType: DateTimeIntervalType.minutes,
-        interval: 35,
-        dateFormat: MediaQuery.of(context).size.width < 768
-            ? DateFormat('hh:mm a')
-            : DateFormat('MMM dd hh:mm a'),
-        majorGridLines: const MajorGridLines(
-          color: Color(0xFF333333),
-          dashArray: [4, 4],
-        ),
-        axisLine: const AxisLine(color: Color(0xFF404040)),
-        majorTickLines: const MajorTickLines(color: Color(0xFF404040)),
-        labelStyle: TextStyle(
-          color: const Color(0xFF8c8c8c),
-          fontSize: MediaQuery.of(context).size.width < 768 ? 10 : 12,
-        ),
-      ),
-      primaryYAxis: NumericAxis(
-        numberFormat: NumberFormat.currency(symbol: '\$', decimalDigits: 2),
-        majorGridLines: const MajorGridLines(
-          color: Color(0xFF333333),
-          dashArray: [4, 4],
-        ),
-        axisLine: const AxisLine(color: Color(0xFF404040)),
-        majorTickLines: const MajorTickLines(color: Color(0xFF404040)),
-        labelStyle: TextStyle(
-          color: const Color(0xFF8c8c8c),
-          fontSize: MediaQuery.of(context).size.width < 768 ? 10 : 12,
-        ),
-      ),
-      series: <CartesianSeries>[
-        CandleSeries<CandleData, DateTime>(
-          dataSource: _groupedData,
-          xValueMapper: (CandleData data, _) => data.x,
-          openValueMapper: (CandleData data, _) => data.open,
-          highValueMapper: (CandleData data, _) => data.high,
-          lowValueMapper: (CandleData data, _) => data.low,
-          closeValueMapper: (CandleData data, _) => data.close,
-          bearColor: const Color(0xFFff3333),
-          bullColor: const Color(0xFF00cc00),
-          enableSolidCandles: true,
+
+        // Chart
+        Expanded(
+          child: SfCartesianChart(
+            backgroundColor: const Color(0xFF1a1a1a),
+            tooltipBehavior: _tooltipBehavior,
+            zoomPanBehavior: _zoomPanBehavior,
+            crosshairBehavior: _crosshairBehavior,
+            primaryXAxis: DateTimeAxis(
+              intervalType: DateTimeIntervalType.minutes,
+              interval: 35,
+              dateFormat: MediaQuery.of(context).size.width < 768
+                  ? DateFormat('hh:mm a')
+                  : DateFormat('MMM dd hh:mm a'),
+              majorGridLines: const MajorGridLines(
+                color: Color(0xFF333333),
+                dashArray: [4, 4],
+              ),
+              axisLine: const AxisLine(color: Color(0xFF404040)),
+              majorTickLines: const MajorTickLines(color: Color(0xFF404040)),
+              labelStyle: TextStyle(
+                color: const Color(0xFF8c8c8c),
+                fontSize: MediaQuery.of(context).size.width < 768 ? 10 : 12,
+              ),
+            ),
+            primaryYAxis: NumericAxis(
+              numberFormat: NumberFormat.currency(
+                symbol: '\$',
+                decimalDigits: 2,
+              ),
+              majorGridLines: const MajorGridLines(
+                color: Color(0xFF333333),
+                dashArray: [4, 4],
+              ),
+              axisLine: const AxisLine(color: Color(0xFF404040)),
+              majorTickLines: const MajorTickLines(color: Color(0xFF404040)),
+              labelStyle: TextStyle(
+                color: const Color(0xFF8c8c8c),
+                fontSize: MediaQuery.of(context).size.width < 768 ? 10 : 12,
+              ),
+            ),
+            series: <CartesianSeries>[
+              CandleSeries<CandleData, DateTime>(
+                dataSource: _groupedData,
+                xValueMapper: (CandleData data, _) => data.x,
+                openValueMapper: (CandleData data, _) => data.open,
+                highValueMapper: (CandleData data, _) => data.high,
+                lowValueMapper: (CandleData data, _) => data.low,
+                closeValueMapper: (CandleData data, _) => data.close,
+                bearColor: const Color(0xFFff3333),
+                bullColor: const Color(0xFF00cc00),
+                enableSolidCandles: true,
+              ),
+            ],
+          ),
         ),
       ],
     );
