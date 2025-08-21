@@ -26,12 +26,13 @@ class GraphsScreen extends StatefulWidget {
 }
 
 class _GraphsScreenState extends State<GraphsScreen> {
-  String selectedTab = 'Asset Allocation';
+  String selectedTab = 'Candle Chart'; // Set Candle Chart as the initial tab
   String frequency = '3M'; // Default frequency set to '3M'
   bool isLoading = false; // Flag to show loading indicator
   bool _isPredictionView = false; // Add state to manage the chart view
 
   final List<String> tabOptions = [
+    'Candle Chart', // Added new tab
     'Asset Allocation',
     'Total Holdings',
     'Gold Holdings',
@@ -194,7 +195,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(color: AppColors.primary),
+              decoration: const BoxDecoration(color: AppColors.black),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -318,67 +319,8 @@ class _GraphsScreenState extends State<GraphsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 20),
-
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (filterOptions.isNotEmpty)
-                      Container(
-                        color: const Color(0xFF111827), // Tailwind gray-900
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                          horizontal: 16,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: filterOptions.map((type) {
-                            final isSelected = metalFilter == type;
-                            return ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  metalFilter = type;
-                                });
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: isSelected
-                                    ? Colors.white
-                                    : Colors.black,
-                                foregroundColor: isSelected
-                                    ? Colors.black
-                                    : Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 10,
-                                ),
-                              ),
-                              child: Text(type),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-
-                    // ... title, zoom buttons, chart etc
-                  ],
-                ),
-                SizedBox(
-                  height: 400,
-                  // Use the MetalCandleChart widget with the provided data
-                  child: MetalCandleChart(
-                    candleChartData: metalCandleChartData,
-                    selectedMetal: metalFilter,
-                  ),
-                ),
-
-                // The following sections are left as-is from your original code.
-                // const SizedBox(height: 10),
-                // SizedBox(
-                //   height: 400,
-                //   child: ApexChartFlutter(
-                //     chartData: metalCandleChartData,
-                //     isGold: true,
-                //   ),
-                // ),
+                const SizedBox(height: 10),
+                // Tab buttons for selection
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: Wrap(
@@ -413,13 +355,60 @@ class _GraphsScreenState extends State<GraphsScreen> {
                     }).toList(),
                   ),
                 ),
-                const SizedBox(height: 20),
-                // ✅ FIXED: Remove Expanded, use fixed-height container
+
+                const SizedBox(height: 10),
+
                 Container(
-                  height: 400, // Set as needed
+                  height: 400,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Center(
-                    child: selectedTab == 'Asset Allocation'
+                    child: selectedTab == 'Candle Chart'
+                        ? Column(
+                            children: [
+                              if (filterOptions.isNotEmpty)
+                                Container(
+                                  color: const Color(0xFF111827),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                    horizontal: 16,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: filterOptions.map((type) {
+                                      final isSelected = metalFilter == type;
+                                      return ElevatedButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            metalFilter = type;
+                                          });
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: isSelected
+                                              ? Colors.white
+                                              : Colors.black,
+                                          foregroundColor: isSelected
+                                              ? Colors.black
+                                              : Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 10,
+                                          ),
+                                        ),
+                                        child: Text(type),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              Expanded(
+                                child: MetalCandleChart(
+                                  candleChartData: metalCandleChartData,
+                                  selectedMetal: metalFilter,
+                                ),
+                              ),
+                            ],
+                          )
+                        : selectedTab == 'Asset Allocation'
                         ? AssetAllocationPieChart(
                             goldPercentage: goldPercentage.toDouble(),
                             silverPercentage: silverPercentage.toDouble(),
