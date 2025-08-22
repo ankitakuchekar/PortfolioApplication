@@ -1,13 +1,11 @@
 import 'dart:convert';
-import 'dart:html' as html; // For Flutter web file picker
 import 'dart:typed_data';
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
-import 'dart:typed_data';
-import 'package:http/http.dart' as http;
+import 'package:file_picker/file_picker.dart';
 
 class SellForm extends StatefulWidget {
   final ScrollController scrollController;
@@ -117,24 +115,19 @@ class _SellFormState extends State<SellForm> {
   }
 
   Future<void> _pickImage() async {
-    final uploadInput = html.FileUploadInputElement();
-    uploadInput.accept = 'image/png,image/jpeg,image/jpg';
-    uploadInput.click();
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: false,
+    );
 
-    uploadInput.onChange.listen((event) async {
-      final files = uploadInput.files;
-      if (files == null || files.isEmpty) return;
-      final file = files[0];
+    if (result != null && result.files.isNotEmpty) {
+      final file = result.files.first;
+
+      // Validate extension
       final fileName = file.name.toLowerCase();
-      final mimeType = file.type.toLowerCase();
-
-      // Validate file type
       if (!(fileName.endsWith('.png') ||
-              fileName.endsWith('.jpg') ||
-              fileName.endsWith('.jpeg')) ||
-          !(mimeType == 'image/png' ||
-              mimeType == 'image/jpeg' ||
-              mimeType == 'image/jpg')) {
+          fileName.endsWith('.jpg') ||
+          fileName.endsWith('.jpeg'))) {
         Fluttertoast.showToast(
           msg: "Please upload a jpg, jpeg, or png image.",
           backgroundColor: Colors.red,
@@ -144,41 +137,36 @@ class _SellFormState extends State<SellForm> {
         return;
       }
 
-      // Read file as bytes
-      final reader = html.FileReader();
-      reader.readAsArrayBuffer(file);
+      final uri = Uri.parse(
+        'https://mobile-dev-api.boldpreciousmetals.com/api/Account/UploadProductImageselltobold',
+      );
 
-      reader.onLoadEnd.listen((e) async {
-        final bytes = reader.result as List<int>;
-        final uri = Uri.parse(
-          'https://mobile-dev-api.boldpreciousmetals.com/api/Account/UploadProductImageselltobold',
-        );
+      final request = http.MultipartRequest('POST', uri)
+        ..files.add(
+          http.MultipartFile.fromBytes(
+            'file',
+            file.bytes!,
+            filename: file.name,
+          ),
+        )
+        ..fields['imageType'] = 'boldimagetype';
 
-        final request = http.MultipartRequest('POST', uri)
-          ..files.add(
-            http.MultipartFile.fromBytes('file', bytes, filename: 'thumb.png'),
-          )
-          ..fields['imageType'] = 'boldimagetype';
+      try {
+        final response = await request.send();
+        if (response.statusCode == 200) {
+          final responseBody = await response.stream.bytesToString();
+          final decoded = jsonDecode(responseBody);
 
-        try {
-          final response = await request.send();
-          if (response.statusCode == 200) {
-            final responseBody = await response.stream.bytesToString();
-            final decoded = jsonDecode(responseBody);
-
-            if (decoded['success'] == true) {
-              final imageUrl = decoded['data']; // ✅ Safe to assign
-
-              setState(() {
-                selectedImage = imageUrl;
-              });
-            }
+          if (decoded['success'] == true) {
+            final imageUrl = decoded['data'];
+            setState(() {
+              selectedImage = imageUrl;
+            });
 
             Fluttertoast.showToast(
               msg: "Image uploaded successfully!",
               backgroundColor: Colors.green,
               textColor: Colors.white,
-              toastLength: Toast.LENGTH_SHORT,
             );
           } else {
             Fluttertoast.showToast(
@@ -187,15 +175,21 @@ class _SellFormState extends State<SellForm> {
               textColor: Colors.white,
             );
           }
-        } catch (e) {
+        } else {
           Fluttertoast.showToast(
-            msg: "Upload error: $e",
+            msg: "Upload failed with status code ${response.statusCode}",
             backgroundColor: Colors.red,
             textColor: Colors.white,
           );
         }
-      });
-    });
+      } catch (e) {
+        Fluttertoast.showToast(
+          msg: "Upload error: $e",
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+    }
   }
 
   Future<void> _submitSellRequest() async {
