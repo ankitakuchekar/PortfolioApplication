@@ -1,4 +1,5 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
+import 'package:bold_portfolio/screens/web_page.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/services/portfolio_service.dart';
 import 'package:bold_portfolio/widgets/ExitForm.dart';
@@ -153,7 +154,17 @@ class HoldingCard extends StatelessWidget {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => WebViewScreen(
+                          url:
+                              'https://www.bullionupdates.com/product/${holding.productId}/${holding.name})}',
+                        ),
+                      ),
+                    );
+                  },
                   icon: const Icon(Icons.arrow_upward),
                   label: const Text("Buy"),
                   style: ElevatedButton.styleFrom(
@@ -162,6 +173,7 @@ class HoldingCard extends StatelessWidget {
                   ),
                 ),
               ),
+
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton.icon(
