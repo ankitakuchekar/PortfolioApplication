@@ -41,7 +41,9 @@ dependencies:
   flutter_typeahead: ^5.2.0
   flutter_easy_recaptcha_v2: ^0.1.0
   flutter_keyboard_visibility: ^6.0.0
-
+  fluttertoast: ^8.2.4
+  image_picker: ^1.0.4
+  path: ^1.8.3
 
 dev_dependencies:
   flutter_test:

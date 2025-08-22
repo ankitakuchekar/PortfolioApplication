@@ -1,4 +1,6 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
+import 'package:bold_portfolio/widgets/ExitForm.dart';
+import 'package:bold_portfolio/widgets/SellTousForm.dart';
 import 'package:flutter/material.dart';
 
 class HoldingCard extends StatelessWidget {
@@ -9,7 +11,6 @@ class HoldingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profit = holding.currentMetalValue - holding.avgPrice;
-    final profitColor = profit >= 0 ? Colors.green : Colors.red;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -122,12 +123,20 @@ class HoldingCard extends StatelessWidget {
                   Icon(Icons.swap_vert, size: 18),
                 ],
               ),
-              Text(
-                "\$${profit.toStringAsFixed(2)}",
-                style: TextStyle(
-                  color: profitColor,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                children: [
+                  Icon(
+                    profit >= 0 ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                    color: profit >= 0 ? Colors.green : Colors.red,
+                  ),
+                  Text(
+                    "\$${profit.toStringAsFixed(2)}",
+                    style: TextStyle(
+                      color: profit >= 0 ? Colors.green : Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -151,7 +160,7 @@ class HoldingCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () => showSellExitPopup(context, holding),
                   icon: const Icon(Icons.arrow_downward),
                   label: const Text("Sell/Exit"),
                   style: ElevatedButton.styleFrom(
@@ -160,6 +169,7 @@ class HoldingCard extends StatelessWidget {
                   ),
                 ),
               ),
+
               const SizedBox(width: 10),
               Container(
                 height: 44,
@@ -180,4 +190,107 @@ class HoldingCard extends StatelessWidget {
       ),
     );
   }
+}
+
+void showSellExitPopup(BuildContext context, ProductHolding holding) {
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (context) {
+      return Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 500,
+            maxHeight: MediaQuery.of(context).size.height * 0.95,
+          ),
+          child: DefaultTabController(
+            length: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header Row
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16, right: 16),
+                    child: IconButton(
+                      icon: const Icon(Icons.close, size: 24),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                ),
+
+                // TabBar
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0F0F0),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TabBar(
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.black,
+                    labelStyle: const TextStyle(
+                      fontWeight: FontWeight.w200,
+                      fontSize: 20,
+                    ),
+                    indicatorSize: TabBarIndicatorSize
+                        .tab, // This makes indicator match the tab width
+                    indicator: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(
+                        8,
+                      ), // smooth, but not too round
+                    ),
+                    tabs: const [
+                      Tab(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            vertical: 8,
+                          ), // control height
+                          child: Text('Sell'),
+                        ),
+                      ),
+                      Tab(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Text('Exit'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                const Divider(height: 1, color: Colors.grey),
+
+                // TabBar View Content
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: SellForm(
+                          scrollController: ScrollController(),
+                          holding: holding,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: ExitForm(scrollController: ScrollController()),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
