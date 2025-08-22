@@ -279,7 +279,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
     }
   }
 
-  Future<void> _addHolding() async {
+  Future<void> _addHolding({bool closeOnSuccess = true}) async {
     if (!_formKey.currentState!.validate()) return;
 
     if (selectedProduct == null && selectedDealer == 'Bold Precious Metals') {
@@ -330,10 +330,23 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
 
       if (response.statusCode == 200) {
         await PortfolioService.fetchCustomerPortfolio(0, '3M');
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Holding added successfully!')),
         );
-        widget.onClose();
+
+        if (closeOnSuccess) {
+          widget.onClose(); // Only close if requested
+        }
+
+        // Clear form for Add More
+        if (!closeOnSuccess) {
+          qtyController.clear();
+          purchaseCostController.clear();
+          spotPriceController.clear();
+          premiumCostController.clear();
+          // Reset dropdowns, selections, etc., as needed
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to add holding: ${response.body}')),
@@ -711,7 +724,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                           ElevatedButton(
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
-                                // Save & Add More logic
+                                _addHolding(closeOnSuccess: false); // Add more
                               }
                             },
                             child: const Text('Save & Add More'),
@@ -719,7 +732,9 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                           ElevatedButton(
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
-                                _addHolding();
+                                _addHolding(
+                                  closeOnSuccess: true,
+                                ); // Save & Close
                               }
                             },
                             child: const Text('Save & Close'),

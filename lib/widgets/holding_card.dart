@@ -1,7 +1,12 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
+import 'package:bold_portfolio/services/auth_service.dart';
+import 'package:bold_portfolio/services/portfolio_service.dart';
 import 'package:bold_portfolio/widgets/ExitForm.dart';
 import 'package:bold_portfolio/widgets/SellTousForm.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
 
 class HoldingCard extends StatelessWidget {
   final ProductHolding holding;
@@ -179,7 +184,7 @@ class HoldingCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: IconButton(
-                  onPressed: () {},
+                  onPressed: () => _showConfirmationDialog(context, holding),
                   icon: const Icon(Icons.delete),
                   color: Colors.red,
                 ),
@@ -296,4 +301,84 @@ void showSellExitPopup(BuildContext context, ProductHolding holding) {
       );
     },
   );
+}
+
+Future<void> _showConfirmationDialog(
+  BuildContext context,
+  ProductHolding holding,
+) async {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text(
+        "Are you sure you want to remove this product?",
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      content: const Text(
+        "This action cannot be undone. This will permanently remove all quantities of the product from your portfolio.",
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          onPressed: () => _removeProduct(context, holding),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+          ),
+          child: const Text("Confirm"),
+        ),
+      ],
+    ),
+  );
+}
+
+Future<void> _removeProduct(
+  BuildContext context,
+  ProductHolding holding,
+) async {
+  final url = Uri.parse(
+    'https://mobile-dev-api.boldpreciousmetals.com/api/Portfolio/RemovePortfolioProducts',
+  );
+
+  final authService = AuthService();
+  final fetchedUserId = await authService.getUser();
+  final token = await authService.getToken();
+  if (token == null) throw Exception('Unauthenticated');
+  final body = jsonEncode({
+    "customerId": int.parse(fetchedUserId?.id ?? '0'),
+    "productId": holding.productId,
+  });
+
+  try {
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      Navigator.of(context).pop(); // Close dialog
+      await PortfolioService.fetchCustomerPortfolio(0, '3M');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Product removed successfully')),
+      );
+      // if (onDelete != null) onDelete!(); // Refresh parent
+    } else {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to remove: ${response.body}')),
+      );
+    }
+  } catch (e) {
+    Navigator.of(context).pop();
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Error: $e')));
+  }
 }

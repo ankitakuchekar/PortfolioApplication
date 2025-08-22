@@ -181,13 +181,13 @@ class MetalHoldingsLineChart extends StatelessWidget {
                   interval: 5,
                 ),
                 primaryYAxis: NumericAxis(
-                  labelFormat: '{value} oz',
+                  labelFormat: '\${value}',
                   majorGridLines: const MajorGridLines(width: 0.5),
                   minimum: minValue,
                   maximum: maxValue,
                   axisLabelFormatter: (AxisLabelRenderDetails args) {
                     return ChartAxisLabel(
-                      '${args.value.toStringAsFixed(0)} oz',
+                      '\$${args.value.toStringAsFixed(0)}',
                       args.textStyle,
                     );
                   },
