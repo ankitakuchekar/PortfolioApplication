@@ -281,7 +281,10 @@ void showSellExitPopup(BuildContext context, ProductHolding holding) {
                       ),
                       Padding(
                         padding: const EdgeInsets.all(16),
-                        child: ExitForm(scrollController: ScrollController()),
+                        child: ExitForm(
+                          scrollController: ScrollController(),
+                          holding: holding,
+                        ),
                       ),
                     ],
                   ),

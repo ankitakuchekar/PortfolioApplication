@@ -1,14 +1,143 @@
+import 'dart:convert';
+import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:bold_portfolio/services/auth_service.dart'; // Assuming AuthService is here
+import 'package:fluttertoast/fluttertoast.dart';
 
-class ExitForm extends StatelessWidget {
+class ExitForm extends StatefulWidget {
   final ScrollController scrollController;
+  final ProductHolding holding;
 
-  const ExitForm({required this.scrollController});
+  const ExitForm({
+    required this.scrollController,
+    required this.holding,
+    super.key,
+  });
+
+  @override
+  State<ExitForm> createState() => _ExitFormState();
+}
+
+class _ExitFormState extends State<ExitForm> {
+  final TextEditingController soldCostController = TextEditingController();
+  final TextEditingController qtyController = TextEditingController();
+  final TextEditingController soldDateController = TextEditingController();
+
+  DateTime? soldDate;
+  bool isLoading = false;
+
+  Future<void> _submitExit() async {
+    final quantity = int.tryParse(qtyController.text) ?? 0;
+    final soldCost = double.tryParse(soldCostController.text) ?? 0.0;
+
+    if (quantity <= 0 || soldCost <= 0 || soldDate == null) {
+      Fluttertoast.showToast(
+        msg: "Please fill all fields correctly.",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+
+    final formattedDate =
+        '${soldDate!.month.toString().padLeft(2, '0')}/${soldDate!.day.toString().padLeft(2, '0')}/${soldDate!.year}';
+
+    final authService = AuthService();
+    final fetchedUserId = await authService.getUser();
+    final token = await authService.getToken();
+
+    final user = {
+      "userId": int.parse(fetchedUserId?.id ?? '0'),
+      "firstName": fetchedUserId?.firstName,
+      "lastName": fetchedUserId?.lastName,
+      "userEmail": fetchedUserId?.email,
+      "phoneNumber": fetchedUserId?.mobNo,
+    };
+
+    final product = {
+      "productId": widget.holding.productId,
+      "name": widget.holding.name,
+      "metal": widget.holding.metal,
+      "quantity": widget.holding.totalQtyOrdered,
+      "weight": widget.holding.weight,
+    };
+
+    final payload = {
+      "customerId": user['userId'],
+      "productId": product['productId'],
+      "transactionDate": formattedDate,
+      "transactionQuantity": quantity,
+      "productUnitPrice": soldCost,
+      "transactionType": "EXIT",
+      "goldSpot": 0,
+      "silverSpot": 0,
+      "source": product['isBold'] == true
+          ? "Bold Precious Metals"
+          : "Not Purchased on Bold",
+      "metal": product['metal'],
+      "ouncesPerUnit": product['weight'],
+      "productName": product['name'],
+      "sourceName": product['sourceName'],
+    };
+
+    try {
+      setState(() => isLoading = true);
+
+      final response = await http.post(
+        Uri.parse(
+          'https://mobile-dev-api.boldpreciousmetals.com/api/Portfolio/AddCustomerHoldings',
+        ),
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode == 200) {
+        Fluttertoast.showToast(
+          msg: "Exit transaction successful!",
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
+      } else {
+        String errorMessage = "Failed to exit holding.";
+
+        try {
+          final errorJson = jsonDecode(response.body);
+          if (errorJson is Map && errorJson.containsKey('message')) {
+            errorMessage = errorJson['message'];
+          } else {
+            errorMessage = response.body;
+          }
+        } catch (_) {
+          errorMessage = response.body;
+        }
+
+        Fluttertoast.showToast(
+          msg: errorMessage,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          toastLength: Toast.LENGTH_LONG,
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Error: $e",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        toastLength: Toast.LENGTH_LONG,
+      );
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      controller: scrollController,
+      controller: widget.scrollController,
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -25,8 +154,9 @@ class ExitForm extends StatelessWidget {
           const Text("Sold Cost (Per Unit) *"),
           const SizedBox(height: 6),
           TextFormField(
+            controller: soldCostController,
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               border: OutlineInputBorder(),
               hintText: "Enter sold price",
             ),
@@ -37,8 +167,9 @@ class ExitForm extends StatelessWidget {
           const Text("Qty *"),
           const SizedBox(height: 6),
           TextFormField(
+            controller: qtyController,
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               border: OutlineInputBorder(),
               hintText: "Enter Quantity",
             ),
@@ -49,19 +180,27 @@ class ExitForm extends StatelessWidget {
           const Text("Sold On *"),
           const SizedBox(height: 6),
           TextFormField(
-            decoration: InputDecoration(
+            controller: soldDateController,
+            readOnly: true,
+            decoration: const InputDecoration(
               border: OutlineInputBorder(),
               hintText: "mm/dd/yyyy",
               suffixIcon: Icon(Icons.calendar_today),
             ),
-            readOnly: true,
             onTap: () async {
-              final DateTime? picked = await showDatePicker(
+              final picked = await showDatePicker(
                 context: context,
                 initialDate: DateTime.now(),
                 firstDate: DateTime(2020),
-                lastDate: DateTime(2100),
+                lastDate: DateTime.now(), // 👈 Prevent selecting a future date
               );
+              if (picked != null) {
+                setState(() {
+                  soldDate = picked;
+                  soldDateController.text =
+                      '${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}';
+                });
+              }
             },
           ),
           const SizedBox(height: 30),
@@ -70,8 +209,10 @@ class ExitForm extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
-              child: const Text("Confirm Exit"),
+              onPressed: isLoading ? null : _submitExit,
+              child: isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text("Confirm Exit"),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 backgroundColor: Colors.black,

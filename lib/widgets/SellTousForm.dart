@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'dart:html' as html; // For Flutter web file picker
+import 'dart:typed_data';
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
 class SellForm extends StatefulWidget {
@@ -114,22 +117,18 @@ class _SellFormState extends State<SellForm> {
   }
 
   Future<void> _pickImage() async {
-    // Use Flutter web file picker
-    html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
+    final uploadInput = html.FileUploadInputElement();
     uploadInput.accept = 'image/png,image/jpeg,image/jpg';
     uploadInput.click();
 
-    uploadInput.onChange.listen((e) {
+    uploadInput.onChange.listen((event) async {
       final files = uploadInput.files;
       if (files == null || files.isEmpty) return;
       final file = files[0];
       final fileName = file.name.toLowerCase();
       final mimeType = file.type.toLowerCase();
 
-      // Debug print statements
-      print('Selected file name: $fileName');
-      print('Selected mime type: $mimeType');
-
+      // Validate file type
       if (!(fileName.endsWith('.png') ||
               fileName.endsWith('.jpg') ||
               fileName.endsWith('.jpeg')) ||
@@ -145,18 +144,56 @@ class _SellFormState extends State<SellForm> {
         return;
       }
 
+      // Read file as bytes
       final reader = html.FileReader();
-      reader.readAsDataUrl(file);
-      reader.onLoadEnd.listen((event) {
-        setState(() {
-          selectedImage = reader.result as String;
-        });
-        Fluttertoast.showToast(
-          msg: "Image uploaded successfully!",
-          backgroundColor: Colors.green,
-          textColor: Colors.white,
-          toastLength: Toast.LENGTH_SHORT,
+      reader.readAsArrayBuffer(file);
+
+      reader.onLoadEnd.listen((e) async {
+        final bytes = reader.result as List<int>;
+        final uri = Uri.parse(
+          'https://mobile-dev-api.boldpreciousmetals.com/api/Account/UploadProductImageselltobold',
         );
+
+        final request = http.MultipartRequest('POST', uri)
+          ..files.add(
+            http.MultipartFile.fromBytes('file', bytes, filename: 'thumb.png'),
+          )
+          ..fields['imageType'] = 'boldimagetype';
+
+        try {
+          final response = await request.send();
+          if (response.statusCode == 200) {
+            final responseBody = await response.stream.bytesToString();
+            final decoded = jsonDecode(responseBody);
+
+            if (decoded['success'] == true) {
+              final imageUrl = decoded['data']; // ✅ Safe to assign
+
+              setState(() {
+                selectedImage = imageUrl;
+              });
+            }
+
+            Fluttertoast.showToast(
+              msg: "Image uploaded successfully!",
+              backgroundColor: Colors.green,
+              textColor: Colors.white,
+              toastLength: Toast.LENGTH_SHORT,
+            );
+          } else {
+            Fluttertoast.showToast(
+              msg: "Upload failed. Try again.",
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+            );
+          }
+        } catch (e) {
+          Fluttertoast.showToast(
+            msg: "Upload error: $e",
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+          );
+        }
       });
     });
   }
