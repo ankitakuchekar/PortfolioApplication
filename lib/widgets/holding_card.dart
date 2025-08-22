@@ -1,11 +1,11 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
-import 'package:bold_portfolio/screens/web_page.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/services/portfolio_service.dart';
 import 'package:bold_portfolio/widgets/ExitForm.dart';
 import 'package:bold_portfolio/widgets/SellTousForm.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -154,16 +154,15 @@ class HoldingCard extends StatelessWidget {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => WebViewScreen(
-                          url:
-                              'https://www.bullionupdates.com/product/${holding.productId}/${holding.name})}',
-                        ),
-                      ),
+                  onPressed: () async {
+                    final url = Uri.parse(
+                      'https://www.bullionupdates.com/product/8963/gold-american-eagle-12',
                     );
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url);
+                    } else {
+                      throw 'Could not launch $url';
+                    }
                   },
                   icon: const Icon(Icons.arrow_upward),
                   label: const Text("Buy"),
