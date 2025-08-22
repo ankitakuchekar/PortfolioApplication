@@ -24,7 +24,9 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
   List<String> dealers = ['Bold Precious Metals', 'Not Purchased on Bold'];
 
   final TextEditingController productController = TextEditingController();
-  final TextEditingController purchaseCostController = TextEditingController();
+  final TextEditingController purchaseCostController = TextEditingController(
+    text: '0',
+  );
   final TextEditingController qtyController = TextEditingController(text: '1');
   final TextEditingController spotPriceController = TextEditingController();
   final TextEditingController premiumCostController = TextEditingController();
@@ -123,8 +125,24 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        List<dynamic> results = data['dataList']['searchProductsByKW'] ?? [];
+
+        if (selectedDealer == 'Not Purchased on Bold' &&
+            productController.text.trim().isNotEmpty &&
+            !results.any(
+              (p) =>
+                  (p['name'] as String?)?.toLowerCase() ==
+                  productController.text.trim().toLowerCase(),
+            )) {
+          results.insert(0, {
+            'id': 0,
+            'name': productController.text.trim(),
+            'imagePath': null,
+          });
+        }
+
         setState(() {
-          searchResults = data['dataList']['searchProductsByKW'] ?? [];
+          searchResults = results;
           isSearching = false;
         });
       } else {
@@ -324,21 +342,22 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                         children: [
                           Row(
                             children: [
-                              const Text.rich(
-                                TextSpan(
-                                  text: 'Product ',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                      text: '*',
-                                      style: TextStyle(color: Colors.red),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              // const Text.rich(
+                              //   TextSpan(
+                              //     text: 'Product ',
+                              //     style: TextStyle(
+                              //       fontSize: 16,
+                              //       fontWeight: FontWeight.w600,
+                              //     ),
+                              //     children: [
+                              //       TextSpan(
+                              //         text: '*',
+                              //         style: TextStyle(color: Colors.red),
+                              //       ),
+                              //     ],
+                              //   ),
+                              // ),
+                              const SizedBox(height: 12),
                               if (selectedDealer == 'Not Purchased on Bold')
                                 GestureDetector(
                                   onTap: _showStepsPopup,
@@ -453,7 +472,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                         // Metal
                         DropdownButtonFormField<String>(
                           value: selectedProduct?['metal'] ?? 'Silver',
-                          items: ['Silver', 'Gold', 'Platinum', 'Palladium']
+                          items: ['Silver', 'Gold']
                               .map(
                                 (m) =>
                                     DropdownMenuItem(value: m, child: Text(m)),
@@ -483,7 +502,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                 initialValue:
                                     selectedProduct?['ouncesPerUnit']
                                         ?.toString() ??
-                                    '',
+                                    '0',
                                 decoration: const InputDecoration(
                                   labelText: 'Ounces Per Unit *',
                                 ),
@@ -547,8 +566,49 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                   firstDate: DateTime(2000),
                                   lastDate: DateTime.now(),
                                 );
+
                                 if (picked != null) {
                                   setState(() => purchaseDate = picked);
+
+                                  // Format date as MM/DD/YYYY
+                                  final formattedDate =
+                                      '${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}';
+
+                                  final productName = productController.text
+                                      .trim();
+                                  final metal =
+                                      selectedProduct?['metal'] ??
+                                      'Gold'; // default fallback
+                                  final authService = AuthService();
+                                  final token = await authService.getToken();
+
+                                  if (token == null ||
+                                      productName.isEmpty ||
+                                      metal.isEmpty) {
+                                    // optionally show an error or skip
+                                    return;
+                                  }
+
+                                  try {
+                                    final spotResponse =
+                                        await fetchSpotPricesDateWise(
+                                          productName: productName,
+                                          purchaseDate: formattedDate,
+                                          token: token,
+                                          metal: metal,
+                                        );
+
+                                    // TODO: Handle the response (e.g., update spot price field or save to state)
+                                    print("Spot Price Response: $spotResponse");
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "Failed to fetch spot price: $e",
+                                        ),
+                                      ),
+                                    );
+                                  }
                                 }
                               },
                               child: AbsorbPointer(
@@ -559,7 +619,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                         : '${purchaseDate!.month.toString().padLeft(2, '0')}/${purchaseDate!.day.toString().padLeft(2, '0')}/${purchaseDate!.year}',
                                   ),
                                   decoration: const InputDecoration(
-                                    labelText: 'Purchase Date *',
+                                    labelText: 'Purchase Date mm/dd/yyy*',
                                     hintText: 'MM/DD/YYYY',
                                   ),
                                   validator: (_) =>

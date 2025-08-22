@@ -80,3 +80,28 @@ class PortfolioService {
     }
   }
 }
+
+Future<dynamic> fetchSpotPricesDateWise({
+  required String productName,
+  required String purchaseDate,
+  required String token,
+  required String metal,
+}) async {
+  final url =
+      'https://mobile-dev-api.boldpreciousmetals.com/api/Portfolio/GetSpotPricesDateWise'
+      '?date=$purchaseDate&productName=$productName&metal=$metal';
+
+  final response = await http.get(
+    Uri.parse(url),
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body);
+  } else {
+    throw Exception('Could not fetch spot prices date wise');
+  }
+}

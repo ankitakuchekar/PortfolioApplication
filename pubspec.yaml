@@ -38,8 +38,10 @@ dependencies:
   provider: ^6.1.1
   syncfusion_flutter_charts: ^30.2.4
   chart_engine: ^2.1.1
-  flutter_typeahead: ^4.1.1
+  flutter_typeahead: ^5.2.0
   flutter_easy_recaptcha_v2: ^0.1.0
+  flutter_keyboard_visibility: ^6.0.0
+
 
 dev_dependencies:
   flutter_test:

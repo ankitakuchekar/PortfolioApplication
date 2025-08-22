@@ -38,7 +38,7 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
   Future<void> _handleLogout() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.logout();
-    
+
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -71,9 +71,7 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
-              ),
+              decoration: const BoxDecoration(color: AppColors.primary),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -162,7 +160,24 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                 padding: const EdgeInsets.all(16),
                 color: Colors.white,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // New Heading Text
+                    const Text(
+                      'Asset Holdings By Product',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Ordered products are automatically added to holdings once shipped.',
+                      style: TextStyle(fontSize: 15, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -175,7 +190,14 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                           );
                         },
                         icon: const Icon(Icons.add),
-                        label: const Text('Add New Holdings'),
+                        label: const Text(
+                          'Add New Holdings',
+                          style: TextStyle(
+                            fontSize: 18, // Increased font size
+                            fontWeight: FontWeight
+                                .w500, // Optional: makes it a bit bolder
+                          ),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.accent,
                           foregroundColor: Colors.white,
@@ -184,6 +206,8 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
+
+                    // Search & Filter
                     Row(
                       children: [
                         Expanded(
