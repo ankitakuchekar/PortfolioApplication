@@ -257,8 +257,8 @@ class _SellFormState extends State<SellForm> {
       "isPortfolioRequest": true,
       "products": [
         {
-          "productName": product['name'],
-          "metalId": product['metal'],
+          "productName": product['name'] ?? '',
+          "metalId": product['metal'] ?? '',
           "quantity": quantityStr,
           "productCondition": selectedConditions.join(", "),
           "productDescription": "",

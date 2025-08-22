@@ -301,7 +301,9 @@ class MetalCandleChartEntry {
 
   factory MetalCandleChartEntry.fromJson(Map<String, dynamic> json) {
     return MetalCandleChartEntry(
-      intervalStart: DateTime.parse(json['intervalStart']),
+      intervalStart: json['intervalStart'] != null
+          ? DateTime.parse(json['intervalStart'])
+          : DateTime.now(),
       openGold: (json['openGold'] ?? 0).toDouble(),
       closeGold: (json['closeGold'] ?? 0).toDouble(),
       highGold: (json['highGold'] ?? 0).toDouble(),
@@ -345,7 +347,9 @@ class MetalInOunces {
     final dateFormat = DateFormat("MM/dd/yyyy HH:mm:ss");
 
     return MetalInOunces(
-      dateFormat.parse(json['orderDate']), // 🔥 Parse properly
+      json['orderDate'] != null
+          ? dateFormat.parse(json['orderDate'])
+          : DateTime.now(),
       (json['totalGoldOptimalPrediction'] ?? 0).toDouble(),
       (json['totalGoldOunces'] ?? 0).toDouble(),
       (json['totalGoldWorstPrediction'] ?? 0).toDouble(),
@@ -403,7 +407,9 @@ class ProductHolding {
       currentPrice: (json['currentPrice'] ?? 0).toDouble(),
       currentMetalValue: (json['currentMetalValue'] ?? 0).toDouble(),
       isSold: json['isSold'] ?? false,
-      orderDate: dateFormat.parse(json['orderDate']), // 🔥 Parse properly
+      orderDate: json['orderDate'] != null
+          ? dateFormat.parse(json['orderDate'])
+          : DateTime.now(),
       productImage: json['productImage'] ?? '',
       assetList: json['assetList'] ?? '',
       totalQtyOrdered: json['totalQtyOrdered'] ?? 0,

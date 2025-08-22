@@ -49,10 +49,10 @@ class _ExitFormState extends State<ExitForm> {
 
     final user = {
       "userId": int.parse(fetchedUserId?.id ?? '0'),
-      "firstName": fetchedUserId?.firstName,
-      "lastName": fetchedUserId?.lastName,
-      "userEmail": fetchedUserId?.email,
-      "phoneNumber": fetchedUserId?.mobNo,
+      "firstName": fetchedUserId?.firstName ?? '',
+      "lastName": fetchedUserId?.lastName ?? '',
+      "userEmail": fetchedUserId?.email ?? '',
+      "phoneNumber": fetchedUserId?.mobNo ?? '',
     };
 
     final product = {
@@ -64,8 +64,8 @@ class _ExitFormState extends State<ExitForm> {
     };
 
     final payload = {
-      "customerId": user['userId'],
-      "productId": product['productId'],
+      "customerId": user['userId'] ?? 0,
+      "productId": product['productId'] ?? 0,
       "transactionDate": formattedDate,
       "transactionQuantity": quantity,
       "productUnitPrice": soldCost,
