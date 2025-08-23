@@ -5,7 +5,6 @@ import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
-import 'package:file_picker/file_picker.dart';
 
 class SellForm extends StatefulWidget {
   final ScrollController scrollController;
@@ -111,84 +110,6 @@ class _SellFormState extends State<SellForm> {
         selectedConditions = result;
         isSelectAll = result.length == productConditions.length;
       });
-    }
-  }
-
-  Future<void> _pickImage() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
-    );
-
-    if (result != null && result.files.isNotEmpty) {
-      final file = result.files.first;
-
-      // Validate extension
-      final fileName = file.name.toLowerCase();
-      if (!(fileName.endsWith('.png') ||
-          fileName.endsWith('.jpg') ||
-          fileName.endsWith('.jpeg'))) {
-        Fluttertoast.showToast(
-          msg: "Please upload a jpg, jpeg, or png image.",
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          toastLength: Toast.LENGTH_LONG,
-        );
-        return;
-      }
-
-      final uri = Uri.parse(
-        'https://mobile-dev-api.boldpreciousmetals.com/api/Account/UploadProductImageselltobold',
-      );
-
-      final request = http.MultipartRequest('POST', uri)
-        ..files.add(
-          http.MultipartFile.fromBytes(
-            'file',
-            file.bytes!,
-            filename: file.name,
-          ),
-        )
-        ..fields['imageType'] = 'boldimagetype';
-
-      try {
-        final response = await request.send();
-        if (response.statusCode == 200) {
-          final responseBody = await response.stream.bytesToString();
-          final decoded = jsonDecode(responseBody);
-
-          if (decoded['success'] == true) {
-            final imageUrl = decoded['data'];
-            setState(() {
-              selectedImage = imageUrl;
-            });
-
-            Fluttertoast.showToast(
-              msg: "Image uploaded successfully!",
-              backgroundColor: Colors.green,
-              textColor: Colors.white,
-            );
-          } else {
-            Fluttertoast.showToast(
-              msg: "Upload failed. Try again.",
-              backgroundColor: Colors.red,
-              textColor: Colors.white,
-            );
-          }
-        } else {
-          Fluttertoast.showToast(
-            msg: "Upload failed with status code ${response.statusCode}",
-            backgroundColor: Colors.red,
-            textColor: Colors.white,
-          );
-        }
-      } catch (e) {
-        Fluttertoast.showToast(
-          msg: "Upload error: $e",
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-        );
-      }
     }
   }
 
@@ -365,16 +286,16 @@ class _SellFormState extends State<SellForm> {
           // Upload Image
           const Text("Upload Image (Optional)"),
           const SizedBox(height: 6),
-          ElevatedButton.icon(
-            onPressed: _pickImage,
-            icon: const Icon(Icons.attach_file),
-            label: const Text("Choose File"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey[800],
-              foregroundColor: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 16),
+          // ElevatedButton.icon(
+          //   onPressed: _pickImage,
+          //   icon: const Icon(Icons.attach_file),
+          //   label: const Text("Choose File"),
+          //   style: ElevatedButton.styleFrom(
+          //     backgroundColor: Colors.grey[800],
+          //     foregroundColor: Colors.white,
+          //   ),
+          // ),
+          // const SizedBox(height: 16),
 
           // Show selected image preview
           if (selectedImage.isNotEmpty)
