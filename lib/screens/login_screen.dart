@@ -395,11 +395,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           label: 'First Name',
                           icon: Icons.person_outline,
                           validator: (value) => nameErrorText(value ?? ''),
-                          // onFocusChange: (hasFocus) {
-                          //   if (hasFocus && !_isRecaptchaVerified) {
-                          //     _showRecaptcha();
-                          //   }
-                          // },
+                          onFocusChange: (hasFocus) {
+                            if (hasFocus && !_isRecaptchaVerified) {
+                              _showRecaptcha();
+                            }
+                          },
                         ),
 
                         const SizedBox(height: 8),
