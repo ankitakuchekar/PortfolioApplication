@@ -112,13 +112,23 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
-  Widget rotatingCoin({required double top, required double left}) {
+  Widget rotatingCoin({
+    required double top,
+    required double left,
+    required String imageUrl,
+  }) {
     return Positioned(
       top: top,
       left: left,
       child: RotationTransition(
         turns: _coinRotationController,
-        child: Image.asset('assets/images/coin.png', width: 40, height: 40),
+        child: Image.network(
+          imageUrl,
+          width: 55,
+          height: 55,
+          errorBuilder: (context, error, stackTrace) =>
+              Icon(Icons.error), // optional
+        ),
       ),
     );
   }
@@ -142,12 +152,29 @@ class _SplashScreenState extends State<SplashScreen>
           ),
 
           // Rotating coins
-          rotatingCoin(top: 100, left: 30),
-          rotatingCoin(top: 100, left: screenSize.width - 70),
-          rotatingCoin(top: screenSize.height - 130, left: 50),
+          rotatingCoin(
+            top: 100,
+            left: 30,
+            imageUrl:
+                'https://res.cloudinary.com/bold-pm/image/upload/Graphics/2025-american-eagle-gold-coin-1.png',
+          ),
+          rotatingCoin(
+            top: 100,
+            left: screenSize.width - 70,
+            imageUrl:
+                'https://res.cloudinary.com/bold-pm/image/upload/Graphics/2025-american-eagle-silver-coin-1.png',
+          ),
+          rotatingCoin(
+            top: screenSize.height - 130,
+            left: 50,
+            imageUrl:
+                'https://res.cloudinary.com/bold-pm/image/upload/Graphics/2025-american-eagle-silver-coin-1.png',
+          ),
           rotatingCoin(
             top: screenSize.height - 120,
             left: screenSize.width - 100,
+            imageUrl:
+                'https://res.cloudinary.com/bold-pm/image/upload/Graphics/2025-american-eagle-gold-coin-1.png',
           ),
 
           // Yellow sliding bar (top right)
