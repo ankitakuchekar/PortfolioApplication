@@ -71,6 +71,8 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/bold_logo.png
+    - assets/images/coin.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -103,4 +105,5 @@ flutter_native_splash:
   image: assets/images/bold_logo.png
   android_12:
     color: "#FFFFFF"
-    image: assets/images/bold_logo.png
+    image: assets/images/bold_logo.png' 
+
