@@ -1,3 +1,4 @@
+import 'package:bold_portfolio/screens/ForgotPasswordScreen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/utils/mobileFormater.dart';
 import 'package:flutter/material.dart';
@@ -394,7 +395,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 16),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ForgotPasswordScreen(),
+                              ),
+                            );
+                          },
                           child: const Text(
                             'Forgot your password?',
                             style: TextStyle(color: Color(0xFF00C566)),
