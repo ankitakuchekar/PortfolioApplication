@@ -220,20 +220,39 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.yellowAccent, width: 2),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Image.asset(
-                      'assets/images/bold_logo.png',
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.contain,
-                    ),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Shadow container with limited height
+                      Container(
+                        width: 150,
+                        height:
+                            60, // reduce height to limit shadow vertical size
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.yellow.withOpacity(0.6),
+                              blurRadius: 10,
+                              offset: Offset(0, 0),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // The logo image on top
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        child: Image.asset(
+                          'assets/images/bold_logo.png',
+                          width: 150,
+                          height: 150,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 30),
+
+                  const SizedBox(height: 10),
                   const Text(
                     'Bullion Portfolio',
                     style: TextStyle(
@@ -248,7 +267,27 @@ class _SplashScreenState extends State<SplashScreen>
                     style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                   const SizedBox(height: 10),
-                  Container(width: 100, height: 2, color: Colors.yellowAccent),
+                  Container(
+                    width: 100,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Colors.yellowAccent.withOpacity(0.6),
+                          Colors.transparent,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.yellowAccent.withOpacity(0.2),
+                          blurRadius: 6,
+                          spreadRadius: 0.3,
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
