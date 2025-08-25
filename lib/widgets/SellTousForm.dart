@@ -5,6 +5,9 @@ import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:http_parser/http_parser.dart';
 
 class SellForm extends StatefulWidget {
   final ScrollController scrollController;
@@ -38,6 +41,86 @@ class _SellFormState extends State<SellForm> {
   bool isSelectAll = false;
   String selectedImage =
       "https://res.cloudinary.com/bold-pm/image/upload/q_auto:good/Graphics/no_img_preview_product.png";
+
+  void pickAndUploadImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      final String extension = path.extension(image.name).toLowerCase().trim();
+      final allowedExtensions = ['.jpg', '.jpeg', '.png'];
+
+      print("File extension: $extension");
+
+      if (!allowedExtensions.contains(extension)) {
+        Fluttertoast.showToast(
+          msg: "Please upload a jpg, jpeg, or png image.",
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          toastLength: Toast.LENGTH_LONG,
+        );
+        return;
+      }
+
+      try {
+        Uint8List imageBytes = await image.readAsBytes();
+
+        final uri = Uri.parse(
+          'https://mobile-dev-api.boldpreciousmetals.com/api/Account/UploadProductImageselltobold',
+        );
+        final request = http.MultipartRequest('POST', uri);
+
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'file',
+            imageBytes,
+            filename: image.name,
+            contentType: getContentType(extension),
+          ),
+        );
+        request.fields['imageType'] = 'boldimagetype';
+
+        final response = await request.send();
+
+        if (response.statusCode == 200) {
+          Fluttertoast.showToast(
+            msg: "Image uploaded Successfully.",
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            toastLength: Toast.LENGTH_LONG,
+          );
+          print("respinse,${response}");
+          setState(() {
+            selectedImage =
+                image.path; // Update selectedImage with the image path
+          });
+        } else {
+          Fluttertoast.showToast(
+            msg: "Image upload failed with status: ${response.statusCode}",
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            toastLength: Toast.LENGTH_LONG,
+          );
+          print('Image upload failed with status: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Error uploading image: $e');
+      }
+    }
+  }
+
+  // Optional: helper to get the content type based on extension
+  MediaType? getContentType(String extension) {
+    switch (extension) {
+      case '.png':
+        return MediaType('image', 'png');
+      case '.jpg':
+      case '.jpeg':
+        return MediaType('image', 'jpeg');
+      default:
+        return null;
+    }
+  }
 
   bool isLoading = false;
 
@@ -224,6 +307,8 @@ class _SellFormState extends State<SellForm> {
     }
   }
 
+  late String imagePath;
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -286,16 +371,16 @@ class _SellFormState extends State<SellForm> {
           // Upload Image
           const Text("Upload Image (Optional)"),
           const SizedBox(height: 6),
-          // ElevatedButton.icon(
-          //   onPressed: _pickImage,
-          //   icon: const Icon(Icons.attach_file),
-          //   label: const Text("Choose File"),
-          //   style: ElevatedButton.styleFrom(
-          //     backgroundColor: Colors.grey[800],
-          //     foregroundColor: Colors.white,
-          //   ),
-          // ),
-          // const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () => pickAndUploadImage(),
+            icon: const Icon(Icons.attach_file),
+            label: const Text("Choose File"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey[800],
+              foregroundColor: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 16),
 
           // Show selected image preview
           if (selectedImage.isNotEmpty)
