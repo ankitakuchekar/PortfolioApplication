@@ -1,4 +1,3 @@
-import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/utils/mobileFormater.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

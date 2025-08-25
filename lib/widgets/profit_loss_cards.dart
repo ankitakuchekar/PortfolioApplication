@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/portfolio_model.dart';
-import '../utils/app_colors.dart';
-import '../models/investment.dart';
 
 class ProfitLossCards extends StatelessWidget {
   final PortfolioData portfolioData;
