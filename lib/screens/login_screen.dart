@@ -2,6 +2,7 @@ import 'package:bold_portfolio/screens/ForgotPasswordScreen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/utils/mobileFormater.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_easy_recaptcha_v2/flutter_easy_recaptcha_v2.dart';
 import '../providers/auth_provider.dart';
@@ -52,23 +53,23 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (cleanedName.isEmpty) {
       return 0; // Empty
-    } else if (!RegExp(r'^[a-zA-Z]+$').hasMatch(cleanedName)) {
-      return -1; // Invalid characters
     } else if (name.contains(' ')) {
       return 1; // Whitespace
+    } else if (!RegExp(r'^[a-zA-Z]+$').hasMatch(cleanedName)) {
+      return -1; // Invalid characters
     }
 
     return 2; // Valid
   }
 
-  String? nameErrorText(String name) {
+  String? nameErrorText(String name, String fieldName) {
     final result = validateName(name);
 
     switch (result) {
       case 0:
-        return 'First name is required';
+        return '${fieldName} name is required';
       case -1:
-        return 'First name must contain only letters';
+        return '${fieldName} name must contain only letters';
       case 1:
         return 'Whitespace is not allowed';
       case 2:
@@ -134,6 +135,19 @@ class _LoginScreenState extends State<LoginScreen> {
       if (success && mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      } else if (mounted) {
+        print("auth,${authProvider}");
+        // Show error toast/snackbar
+        final errorMessage =
+            authProvider.errorMessage ??
+            'Login failed,Username or password is incorrect';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     }
@@ -408,6 +422,41 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: TextStyle(color: Color(0xFF00C566)),
                           ),
                         ),
+
+                        // After Login Button
+                        const SizedBox(height: 30),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              "Don't have an account? ",
+                              style: TextStyle(
+                                color: Color(0xFF4B4B4B),
+                                fontSize: 14,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedTab = 1;
+                                  _formKey.currentState?.reset();
+                                });
+                                Provider.of<AuthProvider>(
+                                  context,
+                                  listen: false,
+                                ).clearError();
+                              },
+                              child: const Text(
+                                "Sign up",
+                                style: TextStyle(
+                                  color: Color(0xFF00C566),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
 
                       // REGISTER FORM
@@ -417,7 +466,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           focusNode: _firstNameFocusNode,
                           label: 'First Name',
                           icon: Icons.person_outline,
-                          validator: (value) => nameErrorText(value ?? ''),
+                          validator: (value) =>
+                              nameErrorText(value ?? '', 'First'),
                           // onFocusChange: (hasFocus) {
                           //   if (hasFocus && !_isRecaptchaVerified) {
                           //     _showRecaptcha();
@@ -449,7 +499,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _lastNameController,
                           label: 'Last Name',
                           icon: Icons.person_outline,
-                          validator: (value) => nameErrorText(value ?? ''),
+                          validator: (value) =>
+                              nameErrorText(value ?? '', 'Last'),
                         ),
                         const SizedBox(height: 16),
                         _buildField(
@@ -462,7 +513,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextFormField(
                           controller: _mobileController,
                           keyboardType: TextInputType.phone,
-                          inputFormatters: [PhoneNumberFormatter()],
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(14),
+                            PhoneNumberFormatter(),
+                          ],
                           validator: validateMobileNumber,
                           style: const TextStyle(color: Colors.black),
                           decoration: InputDecoration(
@@ -481,69 +535,61 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
 
                         const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _regPasswordController,
-                          obscureText: _obscurePassword,
-                          style: const TextStyle(color: Colors.black),
-                          validator: (value) {
-                            // Password is required
-                            if (value == null || value.isEmpty) {
-                              return 'Password is required';
-                            }
-
-                            // Minimum 8 characters check
-                            if (value.length < 8) {
-                              return 'Password should be minimum 8 characters long';
-                            }
-
-                            // Check for at least 1 uppercase letter
-                            if (!RegExp(r'^(?=.*?[A-Z])').hasMatch(value)) {
-                              return 'Password should have minimum 1 uppercase letter';
-                            }
-
-                            // Check for at least 1 lowercase letter
-                            if (!RegExp(r'^(?=.*?[a-z])').hasMatch(value)) {
-                              return 'Password should have minimum 1 lowercase letter';
-                            }
-
-                            // Check for at least 1 digit
-                            if (!RegExp(r'^(?=.*?[0-9])').hasMatch(value)) {
-                              return 'Password should have minimum 1 digit';
-                            }
-
-                            // Check for at least 1 special character
-                            if (!RegExp(
-                              r'^(?=.*?[!@#$%^&*(),.?":{}|<>])',
-                            ).hasMatch(value)) {
-                              return 'Password should have minimum 1 special character';
-                            }
-
-                            return null; // Valid password
-                          },
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            labelStyle: const TextStyle(color: Colors.black),
-                            prefixIcon: const Icon(
-                              Icons.lock,
-                              color: Colors.black,
+                        Theme(
+                          data: Theme.of(context).copyWith(
+                            inputDecorationTheme: const InputDecorationTheme(
+                              errorMaxLines:
+                                  3, // 👈 Allows error text to wrap into 3 lines
                             ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                                color: Colors.black,
+                          ),
+                          child: TextFormField(
+                            controller: _regPasswordController,
+                            obscureText: _obscurePassword,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Password is required';
+                              }
+
+                              final isValid =
+                                  value.length >= 8 &&
+                                  RegExp(r'[A-Z]').hasMatch(value) &&
+                                  RegExp(r'[a-z]').hasMatch(value) &&
+                                  RegExp(r'[0-9]').hasMatch(value) &&
+                                  RegExp(
+                                    r'[!@#$%^&*(),.?":{}|<>]',
+                                  ).hasMatch(value);
+
+                              if (!isValid) {
+                                return 'Password should be minimum 8 characters long, having at least 1 uppercase letter, 1 lowercase letter, 1 digit, and 1 special character.';
+                              }
+
+                              return null;
+                            },
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              prefixIcon: const Icon(Icons.lock),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
-                            filled: true,
-                            fillColor: const Color.fromARGB(255, 237, 239, 245),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              filled: true,
+                              fillColor: const Color.fromARGB(
+                                255,
+                                237,
+                                239,
+                                245,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
                           ),
                         ),
@@ -619,53 +665,47 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                         ),
+
+                        // After Register Button
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              "Already have an account? ",
+                              style: TextStyle(
+                                color: Color(0xFF4B4B4B),
+                                fontSize: 14,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedTab = 0;
+                                  _formKey.currentState?.reset();
+                                });
+                                Provider.of<AuthProvider>(
+                                  context,
+                                  listen: false,
+                                ).clearError();
+                              },
+                              child: const Text(
+                                "Sign in",
+                                style: TextStyle(
+                                  color: Color(0xFF00C566),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
 
                       const SizedBox(height: 60),
                     ],
                   ),
                 ),
-              ),
-            ),
-
-            // Bottom Tabs
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 16),
-              alignment: Alignment.center,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    _selectedTab == 0
-                        ? "Don't have an account? "
-                        : "Already have an account? ",
-                    style: const TextStyle(
-                      color: Color(0xFF4B4B4B), // Dark gray text
-                      fontSize: 14,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedTab = _selectedTab == 0
-                            ? 1
-                            : 0; // Toggle screen
-                      });
-                      Provider.of<AuthProvider>(
-                        context,
-                        listen: false,
-                      ).clearError();
-                    },
-                    child: Text(
-                      _selectedTab == 0 ? "Sign up" : "Sign in",
-                      style: const TextStyle(
-                        color: Color(0xFF00C566), // Green highlight
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ),
           ],
