@@ -53,20 +53,32 @@ class PortfolioService {
       if (response.statusCode == 200) {
         final dynamic rawResponse = jsonDecode(response.body);
 
-        // Handle if the response is a List instead of Map
-        if (rawResponse is List) {
-          if (rawResponse.isNotEmpty) {
-            final Map<String, dynamic> responseData = rawResponse[0];
-            return PortfolioData.fromJson(responseData);
+        // Check for success in response
+        if (rawResponse['success'] == true) {
+          print("1A");
+          // Handle the data and return the PortfolioData object
+          if (rawResponse is List) {
+            print("2A");
+            if (rawResponse.isNotEmpty) {
+              final Map<String, dynamic> responseData = rawResponse[0];
+              return PortfolioData.fromJson(responseData);
+            } else {
+              throw Exception('Empty list response from API');
+            }
+          } else if (rawResponse is Map<String, dynamic>) {
+            print("3A");
+            // Return the response as PortfolioData without throwing error if certain arrays are null
+            return PortfolioData.fromJson(rawResponse);
           } else {
-            throw Exception('Empty list response from API');
+            throw Exception(
+              'Unexpected response type: ${rawResponse.runtimeType}',
+            );
           }
-        } else if (rawResponse is Map<String, dynamic>) {
-          return PortfolioData.fromJson(rawResponse);
         } else {
-          throw Exception(
-            'Unexpected response type: ${rawResponse.runtimeType}',
-          );
+          // If success is false, don't throw error but return PortfolioData with null arrays
+          return PortfolioData.fromJson(
+            rawResponse,
+          ); // Process null arrays gracefully
         }
       } else {
         throw Exception(

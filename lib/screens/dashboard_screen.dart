@@ -1,6 +1,8 @@
+import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/widgets/ActualPriceBanner.dart';
 import 'package:bold_portfolio/widgets/InvestmentFeature.dart';
+import 'package:bold_portfolio/widgets/add_holding_form.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/portfolio_provider.dart';
@@ -108,7 +110,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
           }
 
           final portfolioData = portfolioProvider.portfolioData;
-          if (portfolioData == null) {
+
+          // Check if portfolioData is null or data is empty
+          final customerData = (portfolioData?.data.isNotEmpty ?? false)
+              ? portfolioData!.data[0]
+              : CustomerData.empty();
+
+          // Check if portfolioSettings is null and fall back to default
+          final portfolioSettings = customerData.portfolioSettings;
+
+          // Check if investmentData is null and fall back to default
+          final investmentData = customerData.investment;
+          // Check if portfolioData or its data is null/empty and handle the fallback UI
+          if ((investmentData.customerId == 0 &&
+                  portfolioSettings.customerId == 0) ||
+              portfolioData == null ||
+              portfolioData.data.isEmpty) {
             return Scaffold(
               backgroundColor: Colors.white,
               body: SingleChildScrollView(
@@ -118,28 +135,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     // Image Banner
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                       child: Image.network(
                         'https://res.cloudinary.com/bold-pm/image/upload/Graphics/Bullion-invesment-Portfolio.webp',
                         width: double.infinity,
-                        height: 200,
-                        fit: BoxFit.cover,
+                        height: 250,
+                        fit: BoxFit
+                            .cover, // Ensures the image covers the container properly
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
                     // Title
                     const Text(
                       'Why is it Important to Build\nand Track Your Bullion Investment',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                        fontSize: 22,
+                        color: Colors.black,
+                        height: 1.5, // Increased line height for better spacing
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
                     // Features
-                    const InvestmentFeature(
+                    InvestmentFeature(
                       icon: Icons.link,
                       text:
                           "Keeps all your gold and silver investments in one place.",
@@ -159,27 +179,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       text:
                           "Centralizes all data, making it easily accessible anytime and anywhere.",
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 32),
 
                     // Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber[600],
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          foregroundColor: Colors.white,
+                          backgroundColor:
+                              Colors.amber[600], // Text and icon color
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(
+                              12,
+                            ), // Rounded corners
                           ),
+                          elevation: 5, // Add shadow for elevation effect
                         ),
                         onPressed: () {
-                          // Navigate or add logic
+                          // Navigation logic
+                          showDialog(
+                            context: context,
+                            builder: (context) => AddHoldingForm(
+                              onClose: () => Navigator.of(context).pop(),
+                            ),
+                          );
                         },
                         icon: const Icon(Icons.add),
                         label: const Text(
                           "Add New Holdings",
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
                         ),
                       ),
                     ),
@@ -188,7 +221,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             );
           }
-          final portfolioSettings = portfolioData.data[0].portfolioSettings;
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(

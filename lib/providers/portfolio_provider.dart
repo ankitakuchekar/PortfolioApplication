@@ -39,15 +39,34 @@ class PortfolioProvider with ChangeNotifier {
       final spotPrices = results[0];
       final portfolioData = results[1];
 
-      if (spotPrices is SpotPriceData && portfolioData is PortfolioData) {
+      // Check if spotPrices is valid
+      if (spotPrices is SpotPriceData) {
         _spotPrices = spotPrices;
-        _portfolioData = portfolioData;
-        _errorMessage = null;
       } else {
-        _errorMessage = 'Invalid data format';
-        print('Error: Invalid data format');
+        throw Exception('Invalid Spot Prices Data Format');
+      }
+
+      // Check if portfolioData is valid
+      if (portfolioData is PortfolioData) {
+        print("5");
+        // Check for 'success' flag and handle null arrays
+        if (portfolioData.success == true) {
+          print("1");
+          // If the arrays are not null, process as normal
+          _portfolioData = portfolioData;
+          _errorMessage = null;
+        } else {
+          print("2");
+          _errorMessage = 'Invalid data format';
+          print('Error: Invalid data format in portfolio data');
+        }
+      } else {
+        print("3");
+        _errorMessage = 'Invalid data format for Portfolio Data';
+        print('Error: Invalid portfolio data format');
       }
     } catch (e) {
+      print("4");
       _errorMessage = 'Failed to load data: ${e.toString()}';
       if (kDebugMode) {
         print('Error loading data: $e');

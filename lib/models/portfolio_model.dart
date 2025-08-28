@@ -7,8 +7,9 @@ class PortfolioData {
   PortfolioData({required this.success, required this.data});
 
   // Access the first CustomerData object from the list
-  CustomerData get customerData =>
-      data.isNotEmpty ? data[0] : throw Exception('CustomerData list is empty');
+  CustomerData get customerData => data.isNotEmpty
+      ? data[0]
+      : CustomerData.empty(); // Return empty data if no customer data
 
   // Computed getters for backward compatibility with UI components
   double get totalInvestment =>
@@ -57,10 +58,11 @@ class PortfolioData {
   );
 
   factory PortfolioData.fromJson(Map<String, dynamic> json) {
-    // The top-level 'data' field is a map, not a list.
-    // The lists are inside the 'data' map.
     var rawData = json['data'];
-
+    if (rawData == null || rawData.isEmpty) {
+      // Gracefully handle empty or missing 'data' field
+      return PortfolioData(success: false, data: []);
+    }
     // For simplicity, we'll assume there's only one customer and one investment record.
     return PortfolioData(
       success: json['success'],
@@ -75,7 +77,6 @@ class CustomerData {
   final List<MetalCandleChartEntry> metalCandleChart;
   final List<ProductHolding> productHoldings;
   final List<MetalInOunces> metalInOunces;
-  // ... (other fields)
 
   CustomerData({
     required this.investment,
@@ -85,25 +86,20 @@ class CustomerData {
     required this.metalInOunces,
   });
 
+  // Factory constructor to handle possible null or empty lists gracefully
   factory CustomerData.fromJson(Map<String, dynamic> json) {
-    // Corrected logic to handle 'investment' as a list and get the first item
-    final investmentList = json['investment'] as List<dynamic>;
+    final investmentList = json['investment'] as List<dynamic>? ?? [];
     final investmentData = investmentList.isNotEmpty
         ? InvestmentData.fromJson(investmentList[0] as Map<String, dynamic>)
-        : null;
+        : InvestmentData.empty();
 
-    if (investmentData == null) {
-      throw Exception(
-        'Investment data is missing or empty in the API response.',
-      );
-    }
-
-    final portfolioSettingsList = json['portfolioSettings'] as List<dynamic>;
+    final portfolioSettingsList =
+        json['portfolioSettings'] as List<dynamic>? ?? [];
     final portfolioSettingsData = portfolioSettingsList.isNotEmpty
         ? PortfolioSettings.fromJson(
             portfolioSettingsList[0] as Map<String, dynamic>,
           )
-        : throw Exception('portfolioSettings is missing');
+        : PortfolioSettings.empty();
 
     final chartList = json['metalCandleChart'] as List<dynamic>? ?? [];
     final metalCandleChartData = chartList
@@ -127,7 +123,17 @@ class CustomerData {
       metalCandleChart: metalCandleChartData,
       productHoldings: productHoldings,
       metalInOunces: metalInOunces,
-      // Uncomment and correct the parsing for other fields as needed
+    );
+  }
+
+  // Empty CustomerData constructor for graceful fallback
+  factory CustomerData.empty() {
+    return CustomerData(
+      investment: InvestmentData.empty(),
+      portfolioSettings: PortfolioSettings.empty(),
+      metalCandleChart: [],
+      productHoldings: [],
+      metalInOunces: [],
     );
   }
 }
@@ -163,6 +169,7 @@ class InvestmentData {
     required this.daySilver,
   });
 
+  // Factory constructor to handle missing or invalid values
   factory InvestmentData.fromJson(Map<String, dynamic> json) {
     return InvestmentData(
       customerId: json['customerId']?.toDouble() ?? 0.0,
@@ -178,6 +185,74 @@ class InvestmentData {
       totalSilverInvested: json['totalSilverInvested']?.toDouble() ?? 0.0,
       dayGold: json['dayGold']?.toDouble() ?? 0.0,
       daySilver: json['daySilver']?.toDouble() ?? 0.0,
+    );
+  }
+
+  // Empty InvestmentData constructor for graceful fallback
+  factory InvestmentData.empty() {
+    return InvestmentData(
+      customerId: 0.0,
+      dayChangePercentage: 0.0,
+      totalGold: 0.0,
+      totalSilver: 0.0,
+      totalGoldCurrent: 0.0,
+      totalGoldInvested: 0.0,
+      totalGoldOunces: 0.0,
+      totalSilverCurrent: 0.0,
+      totalSilverInvestment: 0.0,
+      totalSilverOunces: 0.0,
+      totalSilverInvested: 0.0,
+      dayGold: 0.0,
+      daySilver: 0.0,
+    );
+  }
+}
+
+class PortfolioSettings {
+  final int customerId;
+  final bool showActualPrice;
+  final bool showPrediction;
+  final bool showVdo;
+  final bool doNotShowAgain;
+  final bool showGoldPrediction;
+  final bool showSilverPrediction;
+  final bool showTotalPrediction;
+
+  PortfolioSettings({
+    required this.customerId,
+    required this.showActualPrice,
+    required this.showPrediction,
+    required this.showVdo,
+    required this.doNotShowAgain,
+    required this.showGoldPrediction,
+    required this.showSilverPrediction,
+    required this.showTotalPrediction,
+  });
+
+  factory PortfolioSettings.fromJson(Map<String, dynamic> json) {
+    return PortfolioSettings(
+      customerId: json['customerId'] ?? 0,
+      showActualPrice: json['showActualPrice'] ?? false,
+      showPrediction: json['showPrediction'] ?? false,
+      showVdo: json['showVdo'] ?? false,
+      doNotShowAgain: json['doNotShowAgain'] ?? false,
+      showGoldPrediction: json['showGoldPrediction'] ?? false,
+      showSilverPrediction: json['showSilverPrediction'] ?? false,
+      showTotalPrediction: json['showTotalPrediction'] ?? false,
+    );
+  }
+
+  // Empty PortfolioSettings constructor for graceful fallback
+  factory PortfolioSettings.empty() {
+    return PortfolioSettings(
+      customerId: 0,
+      showActualPrice: false,
+      showPrediction: false,
+      showVdo: false,
+      doNotShowAgain: false,
+      showGoldPrediction: false,
+      showSilverPrediction: false,
+      showTotalPrediction: false,
     );
   }
 }
@@ -218,54 +293,6 @@ class MetalData {
     required this.profit,
     required this.profitPercentage,
   });
-}
-
-class PortfolioSettings {
-  final int customerId;
-  final bool showActualPrice;
-  final bool showPrediction;
-  final bool showVdo;
-  final bool doNotShowAgain;
-  final bool showGoldPrediction;
-  final bool showSilverPrediction;
-  final bool showTotalPrediction;
-
-  PortfolioSettings({
-    required this.customerId,
-    required this.showActualPrice,
-    required this.showPrediction,
-    required this.showVdo,
-    required this.doNotShowAgain,
-    required this.showGoldPrediction,
-    required this.showSilverPrediction,
-    required this.showTotalPrediction,
-  });
-
-  factory PortfolioSettings.fromJson(Map<String, dynamic> json) {
-    return PortfolioSettings(
-      customerId: json['customerId'] ?? 0,
-      showActualPrice: json['showActualPrice'] ?? false,
-      showPrediction: json['showPrediction'] ?? false,
-      showVdo: json['showVdo'] ?? false,
-      doNotShowAgain: json['doNotShowAgain'] ?? false,
-      showGoldPrediction: json['showGoldPrediction'] ?? false,
-      showSilverPrediction: json['showSilverPrediction'] ?? false,
-      showTotalPrediction: json['showTotalPrediction'] ?? false,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'customerId': customerId,
-      'showActualPrice': showActualPrice,
-      'showPrediction': showPrediction,
-      'showVdo': showVdo,
-      'doNotShowAgain': doNotShowAgain,
-      'showGoldPrediction': showGoldPrediction,
-      'showSilverPrediction': showSilverPrediction,
-      'showTotalPrediction': showTotalPrediction,
-    };
-  }
 }
 
 class MetalCandleChartEntry {
