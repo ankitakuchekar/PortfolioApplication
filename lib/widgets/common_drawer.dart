@@ -1,3 +1,5 @@
+import 'package:bold_portfolio/screens/BullionPortfolioGuideScreen.dart';
+import 'package:bold_portfolio/screens/PrivacyPolicyScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -7,10 +9,7 @@ import '../screens/login_screen.dart';
 class CommonDrawer extends StatelessWidget {
   final Function(int)? onNavigationTap;
 
-  const CommonDrawer({
-    super.key,
-    this.onNavigationTap,
-  });
+  const CommonDrawer({super.key, this.onNavigationTap});
 
   Future<void> _handleLogout(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -31,71 +30,63 @@ class CommonDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(color: AppColors.primary),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Image.asset(
-                  'assets/images/bold_logo.png',
-                  width: 120,
-                  height: 60,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Text(
-                      'BOLD',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'BOLD Portfolio',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+            margin: EdgeInsets.zero,
+            padding: EdgeInsets.zero,
+            decoration: const BoxDecoration(color: AppColors.black),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment:
+                    MainAxisAlignment.center, // centers vertically
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Image.asset(
+                    'assets/images/bold_logo.png',
+                    width: 120,
+                    height: 60,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Text(
+                        'BOLD',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
                   ),
-                ),
-              ],
+                  const SizedBox(
+                    height: 4,
+                  ), // Adjust spacing between logo and text
+                  const Text(
+                    'BOLD Portfolio',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.dashboard),
-            title: const Text('Dashboard'),
+            leading: const Icon(Icons.shield_outlined),
+            title: const Text('Privacy Policy'),
             onTap: () {
               Navigator.pop(context);
-              if (onNavigationTap != null) {
-                onNavigationTap!(0);
-              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PrivacyPolicyScreen(),
+                ),
+              );
             },
           ),
           ListTile(
-            leading: const Icon(Icons.show_chart),
-            title: const Text('Graphs'),
-            onTap: () {
-              Navigator.pop(context);
-              if (onNavigationTap != null) {
-                onNavigationTap!(1);
-              }
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.inventory_2),
-            title: const Text('Holdings'),
-            onTap: () {
-              Navigator.pop(context);
-              if (onNavigationTap != null) {
-                onNavigationTap!(2);
-              }
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('Profile'),
+            leading: const Icon(Icons.chat_bubble_outline),
+            title: const Text('Feedback'),
             onTap: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -104,12 +95,15 @@ class CommonDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
+            leading: const Icon(Icons.menu_book_outlined),
+            title: const Text('Guide'),
             onTap: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Settings feature coming soon')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BullionPortfolioGuideScreen(),
+                ),
               );
             },
           ),
