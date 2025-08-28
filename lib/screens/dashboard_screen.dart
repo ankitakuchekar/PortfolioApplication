@@ -1,5 +1,6 @@
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/widgets/ActualPriceBanner.dart';
+import 'package:bold_portfolio/widgets/InvestmentFeature.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/portfolio_provider.dart';
@@ -51,7 +52,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-
   Future<void> fetchChartData() async {
     try {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
@@ -64,7 +64,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +109,84 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           final portfolioData = portfolioProvider.portfolioData;
           if (portfolioData == null) {
-            return const Center(child: Text('No data available'));
+            return Scaffold(
+              backgroundColor: Colors.white,
+              body: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Image Banner
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        'https://res.cloudinary.com/bold-pm/image/upload/Graphics/Bullion-invesment-Portfolio.webp',
+                        width: double.infinity,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Title
+                    const Text(
+                      'Why is it Important to Build\nand Track Your Bullion Investment',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Features
+                    const InvestmentFeature(
+                      icon: Icons.link,
+                      text:
+                          "Keeps all your gold and silver investments in one place.",
+                    ),
+                    InvestmentFeature(
+                      icon: Icons.show_chart,
+                      text:
+                          "Helps assess the current value of your holdings compared to purchase prices.",
+                    ),
+                    InvestmentFeature(
+                      icon: Icons.bar_chart,
+                      text:
+                          "Offers insights into the growth of your investments over time.",
+                    ),
+                    InvestmentFeature(
+                      icon: Icons.settings,
+                      text:
+                          "Centralizes all data, making it easily accessible anytime and anywhere.",
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.amber[600],
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () {
+                          // Navigate or add logic
+                        },
+                        icon: const Icon(Icons.add),
+                        label: const Text(
+                          "Add New Holdings",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
           final portfolioSettings = portfolioData.data[0].portfolioSettings;
           return SingleChildScrollView(

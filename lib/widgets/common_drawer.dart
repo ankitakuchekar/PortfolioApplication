@@ -1,5 +1,6 @@
 import 'package:bold_portfolio/screens/BullionPortfolioGuideScreen.dart';
 import 'package:bold_portfolio/screens/PrivacyPolicyScreen.dart';
+import 'package:bold_portfolio/widgets/FeedbackPopup.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -89,8 +90,9 @@ class CommonDrawer extends StatelessWidget {
             title: const Text('Feedback'),
             onTap: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile feature coming soon')),
+              showDialog(
+                context: context,
+                builder: (context) => FeedbackPopup(), // Show your custom popup
               );
             },
           ),
