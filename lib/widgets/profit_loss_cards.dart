@@ -37,7 +37,12 @@ class ProfitLossCards extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                Icon(icon, size: 16, color: textColor),
+                Tooltip(
+                  message: title == 'Total Profit & Loss'
+                      ? 'Total Profit and Loss shows the net gain or loss from your bullion investments. A positive value indicates a profit, while a negative value indicates a loss.'
+                      : 'Day Profit and Loss shows the net daily change in your bullion investments.',
+                  child: Icon(icon, size: 16, color: textColor),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -72,10 +77,12 @@ class ProfitLossCards extends StatelessWidget {
 
     final double totalAcquisitionCost =
         investment.totalGoldInvested + investment.totalSilverInvested;
+
     final double difference = totalCurrentValue - totalAcquisitionCost;
     final double totalProfitDifference = (difference < 0)
         ? -difference
         : difference;
+
     final double percentDifference = totalAcquisitionCost > 0
         ? (totalProfitDifference / totalAcquisitionCost) * 100
         : 0;
@@ -88,6 +95,7 @@ class ProfitLossCards extends StatelessWidget {
         totalAcquisitionCost > 0 && !percentDayProfitLossPage.isNaN
         ? percentDayProfitLossPage.abs()
         : 0;
+
     return Row(
       children: [
         _buildCard(

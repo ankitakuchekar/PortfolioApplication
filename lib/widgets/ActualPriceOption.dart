@@ -29,7 +29,6 @@ class _ActualPriceBannerState extends State<ActualPriceBannerOption> {
   @override
   void initState() {
     super.initState();
-    print("isactial,${widget.isActualPrice}");
     isActualPrice = widget.isActualPrice;
   }
 
@@ -49,12 +48,7 @@ class _ActualPriceBannerState extends State<ActualPriceBannerOption> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.fromLTRB(
-            16,
-            0,
-            16,
-            80,
-          ), // Adjusted margin to not overlap banner
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
           content: Text(
             value ? 'Premium price included' : 'Premium price excluded',
             style: const TextStyle(fontWeight: FontWeight.bold),
@@ -73,67 +67,60 @@ class _ActualPriceBannerState extends State<ActualPriceBannerOption> {
 
   @override
   Widget build(BuildContext context) {
-    // Fixed width for toggle+loading to prevent size changes
     const double toggleWidth = 52;
 
-    return Positioned(
-      bottom: 0, // Positioned just above bottom navigation bar
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFFD95D5C), // red-ish
-              Color(0xFF51C89D), // green-ish
-            ],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
-          borderRadius: BorderRadius.zero,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFFD95D5C), // red-ish
+            Color(0xFF51C89D), // green-ish
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Increased font size & updated text
-            Text(
-              isActualPrice ? 'Include Premium Price' : 'Exclude Premium Price',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+        borderRadius: BorderRadius.zero,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            isActualPrice ? 'Include Premium Price' : 'Exclude Premium Price',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
             ),
-            SizedBox(
-              width: toggleWidth,
-              height: 30,
-              child: isLoading
-                  ? const Center(
-                      child: SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      ),
-                    )
-                  : Transform.scale(
-                      scale: 0.7,
-                      child: Switch(
-                        value: isActualPrice,
-                        onChanged: handleToggle,
-                        activeColor: Colors.white, // Thumb
-                        activeTrackColor: Colors.greenAccent, // Track
-                        inactiveThumbColor: Colors.grey.shade300,
-                        inactiveTrackColor: Colors.grey.shade600,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          SizedBox(
+            width: toggleWidth,
+            height: 30,
+            child: isLoading
+                ? const Center(
+                    child: SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
                       ),
                     ),
-            ),
-          ],
-        ),
+                  )
+                : Transform.scale(
+                    scale: 0.7,
+                    child: Switch(
+                      value: isActualPrice,
+                      onChanged: handleToggle,
+                      activeColor: Colors.white,
+                      activeTrackColor: Colors.greenAccent,
+                      inactiveThumbColor: Colors.grey.shade300,
+                      inactiveTrackColor: Colors.grey.shade600,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+          ),
+        ],
       ),
     );
   }
