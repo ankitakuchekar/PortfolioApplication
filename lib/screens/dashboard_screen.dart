@@ -1,6 +1,6 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
-import 'package:bold_portfolio/widgets/ActualPriceBanner.dart';
+import 'package:bold_portfolio/widgets/ActualPriceOption.dart';
 import 'package:bold_portfolio/widgets/InvestmentFeature.dart';
 import 'package:bold_portfolio/widgets/add_holding_form.dart';
 import 'package:flutter/material.dart';
@@ -222,19 +222,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
             );
           }
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ActualPriceBanner(
+                ActualPriceBannerOption(
                   customerId: int.tryParse(userId ?? '') ?? 0,
                   settings: portfolioSettings,
                   token: token!,
                   fetchChartData: () async {
                     await fetchChartData(); // This must be defined somewhere
                   },
+                  isActualPrice: portfolioSettings.showActualPrice,
                 ),
-
                 Consumer<PortfolioProvider>(
                   builder: (context, provider, child) {
                     final spotPriceData = provider.spotPrices;
