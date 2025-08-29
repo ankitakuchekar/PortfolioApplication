@@ -89,7 +89,6 @@ class _SellFormState extends State<SellForm> {
             textColor: Colors.white,
             toastLength: Toast.LENGTH_LONG,
           );
-          print("respinse,${response}");
           setState(() {
             selectedImage =
                 image.path; // Update selectedImage with the image path

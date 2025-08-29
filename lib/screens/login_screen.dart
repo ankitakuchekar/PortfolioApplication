@@ -137,7 +137,6 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } else if (mounted) {
-        print("auth,${authProvider}");
         // Show error toast/snackbar
         final errorMessage =
             authProvider.errorMessage ??

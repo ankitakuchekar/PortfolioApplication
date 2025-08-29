@@ -55,10 +55,8 @@ class PortfolioService {
 
         // Check for success in response
         if (rawResponse['success'] == true) {
-          print("1A");
           // Handle the data and return the PortfolioData object
           if (rawResponse is List) {
-            print("2A");
             if (rawResponse.isNotEmpty) {
               final Map<String, dynamic> responseData = rawResponse[0];
               return PortfolioData.fromJson(responseData);
@@ -66,7 +64,6 @@ class PortfolioService {
               throw Exception('Empty list response from API');
             }
           } else if (rawResponse is Map<String, dynamic>) {
-            print("3A");
             // Return the response as PortfolioData without throwing error if certain arrays are null
             return PortfolioData.fromJson(rawResponse);
           } else {
