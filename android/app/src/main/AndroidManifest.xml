@@ -5,7 +5,7 @@
         android:label="BOLD Portfolio"
         android:name="${applicationName}"
         android:usesCleartextTraffic="true"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="assets/images/bold_logo.png">
         <activity
             android:name=".MainActivity"
             android:exported="true"
