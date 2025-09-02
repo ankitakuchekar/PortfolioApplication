@@ -534,64 +534,56 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
 
                         const SizedBox(height: 16),
-                        Theme(
-                          data: Theme.of(context).copyWith(
-                            inputDecorationTheme: const InputDecorationTheme(
-                              errorMaxLines:
-                                  3, // 👈 Allows error text to wrap into 3 lines
+                        TextFormField(
+                          controller: _regPasswordController,
+                          obscureText: _obscurePassword,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Password is required';
+                            }
+
+                            final isValid =
+                                value.length >= 8 &&
+                                RegExp(r'[A-Z]').hasMatch(value) &&
+                                RegExp(r'[a-z]').hasMatch(value) &&
+                                RegExp(r'[0-9]').hasMatch(value) &&
+                                RegExp(
+                                  r'[!@#$%^&*(),.?":{}|<>]',
+                                ).hasMatch(value);
+
+                            if (!isValid) {
+                              return 'Password should be minimum 8 characters long, having at least 1 uppercase letter, 1 lowercase letter, 1 digit, and 1 special character.';
+                            }
+
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            prefixIcon: const Icon(
+                              Icons.lock,
+                              color: Colors.black,
                             ),
-                          ),
-                          child: TextFormField(
-                            controller: _regPasswordController,
-                            obscureText: _obscurePassword,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Password is required';
-                              }
-
-                              final isValid =
-                                  value.length >= 8 &&
-                                  RegExp(r'[A-Z]').hasMatch(value) &&
-                                  RegExp(r'[a-z]').hasMatch(value) &&
-                                  RegExp(r'[0-9]').hasMatch(value) &&
-                                  RegExp(
-                                    r'[!@#$%^&*(),.?":{}|<>]',
-                                  ).hasMatch(value);
-
-                              if (!isValid) {
-                                return 'Password should be minimum 8 characters long, having at least 1 uppercase letter, 1 lowercase letter, 1 digit, and 1 special character.';
-                              }
-
-                              return null;
-                            },
-                            decoration: InputDecoration(
-                              labelText: 'Password',
-                              prefixIcon: const Icon(Icons.lock),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _obscurePassword = !_obscurePassword;
-                                  });
-                                },
+                            labelStyle: const TextStyle(color: Colors.black),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                               ),
-                              filled: true,
-                              fillColor: const Color.fromARGB(
-                                255,
-                                237,
-                                239,
-                                245,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                            filled: true,
+                            fillColor: const Color.fromARGB(255, 237, 239, 245),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
                         ),
+
                         const SizedBox(height: 16),
 
                         // Error Message (if any)

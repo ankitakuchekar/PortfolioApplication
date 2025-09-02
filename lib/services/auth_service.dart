@@ -26,6 +26,7 @@ class AuthService extends ChangeNotifier {
       );
 
       final Map<String, dynamic> responseData = jsonDecode(response.body);
+
       if (response.statusCode == 200) {
         final authResponse = AuthResponse.fromJson(responseData);
         if (authResponse.success && authResponse.token != null) {
@@ -36,9 +37,12 @@ class AuthService extends ChangeNotifier {
         }
         return authResponse;
       } else {
+        print("respnonse, ${responseData}");
         return AuthResponse(
           success: false,
-          message: responseData['message'] ?? 'Login failed',
+          message:
+              responseData['errorMessage'] ??
+              'Username or password is incorrect',
         );
       }
     } catch (e) {
