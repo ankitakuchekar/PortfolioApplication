@@ -1,14 +1,31 @@
 import 'package:flutter/material.dart';
 import '../models/portfolio_model.dart';
-import '../utils/app_colors.dart';
-import '../models/investment.dart';
 
 class ProfitLossCards extends StatelessWidget {
   final PortfolioData portfolioData;
 
   const ProfitLossCards({super.key, required this.portfolioData});
 
+  void _showInfoDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildCard({
+    required BuildContext context,
     required String title,
     required String value,
     required String percentage,
@@ -37,11 +54,17 @@ class ProfitLossCards extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                Tooltip(
-                  message: title == 'Total Profit & Loss'
-                      ? 'Total Profit and Loss shows the net gain or loss from your bullion investments. A positive value indicates a profit, while a negative value indicates a loss.'
-                      : 'Day Profit and Loss shows the net daily change in your bullion investments.',
-                  child: Icon(icon, size: 16, color: textColor),
+                GestureDetector(
+                  onTap: () {
+                    final message = title == 'Total Profit & Loss'
+                        ? 'Total Profit and Loss shows the net gain or loss from your bullion investments. A positive value indicates a profit, while a negative value indicates a loss.'
+                        : 'Day Profit and Loss shows the net daily change in your bullion investments.';
+                    _showInfoDialog(context, title, message);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(icon, size: 16, color: textColor),
+                  ),
                 ),
               ],
             ),
@@ -99,6 +122,7 @@ class ProfitLossCards extends StatelessWidget {
     return Row(
       children: [
         _buildCard(
+          context: context,
           title: 'Total Profit & Loss',
           value: totalProfitDifference > 0
               ? '+\$${totalProfitDifference.toStringAsFixed(2)}'
@@ -114,6 +138,7 @@ class ProfitLossCards extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         _buildCard(
+          context: context,
           title: 'Day Profit & Loss',
           value: dayProfitLoss >= 0
               ? '+\$${dayProfitLoss.toStringAsFixed(2)}'
