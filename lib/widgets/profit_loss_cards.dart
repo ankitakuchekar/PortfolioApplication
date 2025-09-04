@@ -7,12 +7,137 @@ class ProfitLossCards extends StatelessWidget {
   const ProfitLossCards({super.key, required this.portfolioData});
 
   void _showInfoDialog(BuildContext context, String title, String message) {
+    final investment = portfolioData.data[0].investment;
+    final double totalCurrentValue = investment.totalGoldCurrent + investment.totalSilverCurrent;
+    final double totalAcquisitionCost = investment.totalGoldInvested + investment.totalSilverInvested;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: Text(message),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(message),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2D3748),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.calculate,
+                          color: Color(0xFF63B3ED),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Calculated by:',
+                          style: TextStyle(
+                            color: Color(0xFF63B3ED),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    if (title == 'Total Profit & Loss') ...[
+                      RichText(
+                        text: const TextSpan(
+                          style: TextStyle(color: Colors.white, fontSize: 14),
+                          children: [
+                            TextSpan(text: '• Total P/L = ('),
+                            TextSpan(
+                              text: 'Total Current Value',
+                              style: TextStyle(color: Color(0xFF63B3ED)),
+                            ),
+                            TextSpan(text: ' - '),
+                            TextSpan(
+                              text: 'Purchase Cost',
+                              style: TextStyle(color: Color(0xFF63B3ED)),
+                            ),
+                            TextSpan(text: ')'),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      RichText(
+                        text: TextSpan(
+                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                          children: [
+                            const TextSpan(text: '• Total P/L = ('),
+                            TextSpan(
+                              text: totalCurrentValue.toStringAsFixed(2),
+                              style: const TextStyle(color: Color(0xFF68D391)),
+                            ),
+                            const TextSpan(text: ' - '),
+                            TextSpan(
+                              text: totalAcquisitionCost.toStringAsFixed(2),
+                              style: const TextStyle(color: Color(0xFFF56565)),
+                            ),
+                            const TextSpan(text: ')'),
+                          ],
+                        ),
+                      ),
+                    ] else ...[
+                      RichText(
+                        text: const TextSpan(
+                          style: TextStyle(color: Colors.white, fontSize: 14),
+                          children: [
+                            TextSpan(text: '• Day P/L = '),
+                            TextSpan(
+                              text: 'Daily Gold Change',
+                              style: TextStyle(color: Color(0xFF63B3ED)),
+                            ),
+                            TextSpan(text: ' + '),
+                            TextSpan(
+                              text: 'Daily Silver Change',
+                              style: TextStyle(color: Color(0xFF63B3ED)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      RichText(
+                        text: TextSpan(
+                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                          children: [
+                            const TextSpan(text: '• Day P/L = '),
+                            TextSpan(
+                              text: investment.dayGold.toStringAsFixed(2),
+                              style: TextStyle(
+                                color: investment.dayGold >= 0 
+                                    ? const Color(0xFF68D391) 
+                                    : const Color(0xFFF56565),
+                              ),
+                            ),
+                            const TextSpan(text: ' + '),
+                            TextSpan(
+                              text: investment.daySilver.toStringAsFixed(2),
+                              style: TextStyle(
+                                color: investment.daySilver >= 0 
+                                    ? const Color(0xFF68D391) 
+                                    : const Color(0xFFF56565),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
