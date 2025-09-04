@@ -6,7 +6,26 @@ class ValueCostCards extends StatelessWidget {
 
   const ValueCostCards({super.key, required this.portfolioData});
 
+  void _showInfoDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildCard({
+    required BuildContext context,
     required String title,
     required String value,
     required Color backgroundColor,
@@ -33,7 +52,18 @@ class ValueCostCards extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                Icon(icon, size: 16, color: Colors.white),
+                GestureDetector(
+                  onTap: () {
+                    final message = title == 'Current Value'
+                        ? 'Displays the total worth of your holdings based on the latest market prices.'
+                        : 'The Total Purchase Cost shows how much you\'ve spent on your holdings.';
+                    _showInfoDialog(context, title, message);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(icon, size: 16, color: Colors.white),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -63,6 +93,7 @@ class ValueCostCards extends StatelessWidget {
     return Row(
       children: [
         _buildCard(
+          context: context,
           title: 'Current Value',
           value: '\$${totalCurrentValue.toStringAsFixed(2)}',
           backgroundColor: const Color(0xFF6A4CAF),
@@ -70,6 +101,7 @@ class ValueCostCards extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         _buildCard(
+          context: context,
           title: 'Purchase Cost',
           value: '\$${totalAcquisitionCost.toStringAsFixed(2)}',
           backgroundColor: const Color(0xFF3F51B5),
