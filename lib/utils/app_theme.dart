@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 class AppTheme {
@@ -7,6 +8,8 @@ class AppTheme {
       primarySwatch: Colors.blue,
       primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.background,
+      fontFamily: GoogleFonts.lexendDeca().fontFamily,
+      textTheme: GoogleFonts.lexendDecaTextTheme(),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,

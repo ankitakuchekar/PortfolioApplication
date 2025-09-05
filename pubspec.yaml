@@ -48,6 +48,7 @@ dependencies:
   webview_flutter: ^4.2.2  # Or the latest version
   url_launcher: ^6.2.6   
   flutter_launcher_icons: ^0.13.1  # ← Add this line
+  google_fonts: ^6.1.0
 
 flutter_launcher_icons:
   android: true
@@ -112,5 +113,5 @@ flutter_native_splash:
   image: assets/images/bold_logo.png
   android_12:
     color: "#FFFFFF"
-    image: assets/images/bold_logo.png' 
+    image: assets/images/bold_logo.png'  
 
