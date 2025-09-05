@@ -75,6 +75,7 @@ class AuthProvider with ChangeNotifier {
     required String mobile,
     required String password,
     required String screenSize,
+    required String captchaToken,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -88,6 +89,7 @@ class AuthProvider with ChangeNotifier {
         mobile: mobile,
         password: password,
         screenSize: screenSize,
+        captchaToken: captchaToken,
       );
 
       if (response.success) {
