@@ -218,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!_isRecaptchaVerified || _recaptchaToken == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Please complete reCAPTCHA verification'),
+            content: Text('Please complete reCAPTCHA verification by tapping the security button above'),
             backgroundColor: Colors.red,
           ),
         );
@@ -485,31 +485,36 @@ class _LoginScreenState extends State<LoginScreen> {
                           icon: Icons.person_outline,
                           validator: (value) =>
                               nameErrorText(value ?? '', 'First'),
-                          // onFocusChange: (hasFocus) {
-                          //   if (hasFocus && !_isRecaptchaVerified) {
-                          //     _showRecaptcha();
-                          //   }
-                          // },
                         ),
 
                         const SizedBox(height: 8),
                         if (_isRecaptchaVerified)
-                          const Row(
-                            children: [
-                              Icon(
-                                Icons.check_circle,
-                                color: Colors.green,
-                                size: 16,
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                'reCAPTCHA verified',
-                                style: TextStyle(
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.green.withOpacity(0.3)),
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(
+                                  Icons.check_circle,
                                   color: Colors.green,
-                                  fontSize: 12,
+                                  size: 20,
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 12),
+                                Text(
+                                  'reCAPTCHA verified successfully!',
+                                  style: TextStyle(
+                                    color: Colors.green,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         const SizedBox(height: 16),
                         _buildField(
@@ -603,6 +608,31 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
 
                         const SizedBox(height: 16),
+
+                        // reCAPTCHA Button (if not verified)
+                        if (!_isRecaptchaVerified)
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 16),
+                            child: OutlinedButton.icon(
+                              onPressed: _showRecaptcha,
+                              icon: const Icon(Icons.security, color: Color(0xFF00C566)),
+                              label: const Text(
+                                'Complete reCAPTCHA Verification',
+                                style: TextStyle(
+                                  color: Color(0xFF00C566),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Color(0xFF00C566)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
 
                         // Error Message (if any)
                         Consumer<AuthProvider>(
