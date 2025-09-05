@@ -4,7 +4,7 @@ import 'package:bold_portfolio/utils/mobileFormater.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_easy_recaptcha_v2/flutter_easy_recaptcha_v2.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import '../providers/auth_provider.dart';
 import 'main_screen.dart';
 
@@ -189,21 +189,106 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             Expanded(
-              child: RecaptchaV2(
-                apiKey: '6Ld321YdAAAAALuFjmWlaC57ilZQQ4Gp1yQeG8e0',
-                onVerifiedSuccessfully: (token) async {
-                  setState(() {
-                    _recaptchaToken = token;
-                    _isRecaptchaVerified = true;
-                  });
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('reCAPTCHA verified successfully!'),
-                      backgroundColor: Colors.green,
+              child: WebViewWidget(
+                controller: WebViewController()
+                  ..setJavaScriptMode(JavaScriptMode.unrestricted)
+                  ..setNavigationDelegate(
+                    NavigationDelegate(
+                      onPageFinished: (String url) {
+                        // Page loaded
+                      },
                     ),
-                  );
-                },
+                  )
+                  ..addJavaScriptChannel(
+                    'RecaptchaChannel',
+                    onMessageReceived: (JavaScriptMessage message) {
+                      final token = message.message;
+                      if (token.isNotEmpty && token != 'null') {
+                        setState(() {
+                          _recaptchaToken = token;
+                          _isRecaptchaVerified = true;
+                        });
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('reCAPTCHA verified successfully!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
+                    },
+                  )
+                  ..loadHtmlString('''
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+                        <style>
+                            body {
+                                margin: 0;
+                                padding: 20px;
+                                background-color: #1A1E29;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                min-height: 100vh;
+                                font-family: Arial, sans-serif;
+                            }
+                            .recaptcha-container {
+                                background: white;
+                                padding: 20px;
+                                border-radius: 8px;
+                                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                            }
+                            .loading {
+                                color: white;
+                                text-align: center;
+                                font-size: 16px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="recaptcha-container">
+                            <div class="loading" id="loading">Loading reCAPTCHA...</div>
+                            <div class="g-recaptcha" 
+                                 data-sitekey="6Ld321YdAAAAALuFjmWlaC57ilZQQ4Gp1yQeG8e0"
+                                 data-callback="onRecaptchaSuccess"
+                                 data-expired-callback="onRecaptchaExpired"
+                                 data-error-callback="onRecaptchaError">
+                            </div>
+                        </div>
+                        
+                        <script>
+                            function onRecaptchaSuccess(token) {
+                                document.getElementById('loading').style.display = 'none';
+                                if (window.RecaptchaChannel) {
+                                    window.RecaptchaChannel.postMessage(token);
+                                }
+                            }
+                            
+                            function onRecaptchaExpired() {
+                                if (window.RecaptchaChannel) {
+                                    window.RecaptchaChannel.postMessage('expired');
+                                }
+                            }
+                            
+                            function onRecaptchaError() {
+                                if (window.RecaptchaChannel) {
+                                    window.RecaptchaChannel.postMessage('error');
+                                }
+                            }
+                            
+                            // Hide loading text when reCAPTCHA loads
+                            window.addEventListener('load', function() {
+                                setTimeout(function() {
+                                    document.getElementById('loading').style.display = 'none';
+                                }, 2000);
+                            });
+                        </script>
+                    </body>
+                    </html>
+                  '''),
               ),
             ),
           ],
