@@ -39,7 +39,6 @@ dependencies:
   syncfusion_flutter_charts: ^30.2.4
   chart_engine: ^2.1.1
   flutter_typeahead: ^5.2.0
-  flutter_easy_recaptcha_v2: ^0.1.0
   flutter_keyboard_visibility: ^6.0.0
   fluttertoast: ^8.2.4
   image_picker: ^1.1.2
@@ -113,5 +112,5 @@ flutter_native_splash:
   image: assets/images/bold_logo.png
   android_12:
     color: "#FFFFFF"
-    image: assets/images/bold_logo.png'  
+    image: assets/images/bold_logo.png'    
 
