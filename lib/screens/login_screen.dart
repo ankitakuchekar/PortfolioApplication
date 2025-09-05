@@ -260,10 +260,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: 20),
-                      Image.asset(
-                        'assets/images/bold_logo.png',
+                      Image.network(
+                        'https://res.cloudinary.com/bold-pm/image/upload/Graphics/bold-portfolio-app-1.png',
                         width: 180,
                         height: 90,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: 180,
+                            height: 90,
+                            color: Colors.grey[300],
+                            child: const Center(
+                              child: Text(
+                                'BOLD',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 20),
                       Text(
