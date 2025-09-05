@@ -242,11 +242,28 @@ class _SplashScreenState extends State<SplashScreen>
                       // The logo image on top
                       Container(
                         padding: const EdgeInsets.all(12),
-                        child: Image.asset(
-                          'assets/images/bold_logo.png',
+                        child: Image.network(
+                          'https://res.cloudinary.com/bold-pm/image/upload/Graphics/bold-portfolio-app-1.png',
                           width: 150,
                           height: 150,
                           fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 150,
+                              height: 150,
+                              color: Colors.grey[300],
+                              child: const Center(
+                                child: Text(
+                                  'BOLD',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ],

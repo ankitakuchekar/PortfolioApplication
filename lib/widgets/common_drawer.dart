@@ -41,8 +41,8 @@ class CommonDrawer extends StatelessWidget {
                     MainAxisAlignment.center, // centers vertically
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.asset(
-                    'assets/images/bold_logo.png',
+                  Image.network(
+                    'https://res.cloudinary.com/bold-pm/image/upload/Graphics/bold-portfolio-app-1.png',
                     width: 120,
                     height: 60,
                     fit: BoxFit.contain,
