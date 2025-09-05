@@ -215,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleRegister() async {
     if (_formKey.currentState!.validate()) {
       // Check reCAPTCHA verification
-      if (!_isRecaptchaVerified) {
+      if (!_isRecaptchaVerified || _recaptchaToken == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Please complete reCAPTCHA verification'),
@@ -234,6 +234,7 @@ class _LoginScreenState extends State<LoginScreen> {
         mobile: _mobileController.text.trim(),
         password: _regPasswordController.text,
         screenSize: "426, 616",
+        captchaToken: _recaptchaToken!,
       );
 
       if (success && mounted) {

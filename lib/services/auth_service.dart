@@ -91,6 +91,31 @@ class AuthService extends ChangeNotifier {
 
   bool isLoading = false;
 
+  Future<AuthResponse> validateCaptcha(String captchaToken) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/Authentication/ValidateGoogleReCaptcha?captchaResponse=$captchaToken'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return AuthResponse.fromJson(responseData);
+      } else {
+        return AuthResponse(
+          success: false,
+          message: responseData['errorMessage'] ?? 'reCAPTCHA validation failed',
+        );
+      }
+    } catch (e) {
+      return AuthResponse(
+        success: false,
+        message: 'Network error: ${e.toString()}',
+      );
+    }
+  }
+
   Future<AuthResponse> register({
     required String firstName,
     required String lastName,
@@ -98,9 +123,17 @@ class AuthService extends ChangeNotifier {
     required String mobile,
     required String password,
     required String screenSize,
+    required String captchaToken,
   }) async {
     isLoading = true;
     notifyListeners();
+
+    final captchaValidation = await validateCaptcha(captchaToken);
+    if (!captchaValidation.success) {
+      isLoading = false;
+      notifyListeners();
+      return captchaValidation;
+    }
 
     final url = Uri.parse(
       'https://mobile-dev-api.boldpreciousmetals.com/api/Customer/register',
