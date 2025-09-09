@@ -1,9 +1,11 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
+import 'package:bold_portfolio/providers/portfolio_provider.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/services/portfolio_service.dart';
 import 'package:bold_portfolio/widgets/ExitForm.dart';
 import 'package:bold_portfolio/widgets/SellTousForm.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -375,7 +377,8 @@ Future<void> _removeProduct(
 
     if (response.statusCode == 200) {
       Navigator.of(context).pop(); // Close dialog
-      await PortfolioService.fetchCustomerPortfolio(0, '3M');
+      final provider = Provider.of<PortfolioProvider>(context, listen: false);
+      await provider.refreshDataFromAPIs();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Product removed successfully')),
       );

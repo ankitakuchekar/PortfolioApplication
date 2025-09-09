@@ -329,8 +329,9 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
       );
 
       if (response.statusCode == 200) {
-        await PortfolioService.fetchCustomerPortfolio(0, '3M');
-
+        // await PortfolioService.fetchCustomerPortfolio(0, '3M');
+        final provider = Provider.of<PortfolioProvider>(context, listen: false);
+        await provider.refreshDataFromAPIs();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Holding added successfully!')),
         );
@@ -423,7 +424,20 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                         ),
                       ),
                       const SizedBox(height: 12),
-
+                      if (selectedDealer == 'Not Purchased on Bold') ...[
+                        const SizedBox(
+                          height: 12,
+                        ), // optional spacing, based on condition
+                        TextFormField(
+                          controller: dealerNameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Dealer Name *',
+                          ),
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Required'
+                              : null,
+                        ),
+                      ],
                       // Product Field
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -432,20 +446,21 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                             children: [
                               const SizedBox(height: 12),
                               if (selectedDealer == 'Not Purchased on Bold')
-                                GestureDetector(
-                                  onTap: _showStepsPopup,
-                                  child: const Padding(
-                                    padding: EdgeInsets.only(left: 6),
-                                    child: Text(
-                                      '(What if you didn’t find the product?)',
-                                      style: TextStyle(
-                                        color: Colors.blue,
-                                        decoration: TextDecoration.underline,
-                                        fontSize: 13,
-                                      ),
+                                const SizedBox(height: 12),
+                              GestureDetector(
+                                onTap: _showStepsPopup,
+                                child: const Padding(
+                                  padding: EdgeInsets.only(left: 6),
+                                  child: Text(
+                                    '(What if you didn’t find the product?)',
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      decoration: TextDecoration.underline,
+                                      fontSize: 13,
                                     ),
                                   ),
                                 ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 12),
@@ -543,15 +558,6 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
 
                       // Optional fields for Not Purchased on Bold
                       if (selectedDealer == 'Not Purchased on Bold') ...[
-                        TextFormField(
-                          controller: dealerNameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Dealer Name *',
-                          ),
-                          validator: (value) => value == null || value.isEmpty
-                              ? 'Required'
-                              : null,
-                        ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
                           value: selectedProduct?['metal'] ?? 'Silver',

@@ -128,35 +128,33 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(
-            child: Text(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            Text(
               '$label: \$${price.toStringAsFixed(2)}',
-              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,
               ),
             ),
-          ),
-          const SizedBox(width: 6),
-          Icon(
-            isPositive ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-            color: isPositive ? Colors.green : Colors.red,
-            size: 16,
-          ),
-          Text(
-            '\$${change.abs().toStringAsFixed(2)}',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+            Icon(
+              isPositive ? Icons.arrow_drop_up : Icons.arrow_drop_down,
               color: isPositive ? Colors.green : Colors.red,
+              size: 16,
             ),
-          ),
-        ],
+            Text(
+              '\$${change.abs().toStringAsFixed(2)}',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: isPositive ? Colors.green : Colors.red,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
