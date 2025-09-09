@@ -52,18 +52,18 @@ class ValueCostCards extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                GestureDetector(
-                  onTap: () {
-                    final message = title == 'Current Value'
-                        ? 'Displays the total worth of your holdings based on the latest market prices.'
-                        : 'The Total Purchase Cost shows how much you\'ve spent on your holdings.';
-                    _showInfoDialog(context, title, message);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(icon, size: 16, color: Colors.white),
-                  ),
-                ),
+                // GestureDetector(
+                //   onTap: () {
+                //     final message = title == 'Current Value'
+                //         ? 'Displays the total worth of your holdings based on the latest market prices.'
+                //         : 'The Total Purchase Cost shows how much you\'ve spent on your holdings.';
+                //     _showInfoDialog(context, title, message);
+                //   },
+                //   child: Container(
+                //     padding: const EdgeInsets.all(4),
+                //     child: Icon(icon, size: 16, color: Colors.white),
+                //   ),
+                // ),
               ],
             ),
             const SizedBox(height: 8),

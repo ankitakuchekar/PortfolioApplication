@@ -8,8 +8,10 @@ class ProfitLossCards extends StatelessWidget {
 
   void _showInfoDialog(BuildContext context, String title, String message) {
     final investment = portfolioData.data[0].investment;
-    final double totalCurrentValue = investment.totalGoldCurrent + investment.totalSilverCurrent;
-    final double totalAcquisitionCost = investment.totalGoldInvested + investment.totalSilverInvested;
+    final double totalCurrentValue =
+        investment.totalGoldCurrent + investment.totalSilverCurrent;
+    final double totalAcquisitionCost =
+        investment.totalGoldInvested + investment.totalSilverInvested;
 
     showDialog(
       context: context,
@@ -72,7 +74,10 @@ class ProfitLossCards extends StatelessWidget {
                       const SizedBox(height: 8),
                       RichText(
                         text: TextSpan(
-                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
                           children: [
                             const TextSpan(text: '• Total P/L = ('),
                             TextSpan(
@@ -109,14 +114,17 @@ class ProfitLossCards extends StatelessWidget {
                       const SizedBox(height: 8),
                       RichText(
                         text: TextSpan(
-                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
                           children: [
                             const TextSpan(text: '• Day P/L = '),
                             TextSpan(
                               text: investment.dayGold.toStringAsFixed(2),
                               style: TextStyle(
-                                color: investment.dayGold >= 0 
-                                    ? const Color(0xFF68D391) 
+                                color: investment.dayGold >= 0
+                                    ? const Color(0xFF68D391)
                                     : const Color(0xFFF56565),
                               ),
                             ),
@@ -124,8 +132,8 @@ class ProfitLossCards extends StatelessWidget {
                             TextSpan(
                               text: investment.daySilver.toStringAsFixed(2),
                               style: TextStyle(
-                                color: investment.daySilver >= 0 
-                                    ? const Color(0xFF68D391) 
+                                color: investment.daySilver >= 0
+                                    ? const Color(0xFF68D391)
                                     : const Color(0xFFF56565),
                               ),
                             ),
@@ -179,18 +187,18 @@ class ProfitLossCards extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                GestureDetector(
-                  onTap: () {
-                    final message = title == 'Total Profit & Loss'
-                        ? 'Total Profit and Loss shows the net gain or loss from your bullion investments. A positive value indicates a profit, while a negative value indicates a loss.'
-                        : 'Day Profit and Loss shows the net daily change in your bullion investments.';
-                    _showInfoDialog(context, title, message);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(icon, size: 16, color: textColor),
-                  ),
-                ),
+                // GestureDetector(
+                //   onTap: () {
+                //     final message = title == 'Total Profit & Loss'
+                //         ? 'Total Profit and Loss shows the net gain or loss from your bullion investments. A positive value indicates a profit, while a negative value indicates a loss.'
+                //         : 'Day Profit and Loss shows the net daily change in your bullion investments.';
+                //     _showInfoDialog(context, title, message);
+                //   },
+                //   child: Container(
+                //     padding: const EdgeInsets.all(4),
+                //     child: Icon(icon, size: 16, color: textColor),
+                //   ),
+                // ),
               ],
             ),
             const SizedBox(height: 8),

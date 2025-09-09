@@ -122,8 +122,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // Check if investmentData is null and fall back to default
           final investmentData = customerData.investment;
           // Check if portfolioData or its data is null/empty and handle the fallback UI
-          if ((investmentData.customerId == 0 &&
-                  portfolioSettings.customerId == 0) ||
+          if (customerData.productHoldings.length <= 0 ||
               portfolioData == null ||
               portfolioData.data.isEmpty) {
             return Scaffold(
@@ -235,15 +234,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   },
                   isActualPrice: portfolioSettings.showActualPrice,
                 ),
-                Consumer<PortfolioProvider>(
-                  builder: (context, provider, child) {
-                    final spotPriceData = provider.spotPrices;
-                    if (spotPriceData == null) {
-                      return const Center(child: Text('No data available'));
-                    }
-                    return AssetAllocationSection(spotPrices: spotPriceData);
-                  },
-                ),
+                // Consumer<PortfolioProvider>(
+                //   builder: (context, provider, child) {
+                //     final spotPriceData = provider.spotPrices;
+                //     if (spotPriceData == null) {
+                //       return const Center(child: Text('No data available'));
+                //     }
+                //     return AssetAllocationSection(spotPrices: spotPriceData);
+                //   },
+                // ),
                 const SizedBox(height: 16),
                 ProfitLossCards(portfolioData: portfolioData),
                 const SizedBox(height: 16),

@@ -22,7 +22,9 @@ class MetalPortfolioSection extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('The Current Value of Silver shows the total worth of all your silver products combined, based on their latest market prices.'),
+              const Text(
+                'The Current Value of Silver shows the total worth of all your silver products combined, based on their latest market prices.',
+              ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -35,11 +37,7 @@ class MetalPortfolioSection extends StatelessWidget {
                   children: [
                     const Row(
                       children: [
-                        Icon(
-                          Icons.calculate,
-                          color: Colors.white,
-                          size: 20,
-                        ),
+                        Icon(Icons.calculate, color: Colors.white, size: 20),
                         SizedBox(width: 8),
                         Text(
                           'Calculated by:',
@@ -54,7 +52,11 @@ class MetalPortfolioSection extends StatelessWidget {
                     const SizedBox(height: 12),
                     RichText(
                       text: const TextSpan(
-                        style: TextStyle(color: Color(0xFFD1D5DB), fontSize: 14, height: 1.5),
+                        style: TextStyle(
+                          color: Color(0xFFD1D5DB),
+                          fontSize: 14,
+                          height: 1.5,
+                        ),
                         children: [
                           TextSpan(text: '• '),
                           TextSpan(
@@ -68,7 +70,8 @@ class MetalPortfolioSection extends StatelessWidget {
                           ),
                           TextSpan(text: ' '),
                           TextSpan(
-                            text: 'Sum of the Current Value of All Silver Products',
+                            text:
+                                'Sum of the Current Value of All Silver Products',
                             style: TextStyle(color: Color(0xFF63B3ED)),
                           ),
                         ],
@@ -250,17 +253,28 @@ class MetalPortfolioSection extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
-                                "\$${absProfitOrLoss.toStringAsFixed(2)}",
+                                "\$${absProfitOrLoss.toStringAsFixed(2)} ",
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: profitColor,
                                 ),
                               ),
+                              // if (percentageChange != 0)
+                              //   Icon(arrowIcon, size: 14, color: profitColor),
+                              // const SizedBox(width: 4),
+                              // Text(
+                              //   "(${percentageChange.toStringAsFixed(2)}%)",
+                              //   style: TextStyle(
+                              //     fontSize: 12,
+                              //     fontWeight: FontWeight.w600,
+                              //     color: profitColor,
+                              //   ),
+                              // ),
                               const SizedBox(height: 2),
                               Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -316,8 +330,9 @@ class MetalPortfolioSection extends StatelessWidget {
   }
 
   Widget _labelWithIcon(String label, BuildContext context) {
-    final bool isSilverCurrentValue = metalType == "Silver" && label == "Current Value";
-    
+    final bool isSilverCurrentValue =
+        metalType == "Silver" && label == "Current Value";
+
     return Row(
       children: [
         Text(
@@ -325,19 +340,19 @@ class MetalPortfolioSection extends StatelessWidget {
           style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
         ),
         const SizedBox(width: 4),
-        GestureDetector(
-          onTap: isSilverCurrentValue 
-              ? () => _showSilverCurrentValueDialog(context)
-              : null,
-          child: Container(
-            padding: const EdgeInsets.all(4),
-            child: Icon(
-              Icons.info_outline,
-              size: 16,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ),
+        // GestureDetector(
+        //   onTap: isSilverCurrentValue
+        //       ? () => _showSilverCurrentValueDialog(context)
+        //       : null,
+        //   child: Container(
+        //     padding: const EdgeInsets.all(4),
+        //     child: Icon(
+        //       Icons.info_outline,
+        //       size: 16,
+        //       color: AppColors.textSecondary,
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }

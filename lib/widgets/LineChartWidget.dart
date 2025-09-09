@@ -125,7 +125,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      isPredictionView ? 'View Historical' : 'View Prediction',
+                      isPredictionView ? 'View Prediction' : 'View Prediction',
                       style: const TextStyle(
                         color: Colors.blue,
                         fontWeight: FontWeight.bold,
