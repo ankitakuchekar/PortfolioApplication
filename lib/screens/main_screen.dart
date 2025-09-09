@@ -27,12 +27,12 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<PortfolioProvider>(
-        context,
-        listen: false,
-      ).loadPortfolioData();
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   Provider.of<PortfolioProvider>(
+    //     context,
+    //     listen: false,
+    //   ).loadPortfolioData();
+    // });
   }
 
   void _onNavigationTap(int index) {

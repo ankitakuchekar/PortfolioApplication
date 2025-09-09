@@ -41,30 +41,17 @@ class _GraphsScreenState extends State<GraphsScreen> {
   final List<String> timePeriods = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'];
 
   // Method to fetch the portfolio data when the frequency changes
-  Future<void> fetchPortfolioData() async {
-    setState(() {
-      isLoading = true;
-    });
 
+  Future<void> fetchChartData() async {
     try {
-      final portfolioData = await PortfolioService.fetchCustomerPortfolio(
-        0,
-        frequency,
+      final provider = Provider.of<PortfolioProvider>(context, listen: false);
+      await provider
+          .refreshDataFromAPIs(); // Or refreshDataFromAPIs() depending on what you want
+    } catch (error) {
+      debugPrint('Error fetching chart data: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to fetch chart data')),
       );
-      // Update portfolio provider with new data after fetching
-      Provider.of<PortfolioProvider>(
-        context,
-        listen: false,
-      ).updatePortfolioData(portfolioData);
-    } catch (e) {
-      // Handle any errors if the API call fails
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
     }
   }
 
@@ -94,7 +81,6 @@ class _GraphsScreenState extends State<GraphsScreen> {
       return 'Gold'; // Default fallback
     }
   }
-
 
   // Method to toggle the chart view and call the API
   void _toggleChartType(bool value) async {
@@ -139,7 +125,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
         print("API call successful");
 
         // Call the fetchPortfolioData after a successful response
-        fetchPortfolioData();
+        fetchChartData();
       } else {
         // If the response is not successful, handle the error
         throw Exception('Failed to update portfolio settings');

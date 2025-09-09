@@ -238,7 +238,6 @@ class ProfitLossCards extends StatelessWidget {
     final double totalProfitDifference = (difference < 0)
         ? -difference
         : difference;
-
     final double percentDifference = totalAcquisitionCost > 0
         ? (totalProfitDifference / totalAcquisitionCost) * 100
         : 0;
@@ -257,13 +256,11 @@ class ProfitLossCards extends StatelessWidget {
         _buildCard(
           context: context,
           title: 'Total Profit & Loss',
-          value: totalProfitDifference > 0
-              ? '+\$${totalProfitDifference.toStringAsFixed(2)}'
-              : '-\$${totalProfitDifference.abs().toStringAsFixed(2)}',
+          value: difference.toStringAsFixed(2),
           percentage: percentDifference > 0
               ? '+${percentDifference.toStringAsFixed(2)}%'
               : '-${percentDifference.abs().toStringAsFixed(2)}%',
-          backgroundColor: totalProfitDifference > 0
+          backgroundColor: difference > 0
               ? const Color(0xFF16A34A)
               : const Color(0xFFDC2626),
           textColor: Colors.white,

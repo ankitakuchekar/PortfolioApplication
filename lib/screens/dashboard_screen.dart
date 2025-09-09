@@ -58,7 +58,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     try {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
       await provider
-          .loadPortfolioData(); // Or refreshDataFromAPIs() depending on what you want
+          .refreshDataFromAPIs(); // Or refreshDataFromAPIs() depending on what you want
     } catch (error) {
       debugPrint('Error fetching chart data: $error');
       ScaffoldMessenger.of(context).showSnackBar(
