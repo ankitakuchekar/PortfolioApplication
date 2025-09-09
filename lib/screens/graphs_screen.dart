@@ -29,6 +29,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
   String frequency = '3M'; // Default frequency set to '3M'
   bool isLoading = false; // Flag to show loading indicator
   bool _isPredictionView = false; // Add state to manage the chart view
+  bool _isPredictionToggleLoading = false; // Add state to track prediction toggle loading
 
   final List<String> tabOptions = [
     'Candle Chart', // Added new tab
@@ -100,6 +101,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
   void _toggleChartType(bool value) async {
     setState(() {
       _isPredictionView = value;
+      _isPredictionToggleLoading = true; // Set loading state
     });
 
     // API request data based on the current toggle state
@@ -139,7 +141,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
         print("API call successful");
 
         // Call the fetchPortfolioData after a successful response
-        fetchPortfolioData();
+        await fetchPortfolioData();
       } else {
         // If the response is not successful, handle the error
         throw Exception('Failed to update portfolio settings');
@@ -149,6 +151,10 @@ class _GraphsScreenState extends State<GraphsScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error: ${error.toString()}')));
+    } finally {
+      setState(() {
+        _isPredictionToggleLoading = false; // Clear loading state
+      });
     }
   }
 
@@ -315,6 +321,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
                             metalInOuncesData: metalInOuncesData,
                             onToggleView: _toggleChartType,
                             isPredictionView: _isPredictionView,
+                            isToggleLoading: _isPredictionToggleLoading,
                             isGoldView: selectedTab == 'Gold Holdings',
                             isTotalHoldingsView:
                                 selectedTab == 'Total Holdings',
