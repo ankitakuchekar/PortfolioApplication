@@ -7,7 +7,6 @@ class MetalHoldingsLineChart extends StatelessWidget {
   final List<MetalInOunces> metalInOuncesData;
   final ValueChanged<bool> onToggleView;
   final bool isPredictionView;
-  final bool isToggleLoading;
   final bool isGoldView; // Flag to distinguish between gold and silver
   final bool isTotalHoldingsView; // Flag for total holdings
   final String selectedTab;
@@ -17,7 +16,6 @@ class MetalHoldingsLineChart extends StatelessWidget {
     required this.metalInOuncesData,
     required this.onToggleView,
     required this.isPredictionView,
-    required this.isToggleLoading,
     required this.isGoldView, // Flag to determine if it's gold or silver
     required this.isTotalHoldingsView, // Flag to handle total holdings
     required this.selectedTab, // Selected tab for dynamic label
@@ -133,26 +131,10 @@ class MetalHoldingsLineChart extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      width: 52,
-                      height: 30,
-                      child: isToggleLoading
-                          ? const Center(
-                              child: SizedBox(
-                                height: 18,
-                                width: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.blue,
-                                ),
-                              ),
-                            )
-                          : Switch(
-                              value: isPredictionView,
-                              onChanged: onToggleView,
-                              activeColor: Colors.blue,
-                            ),
+                    Switch(
+                      value: isPredictionView,
+                      onChanged: onToggleView,
+                      activeColor: Colors.blue,
                     ),
                   ],
                 ),
