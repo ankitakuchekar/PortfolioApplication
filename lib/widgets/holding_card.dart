@@ -13,12 +13,19 @@ import 'package:http/http.dart' as http;
 
 class HoldingCard extends StatelessWidget {
   final ProductHolding holding;
+  final bool showActualPrice;
 
-  const HoldingCard({super.key, required this.holding});
+  const HoldingCard({
+    super.key,
+    required this.holding,
+    required this.showActualPrice,
+  });
 
   @override
   Widget build(BuildContext context) {
     final profit = holding.currentMetalValue - holding.avgPrice;
+    String selectedImage =
+        "https://res.cloudinary.com/bold-pm/image/upload/q_auto:good/Graphics/no_img_preview_product.png";
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -33,12 +40,30 @@ class HoldingCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Image on left
-              Image.network(
-                holding.productImage,
-                height: 70,
-                width: 70,
-                fit: BoxFit.cover,
-              ),
+              (holding.productImage ?? selectedImage) != null &&
+                      (holding.productImage ?? selectedImage)!.isNotEmpty
+                  ? Image.network(
+                      holding.productImage ?? selectedImage!,
+                      height: 70,
+                      width: 70,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.broken_image,
+                        ); // fallback on image load failure
+                      },
+                    )
+                  : Image.network(
+                      selectedImage!,
+                      height: 70,
+                      width: 70,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.broken_image,
+                        ); // fallback on image load failure
+                      },
+                    ),
 
               const SizedBox(width: 10),
 
@@ -118,7 +143,11 @@ class HoldingCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Approx. Current Price"),
+              Text(
+                this.showActualPrice
+                    ? "Approx. Current Price"
+                    : 'Approx. Metal Value',
+              ),
               Text("\$${holding.currentMetalValue.toStringAsFixed(2)}"),
             ],
           ),

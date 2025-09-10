@@ -303,7 +303,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!_isRecaptchaVerified || _recaptchaToken == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Please complete reCAPTCHA verification by tapping the security button above'),
+            content: Text(
+              'Please complete reCAPTCHA verification by tapping the security button above',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -397,8 +399,21 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: _usernameController,
                           style: const TextStyle(color: Colors.black),
                           decoration: InputDecoration(
-                            labelText: 'Username or E-mail',
-                            labelStyle: const TextStyle(color: Colors.black),
+                            label: RichText(
+                              text: TextSpan(
+                                text: 'Username or E-mail',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: ' *',
+                                    style: const TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            ),
                             prefixIcon: const Icon(
                               Icons.email,
                               color: Colors.black,
@@ -409,6 +424,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
+
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your email';
@@ -425,7 +441,21 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: const TextStyle(color: Colors.black),
                           obscureText: _obscurePassword,
                           decoration: InputDecoration(
-                            labelText: 'Password',
+                            label: RichText(
+                              text: TextSpan(
+                                text: 'Password',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: ' *',
+                                    style: const TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            ),
                             labelStyle: const TextStyle(color: Colors.black),
                             prefixIcon: const Icon(
                               Icons.lock,
@@ -570,6 +600,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           icon: Icons.person_outline,
                           validator: (value) =>
                               nameErrorText(value ?? '', 'First'),
+                          isRequired: true,
                         ),
 
                         const SizedBox(height: 8),
@@ -580,7 +611,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             decoration: BoxDecoration(
                               color: Colors.green.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.green.withOpacity(0.3)),
+                              border: Border.all(
+                                color: Colors.green.withOpacity(0.3),
+                              ),
                             ),
                             child: const Row(
                               children: [
@@ -608,6 +641,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           icon: Icons.person_outline,
                           validator: (value) =>
                               nameErrorText(value ?? '', 'Last'),
+                          isRequired: true,
                         ),
                         const SizedBox(height: 16),
                         _buildField(
@@ -615,32 +649,59 @@ class _LoginScreenState extends State<LoginScreen> {
                           label: 'E-mail',
                           icon: Icons.email_outlined,
                           validator: (v) => emailErrorText(v ?? ''),
+                          isRequired: true,
                         ),
                         const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _mobileController,
-                          keyboardType: TextInputType.phone,
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(14),
-                            PhoneNumberFormatter(),
-                          ],
-                          validator: validateMobileNumber,
-                          style: const TextStyle(color: Colors.black),
-                          decoration: InputDecoration(
-                            labelText: 'Mobile No.',
-                            labelStyle: const TextStyle(color: Colors.black),
-                            prefixIcon: const Icon(
-                              Icons.phone_outlined,
-                              color: Colors.black,
-                            ),
-                            filled: true,
-                            fillColor: const Color.fromARGB(255, 237, 239, 245),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
+                        Builder(
+                          builder: (context) {
+                            final baseStyle = Theme.of(context)
+                                .textTheme
+                                .bodyLarge
+                                ?.copyWith(fontSize: 16, color: Colors.black);
 
+                            return TextFormField(
+                              controller: _mobileController,
+                              keyboardType: TextInputType.phone,
+                              inputFormatters: [
+                                LengthLimitingTextInputFormatter(14),
+                                PhoneNumberFormatter(),
+                              ],
+                              validator: validateMobileNumber,
+                              style: const TextStyle(color: Colors.black),
+                              decoration: InputDecoration(
+                                label: RichText(
+                                  text: TextSpan(
+                                    text: 'Mobile No.',
+                                    style: baseStyle,
+                                    children: [
+                                      TextSpan(
+                                        text: ' *',
+                                        style: baseStyle?.copyWith(
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                labelStyle: baseStyle,
+                                prefixIcon: const Icon(
+                                  Icons.phone_outlined,
+                                  color: Colors.black,
+                                ),
+                                filled: true,
+                                fillColor: const Color.fromARGB(
+                                  255,
+                                  237,
+                                  239,
+                                  245,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _regPasswordController,
@@ -666,17 +727,39 @@ class _LoginScreenState extends State<LoginScreen> {
                             return null;
                           },
                           decoration: InputDecoration(
-                            labelText: 'Password',
+                            label: Builder(
+                              builder: (context) {
+                                final baseStyle = Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.copyWith(
+                                      fontSize: 16,
+                                      color: Colors.black,
+                                    );
+                                return RichText(
+                                  text: TextSpan(
+                                    text: 'Password',
+                                    style: baseStyle,
+                                    children: const [
+                                      TextSpan(
+                                        text: ' *',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                             prefixIcon: const Icon(
                               Icons.lock,
                               color: Colors.black,
                             ),
-                            labelStyle: const TextStyle(color: Colors.black),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword
                                     ? Icons.visibility_off
                                     : Icons.visibility,
+                                color: Colors.black,
                               ),
                               onPressed: () {
                                 setState(() {
@@ -701,7 +784,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             margin: const EdgeInsets.only(bottom: 16),
                             child: OutlinedButton.icon(
                               onPressed: _showRecaptcha,
-                              icon: const Icon(Icons.security, color: Color(0xFF00C566)),
+                              icon: const Icon(
+                                Icons.security,
+                                color: Color(0xFF00C566),
+                              ),
                               label: const Text(
                                 'Complete reCAPTCHA Verification',
                                 style: TextStyle(
@@ -710,11 +796,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Color(0xFF00C566)),
+                                side: const BorderSide(
+                                  color: Color(0xFF00C566),
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                               ),
                             ),
                           ),
@@ -843,20 +933,43 @@ class _LoginScreenState extends State<LoginScreen> {
     required String label,
     required IconData icon,
     String? Function(String?)? validator,
+    double fontSize = 16,
+    bool isRequired = false,
   }) {
-    return TextFormField(
-      controller: controller,
-      validator:
-          validator ?? (v) => (v == null || v.isEmpty) ? 'Required' : null,
-      style: const TextStyle(color: Colors.black),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.black),
-        prefixIcon: Icon(icon, color: Colors.black),
-        filled: true,
-        fillColor: const Color.fromARGB(255, 237, 239, 245),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-      ),
+    return Builder(
+      builder: (ctx) {
+        final baseStyle = Theme.of(ctx).textTheme.bodyLarge?.copyWith(
+          fontSize: fontSize,
+          color: Colors.black,
+        );
+
+        return TextFormField(
+          controller: controller,
+          validator:
+              validator ?? (v) => (v == null || v.isEmpty) ? 'Required' : null,
+          style: TextStyle(color: Colors.black, fontSize: fontSize),
+          decoration: InputDecoration(
+            label: RichText(
+              text: TextSpan(
+                text: label,
+                style: baseStyle,
+                children: isRequired
+                    ? [
+                        TextSpan(
+                          text: ' *',
+                          style: baseStyle?.copyWith(color: Colors.red),
+                        ),
+                      ]
+                    : [],
+              ),
+            ),
+            prefixIcon: Icon(icon, color: Colors.black),
+            filled: true,
+            fillColor: const Color.fromARGB(255, 237, 239, 245),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      },
     );
   }
 
@@ -867,26 +980,53 @@ class _LoginScreenState extends State<LoginScreen> {
     required IconData icon,
     String? Function(String?)? validator,
     Function(bool)? onFocusChange,
+    bool isRequired = true,
+    double fontSize = 16,
   }) {
     return Focus(
       onFocusChange: onFocusChange,
-      child: TextFormField(
-        controller: controller,
-        focusNode: focusNode,
-        validator:
-            validator ?? (v) => (v == null || v.isEmpty) ? 'Required' : null,
-        style: const TextStyle(color: Colors.black),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(color: Colors.black),
-          prefixIcon: Icon(icon, color: Colors.black),
-          suffixIcon: _isRecaptchaVerified && focusNode == _firstNameFocusNode
-              ? const Icon(Icons.verified, color: Colors.green)
-              : null,
-          filled: true,
-          fillColor: const Color.fromARGB(255, 237, 239, 245),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        ),
+      child: Builder(
+        builder: (ctx) {
+          final baseStyle = Theme.of(ctx).textTheme.bodyLarge?.copyWith(
+            fontSize: fontSize,
+            color: Colors.black,
+          );
+
+          return TextFormField(
+            controller: controller,
+            focusNode: focusNode,
+            validator:
+                validator ??
+                (v) => (v == null || v.isEmpty) ? 'Required' : null,
+            style: TextStyle(color: Colors.black, fontSize: fontSize),
+            decoration: InputDecoration(
+              label: RichText(
+                text: TextSpan(
+                  text: label,
+                  style: baseStyle,
+                  children: isRequired
+                      ? [
+                          TextSpan(
+                            text: ' *',
+                            style: baseStyle?.copyWith(color: Colors.red),
+                          ),
+                        ]
+                      : [],
+                ),
+              ),
+              prefixIcon: Icon(icon, color: Colors.black),
+              suffixIcon:
+                  _isRecaptchaVerified && focusNode == _firstNameFocusNode
+                  ? const Icon(Icons.verified, color: Colors.green)
+                  : null,
+              filled: true,
+              fillColor: const Color.fromARGB(255, 237, 239, 245),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

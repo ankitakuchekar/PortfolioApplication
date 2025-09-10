@@ -27,7 +27,6 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,6 +37,13 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
         builder: (context, portfolioProvider, child) {
           final holdingData =
               portfolioProvider.portfolioData?.data[0].productHoldings;
+          final showActualPrice =
+              portfolioProvider
+                  .portfolioData
+                  ?.data[0]
+                  .portfolioSettings
+                  .showActualPrice ??
+              false;
           final filteredHoldings = holdingData?.where((holding) {
             final query = _searchController.text.toLowerCase();
             final matchesSearch = holding.assetList.toLowerCase().contains(
@@ -183,7 +189,10 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                           final holding = filteredHoldings![index];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12),
-                            child: HoldingCard(holding: holding),
+                            child: HoldingCard(
+                              holding: holding,
+                              showActualPrice: showActualPrice,
+                            ),
                           );
                         },
                       ),

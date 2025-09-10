@@ -151,7 +151,18 @@ class _ExitFormState extends State<ExitForm> {
           const SizedBox(height: 20),
 
           // Sold Cost
-          const Text("Sold Cost (Per Unit) *"),
+          RichText(
+            text: const TextSpan(
+              text: 'Sold Cost (Per Unit)',
+              style: TextStyle(color: Colors.black),
+              children: [
+                TextSpan(
+                  text: ' *',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 6),
           TextFormField(
             controller: soldCostController,
@@ -164,7 +175,18 @@ class _ExitFormState extends State<ExitForm> {
           const SizedBox(height: 16),
 
           // Qty
-          const Text("Qty *"),
+          RichText(
+            text: const TextSpan(
+              text: 'Qty',
+              style: TextStyle(color: Colors.black),
+              children: [
+                TextSpan(
+                  text: ' *',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 6),
           TextFormField(
             controller: qtyController,
@@ -177,7 +199,18 @@ class _ExitFormState extends State<ExitForm> {
           const SizedBox(height: 16),
 
           // Sold On Date
-          const Text("Sold On *"),
+          RichText(
+            text: const TextSpan(
+              text: 'Sold On',
+              style: TextStyle(color: Colors.black),
+              children: [
+                TextSpan(
+                  text: ' *',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 6),
           TextFormField(
             controller: soldDateController,

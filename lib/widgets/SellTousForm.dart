@@ -327,7 +327,19 @@ class _SellFormState extends State<SellForm> {
           const SizedBox(height: 20),
 
           // Quantity
-          const Text("Qty *"),
+          RichText(
+            text: const TextSpan(
+              text: 'Qty',
+              style: TextStyle(color: Colors.black),
+              children: [
+                TextSpan(
+                  text: ' *',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 6),
           TextFormField(
             controller: _quantityController,
@@ -340,7 +352,19 @@ class _SellFormState extends State<SellForm> {
           const SizedBox(height: 16),
 
           // Product Condition
-          const Text("Product Condition *"),
+          RichText(
+            text: const TextSpan(
+              text: 'Product Condition',
+              style: TextStyle(color: Colors.black),
+              children: [
+                TextSpan(
+                  text: ' *',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 6),
           InkWell(
             onTap: _showConditionDialog,

@@ -128,9 +128,23 @@ class _FeedbackPopupState extends State<FeedbackPopup> {
             SizedBox(height: 20),
 
             /// Feedback text input
-            Text(
-              "Your Feedback *",
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: 'Your Feedback ',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  TextSpan(
+                    text: '*',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Colors.red,
+                    ),
+                  ),
+                ],
+              ),
             ),
             SizedBox(height: 8),
             TextField(

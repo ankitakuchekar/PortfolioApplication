@@ -419,8 +419,22 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                           spotPriceController.clear();
                           premiumCostController.clear();
                         }),
-                        decoration: const InputDecoration(
-                          labelText: 'Dealer *',
+                        decoration: InputDecoration(
+                          label: RichText(
+                            text: const TextSpan(
+                              text: 'Dealer',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: ' *',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -430,9 +444,24 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                         ), // optional spacing, based on condition
                         TextFormField(
                           controller: dealerNameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Dealer Name *',
+                          decoration: InputDecoration(
+                            label: RichText(
+                              text: const TextSpan(
+                                text: 'Dealer Name',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: ' *',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
+
                           validator: (value) => value == null || value.isEmpty
                               ? 'Required'
                               : null,
@@ -445,22 +474,24 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                           Row(
                             children: [
                               const SizedBox(height: 12),
-                              if (selectedDealer == 'Not Purchased on Bold')
+                              if (selectedDealer ==
+                                  'Not Purchased on Bold') ...[
                                 const SizedBox(height: 12),
-                              GestureDetector(
-                                onTap: _showStepsPopup,
-                                child: const Padding(
-                                  padding: EdgeInsets.only(left: 6),
-                                  child: Text(
-                                    '(What if you didn’t find the product?)',
-                                    style: TextStyle(
-                                      color: Colors.blue,
-                                      decoration: TextDecoration.underline,
-                                      fontSize: 13,
+                                GestureDetector(
+                                  onTap: _showStepsPopup,
+                                  child: const Padding(
+                                    padding: EdgeInsets.only(left: 6),
+                                    child: Text(
+                                      '(What if you didn’t find the product?)',
+                                      style: TextStyle(
+                                        color: Colors.blue,
+                                        decoration: TextDecoration.underline,
+                                        fontSize: 13,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
+                              ],
                             ],
                           ),
                           const SizedBox(height: 12),
@@ -468,7 +499,21 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                             controller: productController,
                             focusNode: _productFocusNode,
                             decoration: InputDecoration(
-                              hintText: 'Product name',
+                              label: RichText(
+                                text: const TextSpan(
+                                  text: 'Product name',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: ' *',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ],
+                                ),
+                              ),
                               suffixIcon: isSearching
                                   ? const Padding(
                                       padding: EdgeInsets.all(10),
@@ -482,6 +527,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                     )
                                   : null,
                             ),
+
                             validator: (value) => value == null || value.isEmpty
                                 ? 'Required'
                                 : null,
@@ -523,6 +569,8 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                     selectedProduct = prod;
                                     searchResults.clear();
                                     isSearching = false;
+                                    selectedProduct?['ouncesPerUnit'] =
+                                        prod['ounces'] ?? '';
                                   });
                                   _productFocusNode.unfocus();
                                   Future.delayed(
@@ -544,9 +592,24 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                       TextFormField(
                         controller: purchaseCostController,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Purchase Cost (Per Unit) *',
+                        decoration: InputDecoration(
+                          label: RichText(
+                            text: const TextSpan(
+                              text: 'Purchase Cost (Per Unit)',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: ' *',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
+
                         validator: (value) =>
                             value == null || value.isEmpty ? 'Required' : null,
                         onChanged: (_) {
@@ -575,9 +638,24 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                               };
                             });
                           },
-                          decoration: const InputDecoration(
-                            labelText: 'Metal *',
+                          decoration: InputDecoration(
+                            label: RichText(
+                              text: const TextSpan(
+                                text: 'Metal',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: ' *',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
+
                           validator: (value) => value == null || value.isEmpty
                               ? 'Required'
                               : null,
@@ -590,9 +668,24 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                 initialValue:
                                     (selectedProduct?['ouncesPerUnit'] ?? 0)
                                         .toString(),
-                                decoration: const InputDecoration(
-                                  labelText: 'Ounces Per Unit *',
+                                decoration: InputDecoration(
+                                  label: RichText(
+                                    text: const TextSpan(
+                                      text: 'Ounces Per Unit',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: ' *',
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
+
                                 keyboardType: TextInputType.number,
                                 onChanged: (val) {
                                   setState(() {
@@ -615,9 +708,29 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                               child: TextFormField(
                                 controller: purchaseCostController,
                                 keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
-                                  labelText: 'Purchase Cost (Per Unit) *',
+                                decoration: InputDecoration(
+                                  label: RichText(
+                                    text: const TextSpan(
+                                      text: 'Purchase Cost (Per Unit)',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: ' *',
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
+
+                                onChanged: (_) {
+                                  if (purchaseDate != null &&
+                                      selectedProduct != null)
+                                    getPremiumPrice();
+                                },
                                 validator: (value) =>
                                     value == null || value.isEmpty
                                     ? 'Required'
@@ -635,9 +748,24 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                           Expanded(
                             child: TextFormField(
                               controller: qtyController,
-                              decoration: const InputDecoration(
-                                labelText: 'Qty *',
+                              decoration: InputDecoration(
+                                label: RichText(
+                                  text: const TextSpan(
+                                    text: 'Qty',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                    ),
+                                    children: [
+                                      TextSpan(
+                                        text: ' *',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
+
                               keyboardType: TextInputType.number,
                               validator: (val) => val == null || val.isEmpty
                                   ? 'Required'
@@ -670,12 +798,47 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                         ? ''
                                         : '${purchaseDate!.month.toString().padLeft(2, '0')}/${purchaseDate!.day.toString().padLeft(2, '0')}/${purchaseDate!.year}',
                                   ),
-                                  decoration: const InputDecoration(
-                                    labelText: 'Purchase Date (MM/DD/YYYY) *',
-                                    hintText: 'MM/DD/YYYY',
-                                  ),
                                   validator: (_) =>
                                       purchaseDate == null ? 'Required' : null,
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                  ),
+                                  decoration: InputDecoration(
+                                    label: RichText(
+                                      text: const TextSpan(
+                                        text: 'Purchase Date',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.normal, // bold
+                                          fontSize: 16,
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: ' *',
+                                            style: TextStyle(color: Colors.red),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    hintText: 'mm/dd/yyyy',
+                                    hintStyle: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 14,
+                                    ),
+                                    prefixIcon: const Icon(
+                                      Icons.calendar_today_outlined,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                      horizontal: 12,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
