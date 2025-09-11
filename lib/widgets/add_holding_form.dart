@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import '../providers/portfolio_provider.dart';
@@ -283,8 +284,13 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
     if (!_formKey.currentState!.validate()) return;
 
     if (selectedProduct == null && selectedDealer == 'Bold Precious Metals') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a product from the list.')),
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text('Please select a product from the list.')),
+      // );
+      Fluttertoast.showToast(
+        msg: "Please select a product from the list.",
+        backgroundColor: Colors.grey,
+        textColor: Colors.white,
       );
       return;
     }
@@ -332,8 +338,10 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
         // await PortfolioService.fetchCustomerPortfolio(0, '3M');
         final provider = Provider.of<PortfolioProvider>(context, listen: false);
         await provider.refreshDataFromAPIs();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Holding added successfully!')),
+        Fluttertoast.showToast(
+          msg: "Holding added successfully!",
+          backgroundColor: Colors.grey,
+          textColor: Colors.black,
         );
 
         if (closeOnSuccess) {
@@ -349,8 +357,10 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
           // Reset dropdowns, selections, etc., as needed
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add holding: ${response.body}')),
+        Fluttertoast.showToast(
+          msg: "Failed to add holding ",
+          backgroundColor: Colors.grey,
+          textColor: Colors.black,
         );
       }
     } catch (e) {

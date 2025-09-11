@@ -101,6 +101,7 @@ class _ExitFormState extends State<ExitForm> {
           backgroundColor: Colors.green,
           textColor: Colors.white,
         );
+        Navigator.pop(context); // Close bottom sheet
       } else {
         String errorMessage = "Failed to exit holding.";
 

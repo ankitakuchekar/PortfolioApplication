@@ -44,6 +44,13 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                   .portfolioSettings
                   .showActualPrice ??
               false;
+          final showMetalPrice =
+              portfolioProvider
+                  .portfolioData
+                  ?.data[0]
+                  .portfolioSettings
+                  .showMetalPrice ??
+              false;
           final filteredHoldings = holdingData?.where((holding) {
             final query = _searchController.text.toLowerCase();
             final matchesSearch = holding.assetList.toLowerCase().contains(
@@ -192,6 +199,7 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                             child: HoldingCard(
                               holding: holding,
                               showActualPrice: showActualPrice,
+                              showMetalPrice: showMetalPrice,
                             ),
                           );
                         },

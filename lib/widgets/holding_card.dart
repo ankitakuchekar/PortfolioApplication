@@ -1,31 +1,57 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/providers/portfolio_provider.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
-import 'package:bold_portfolio/services/portfolio_service.dart';
 import 'package:bold_portfolio/widgets/ExitForm.dart';
 import 'package:bold_portfolio/widgets/SellTousForm.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
-
 import 'package:http/http.dart' as http;
 
-class HoldingCard extends StatelessWidget {
+class HoldingCard extends StatefulWidget {
   final ProductHolding holding;
   final bool showActualPrice;
+  final bool showMetalPrice;
 
   const HoldingCard({
-    super.key,
+    Key? key,
     required this.holding,
     required this.showActualPrice,
-  });
+    required this.showMetalPrice,
+  }) : super(key: key);
+
+  @override
+  _HoldingCardState createState() => _HoldingCardState();
+}
+
+class _HoldingCardState extends State<HoldingCard> {
+  bool showPercentage = false;
+
+  void toggleDisplay() {
+    setState(() {
+      showPercentage = !showPercentage;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final profit = holding.currentMetalValue - holding.avgPrice;
-    String selectedImage =
+    final profit = widget.holding.currentMetalValue - widget.holding.avgPrice;
+    final selectedImage =
         "https://res.cloudinary.com/bold-pm/image/upload/q_auto:good/Graphics/no_img_preview_product.png";
+
+    final double gainLossValue =
+        widget.holding.currentMetalValue - widget.holding.pastMetalValue;
+
+    final double gainLossPercentage = widget.holding.pastMetalValue == 0
+        ? 0
+        : ((gainLossValue / widget.holding.pastMetalValue) * 100);
+
+    final Color valueColor = gainLossValue == 0
+        ? Colors.grey
+        : gainLossValue > 0
+        ? Colors.green
+        : Colors.red;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -39,57 +65,36 @@ class HoldingCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image on left
-              (holding.productImage ?? selectedImage) != null &&
-                      (holding.productImage ?? selectedImage)!.isNotEmpty
-                  ? Image.network(
-                      holding.productImage ?? selectedImage!,
-                      height: 70,
-                      width: 70,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          Icons.broken_image,
-                        ); // fallback on image load failure
-                      },
-                    )
-                  : Image.network(
-                      selectedImage!,
-                      height: 70,
-                      width: 70,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          Icons.broken_image,
-                        ); // fallback on image load failure
-                      },
-                    ),
-
+              Image.network(
+                widget.holding.productImage?.isNotEmpty == true
+                    ? widget.holding.productImage!
+                    : selectedImage,
+                height: 70,
+                width: 70,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(Icons.broken_image);
+                },
+              ),
               const SizedBox(width: 10),
-
-              // Text details on right
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Product name with underline
                     Text(
-                      holding.assetList,
+                      widget.holding.assetList,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                         decoration: TextDecoration.underline,
                       ),
                     ),
-
                     const SizedBox(height: 10),
-
-                    // Qty, weight, and date using Column instead of RichText
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Qty: ${holding.totalQtyOrdered ?? 1}",
+                          "Qty: ${widget.holding.totalQtyOrdered ?? 1}",
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
@@ -99,7 +104,7 @@ class HoldingCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "Total Weight: ${holding.weight.toStringAsFixed(2)} oz",
+                          "Total Weight: ${widget.holding.weight.toStringAsFixed(2)} oz",
                           style: const TextStyle(
                             fontSize: 14,
                             height: 1.4,
@@ -108,7 +113,7 @@ class HoldingCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "${holding.orderDate.toIso8601String().split('T')[0]}",
+                          "${widget.holding.orderDate.toIso8601String().split('T')[0]}",
                           style: const TextStyle(
                             fontSize: 14,
                             height: 1.4,
@@ -122,79 +127,105 @@ class HoldingCard extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 16),
 
-          // Price details in two columns
+          // Price details
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text("Average Unit Price"),
-              Text("\$${holding.avgPrice.toStringAsFixed(2)}"),
+              Text("\$${widget.holding.avgPrice.toStringAsFixed(2)}"),
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Actual Purchase Price"),
-              Text("\$${holding.avgPrice.toStringAsFixed(2)}"),
+              if (widget.showActualPrice)
+                const Text(
+                  "Actual Purchase Price",
+                  style: TextStyle(color: Colors.black),
+                ),
+              if (widget.showMetalPrice)
+                const Text(
+                  "Purchase Metal Value",
+                  style: TextStyle(color: Colors.black),
+                ),
+              Text("\$${widget.holding.pastMetalValue.toStringAsFixed(2)}"),
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                this.showActualPrice
+                widget.showActualPrice
                     ? "Approx. Current Price"
                     : 'Approx. Metal Value',
               ),
-              Text("\$${holding.currentMetalValue.toStringAsFixed(2)}"),
+              Text("\$${widget.holding.currentMetalValue.toStringAsFixed(2)}"),
             ],
           ),
+
+          // Profit / Loss toggle
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: const [
-                  Text("Profit/Loss "),
-                  Icon(Icons.swap_vert, size: 18),
-                ],
+              GestureDetector(
+                onTap: toggleDisplay,
+                child: Row(
+                  children: const [
+                    Text(
+                      "Profit/Loss ",
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    Icon(Icons.swap_vert, size: 18),
+                  ],
+                ),
               ),
               Row(
                 children: [
-                  Icon(
-                    profit >= 0 ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-                    color: profit >= 0 ? Colors.green : Colors.red,
-                  ),
-                  Text(
-                    "\$${profit.toStringAsFixed(2)}",
-                    style: TextStyle(
-                      color: profit >= 0 ? Colors.green : Colors.red,
-                      fontWeight: FontWeight.bold,
+                  if (gainLossValue != 0)
+                    Icon(
+                      gainLossValue > 0
+                          ? Icons.arrow_drop_up
+                          : Icons.arrow_drop_down,
+                      color: valueColor,
+                      size: 24,
+                    ),
+                  GestureDetector(
+                    onTap: toggleDisplay,
+                    child: Text(
+                      showPercentage
+                          ? "${gainLossPercentage.toStringAsFixed(2)}%"
+                          : "\$${gainLossValue.abs().toStringAsFixed(2)}",
+                      style: TextStyle(
+                        color: valueColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
               ),
             ],
           ),
-
           const SizedBox(height: 16),
 
-          // Buttons row
+          // Action buttons
           Row(
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () async {
-                    final url = Uri.parse(
-                      'https://www.bullionupdates.com/product/8963/gold-american-eagle-12',
-                    );
-                    if (await canLaunchUrl(url)) {
-                      await launchUrl(url);
-                    } else {
-                      throw 'Could not launch $url';
-                    }
-                  },
+                  onPressed: widget.holding.isBold
+                      ? () async {
+                          final url = Uri.parse(
+                            'https://www.bullionupdates.com/product/${widget.holding.productId}/${widget.holding.name}',
+                          );
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url);
+                          } else {
+                            throw 'Could not launch $url';
+                          }
+                        }
+                      : null,
                   icon: const Icon(Icons.arrow_upward),
                   label: const Text("Buy"),
                   style: ElevatedButton.styleFrom(
@@ -203,11 +234,12 @@ class HoldingCard extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => showSellExitPopup(context, holding),
+                  onPressed: widget.holding.isBold
+                      ? () => showSellExitPopup(context, widget.holding)
+                      : null,
                   icon: const Icon(Icons.arrow_downward),
                   label: const Text("Sell/Exit"),
                   style: ElevatedButton.styleFrom(
@@ -216,7 +248,6 @@ class HoldingCard extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(width: 10),
               Container(
                 height: 44,
@@ -226,7 +257,8 @@ class HoldingCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: IconButton(
-                  onPressed: () => _showConfirmationDialog(context, holding),
+                  onPressed: () =>
+                      _showConfirmationDialog(context, widget.holding),
                   icon: const Icon(Icons.delete),
                   color: Colors.red,
                 ),

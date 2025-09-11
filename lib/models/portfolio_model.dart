@@ -217,6 +217,7 @@ class PortfolioSettings {
   final bool showGoldPrediction;
   final bool showSilverPrediction;
   final bool showTotalPrediction;
+  final bool showMetalPrice;
 
   PortfolioSettings({
     required this.customerId,
@@ -227,6 +228,7 @@ class PortfolioSettings {
     required this.showGoldPrediction,
     required this.showSilverPrediction,
     required this.showTotalPrediction,
+    required this.showMetalPrice,
   });
 
   factory PortfolioSettings.fromJson(Map<String, dynamic> json) {
@@ -239,6 +241,7 @@ class PortfolioSettings {
       showGoldPrediction: json['showGoldPrediction'] ?? false,
       showSilverPrediction: json['showSilverPrediction'] ?? false,
       showTotalPrediction: json['showTotalPrediction'] ?? false,
+      showMetalPrice: json['showMetalPrice'] ?? false,
     );
   }
 
@@ -253,6 +256,7 @@ class PortfolioSettings {
       showGoldPrediction: false,
       showSilverPrediction: false,
       showTotalPrediction: false,
+      showMetalPrice: false,
     );
   }
 }
@@ -395,8 +399,9 @@ class ProductHolding {
   final String metal;
   final double weight;
   final double avgPrice;
+  final double pastMetalValue;
   final double currentPrice;
-  final bool isSold;
+  final bool isBold;
   final DateTime orderDate;
   final double currentMetalValue;
   final String productImage;
@@ -409,8 +414,9 @@ class ProductHolding {
     required this.metal,
     required this.weight,
     required this.avgPrice,
+    required this.pastMetalValue,
     required this.currentPrice,
-    required this.isSold,
+    required this.isBold,
     required this.orderDate,
     required this.currentMetalValue,
     required this.productImage,
@@ -431,9 +437,10 @@ class ProductHolding {
       metal: json['metal'] ?? '',
       weight: (json['weight'] ?? 0).toDouble(),
       avgPrice: (json['avgPrice'] ?? 0).toDouble(),
+      pastMetalValue: (json['pastMetalValue'] ?? 0).toDouble(),
       currentPrice: (json['currentPrice'] ?? 0).toDouble(),
       currentMetalValue: (json['currentMetalValue'] ?? 0).toDouble(),
-      isSold: json['isSold'] ?? false,
+      isBold: json['isBold'] ?? false,
       orderDate: json['orderDate'] != null
           ? dateFormat.parse(json['orderDate'])
           : DateTime.now(),
