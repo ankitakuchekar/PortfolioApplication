@@ -50,8 +50,7 @@ dependencies:
 
 flutter_launcher_icons:
   android: true
-  ios: true
-  image_path: "assets/images/bold_logo.png" 
+  ios: true 
 
 dev_dependencies:
   flutter_test:
@@ -74,11 +73,7 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
-  assets:
-    - assets/images/
-    - assets/images/bold_logo.png
-    - assets/images/coin.png
+ 
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -107,9 +102,7 @@ flutter:
   # see https://flutter.dev/to/font-from-package
 
 flutter_native_splash:
-  color: "#FFFFFF"
-  image: assets/images/bold_logo.png
+  color: "#FFFFFF" 
   android_12:
-    color: "#FFFFFF"
-    image: assets/images/bold_logo.png'    
+    color: "#FFFFFF"  
 
