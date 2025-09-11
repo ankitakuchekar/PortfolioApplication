@@ -13,6 +13,7 @@ import '../widgets/value_cost_cards.dart';
 import '../widgets/metal_portfolio_section.dart';
 import '../widgets/common_app_bar.dart';
 import '../widgets/common_drawer.dart';
+import '../services/api_service.dart'; // For updatePortfolioSettings
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -22,9 +23,11 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  bool isPremiumIncluded = true; // <-- Added state variable
+  bool isPremiumIncluded = true; // This might map to 'show actual price'
+  bool isLoadingToggle = false; // Tracks loading state for toggle action
   String? token;
   String? userId;
+
   @override
   void initState() {
     super.initState();
@@ -48,23 +51,65 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _loadUserId() async {
     final authService = AuthService();
-    final fetchedUserId = await authService.getUser();
+    final fetchedUser = await authService.getUser();
     setState(() {
-      userId = fetchedUserId?.id;
+      userId = fetchedUser?.id;
     });
   }
 
   Future<void> fetchChartData() async {
     try {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
-      await provider
-          .refreshDataFromAPIs(); // Or refreshDataFromAPIs() depending on what you want
+      await provider.refreshDataFromAPIs();
     } catch (error) {
       debugPrint('Error fetching chart data: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to fetch chart data')),
       );
     }
+  }
+
+  Future<void> handleToggle(bool value) async {
+    setState(() {
+      isLoadingToggle = true;
+    });
+
+    // Call your API to update the setting
+    bool result = await updatePortfolioSettings(
+      customerId: int.tryParse(userId ?? '0') ?? 0,
+      settings: Provider.of<PortfolioProvider>(
+        context,
+        listen: false,
+      ).portfolioData!.data[0].portfolioSettings,
+      showActualPrice: value,
+      token: token ?? '',
+    );
+
+    if (result) {
+      setState(() {
+        isPremiumIncluded = value;
+      });
+      await fetchChartData();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
+          content: Text(
+            value ? 'Premium price included' : 'Premium price excluded',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to update settings')),
+      );
+    }
+
+    setState(() {
+      isLoadingToggle = false;
+    });
   }
 
   @override
@@ -111,138 +156,106 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           final portfolioData = portfolioProvider.portfolioData;
 
-          // Check if portfolioData is null or data is empty
           final customerData = (portfolioData?.data.isNotEmpty ?? false)
               ? portfolioData!.data[0]
               : CustomerData.empty();
 
-          // Check if portfolioSettings is null and fall back to default
           final portfolioSettings = customerData.portfolioSettings;
 
-          // Check if investmentData is null and fall back to default
-          final investmentData = customerData.investment;
-          // Check if portfolioData or its data is null/empty and handle the fallback UI
-          if (customerData.productHoldings.length <= 0 ||
+          if (customerData.productHoldings.isEmpty ||
               portfolioData == null ||
               portfolioData.data.isEmpty) {
-            return Scaffold(
-              backgroundColor: Colors.white,
-              body: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Image Banner
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        'https://res.cloudinary.com/bold-pm/image/upload/Graphics/Bullion-invesment-Portfolio.webp',
-                        width: double.infinity,
-                        height: 250,
-                        fit: BoxFit
-                            .cover, // Ensures the image covers the container properly
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Title
-                    const Text(
-                      'Why is it Important to Build\nand Track Your Bullion Investment',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 22,
-                        color: Colors.black,
-                        height: 1.5, // Increased line height for better spacing
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Features
-                    InvestmentFeature(
-                      icon: Icons.link,
-                      text:
-                          "Keeps all your gold and silver investments in one place.",
-                    ),
-                    InvestmentFeature(
-                      icon: Icons.show_chart,
-                      text:
-                          "Helps assess the current value of your holdings compared to purchase prices.",
-                    ),
-                    InvestmentFeature(
-                      icon: Icons.bar_chart,
-                      text:
-                          "Offers insights into the growth of your investments over time.",
-                    ),
-                    InvestmentFeature(
-                      icon: Icons.settings,
-                      text:
-                          "Centralizes all data, making it easily accessible anytime and anywhere.",
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Button
-                    SizedBox(
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      'https://res.cloudinary.com/bold-pm/image/upload/Graphics/Bullion-invesment-Portfolio.webp',
                       width: double.infinity,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor:
-                              Colors.amber[600], // Text and icon color
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              12,
-                            ), // Rounded corners
-                          ),
-                          elevation: 5, // Add shadow for elevation effect
+                      height: 250,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Why is it Important to Build\nand Track Your Bullion Investment',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                      color: Colors.black,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  InvestmentFeature(
+                    icon: Icons.link,
+                    text:
+                        "Keeps all your gold and silver investments in one place.",
+                  ),
+                  InvestmentFeature(
+                    icon: Icons.show_chart,
+                    text:
+                        "Helps assess the current value of your holdings compared to purchase prices.",
+                  ),
+                  InvestmentFeature(
+                    icon: Icons.bar_chart,
+                    text:
+                        "Offers insights into the growth of your investments over time.",
+                  ),
+                  InvestmentFeature(
+                    icon: Icons.settings,
+                    text:
+                        "Centralizes all data, making it easily accessible anytime and anywhere.",
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.amber[600],
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        onPressed: () {
-                          // Navigation logic
-                          showDialog(
-                            context: context,
-                            builder: (context) => AddHoldingForm(
-                              onClose: () => Navigator.of(context).pop(),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.add),
-                        label: const Text(
-                          "Add New Holdings",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
+                        elevation: 5,
+                      ),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AddHoldingForm(
+                            onClose: () => Navigator.of(context).pop(),
                           ),
+                        );
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text(
+                        "Add New Holdings",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
           }
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ActualPriceBannerOption(
-                  customerId: int.tryParse(userId ?? '') ?? 0,
-                  settings: portfolioSettings,
-                  token: token!,
-                  fetchChartData: () async {
-                    await fetchChartData(); // This must be defined somewhere
-                  },
                   isActualPrice: portfolioSettings.showActualPrice,
+                  isLoading: isLoadingToggle,
+                  onToggle: handleToggle,
                 ),
-                // Consumer<PortfolioProvider>(
-                //   builder: (context, provider, child) {
-                //     final spotPriceData = provider.spotPrices;
-                //     if (spotPriceData == null) {
-                //       return const Center(child: Text('No data available'));
-                //     }
-                //     return AssetAllocationSection(spotPrices: spotPriceData);
-                //   },
-                // ),
                 const SizedBox(height: 16),
                 ProfitLossCards(portfolioData: portfolioData),
                 const SizedBox(height: 16),
