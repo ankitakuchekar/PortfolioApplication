@@ -71,11 +71,42 @@
 //   }
 // }
 
-import 'package:bold_portfolio/screens/login_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:bold_portfolio/screens/login_screen.dart';
 
-class LandingPage extends StatelessWidget {
+class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
+
+  @override
+  State<LandingPage> createState() => _LandingPageState();
+}
+
+class _LandingPageState extends State<LandingPage>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+
+    _controller.forward(); // Start animation on page load
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,120 +121,109 @@ class LandingPage extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
-            // Content overlaid on top of the background
+            // Foreground content
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Logo
-                    Image.network(
-                      'https://res.cloudinary.com/bold-pm/image/upload/v1629887471/Graphics/email/BPM-White-Logo.png',
-                      width: 150,
-                    ),
-                    const SizedBox(height: 15),
-                    // Heading and Subheading
-                    RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white, // default color for text
-                        ),
-                        children: [
-                          TextSpan(text: 'Your Precious Metals,\n'),
-                          TextSpan(
-                            text: 'Your Wealth,\n',
-                            style: TextStyle(
-                              color: Colors.yellow,
-                            ), // Yellow color for "Your Wealth"
-                          ),
-                          TextSpan(text: 'Your Control.'),
-                        ],
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Logo
+                      Image.network(
+                        'https://res.cloudinary.com/bold-pm/image/upload/v1629887471/Graphics/email/BPM-White-Logo.png',
+                        width: 150,
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Your precious metals investment starts with solid, secure returns.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                    const SizedBox(height: 10),
-                    // Action buttons with descriptive text
-                    Column(
-                      children: [
-                        // Track Your Holdings Feature Card
-                        FeatureCard(
-                          icon: Icons.show_chart,
-                          iconColor: Colors.green,
-                          title: 'Track Your Holdings',
-                          description:
-                              'Secure real-time portfolio tracking with detailed analytics.',
-                        ),
-                        // View Live Performance Feature Card
-                        FeatureCard(
-                          icon: Icons.trending_up,
-                          iconColor: Colors.blue,
-                          title: 'View Live Performance',
-                          description:
-                              'Real-time market data and performance insights.',
-                        ),
-                        // Add Predictions Feature Card
-                        FeatureCard(
-                          icon: Icons.circle,
-                          iconColor: Colors.purple,
-                          title: 'Add Predictions',
-                          description:
-                              'AI-powered market predictions and investment guidance.',
-                        ),
-
-                        const SizedBox(height: 10),
-                        // Start Tracking Your Investments Button
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginScreen(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.amber, // Button color
-                            minimumSize: Size(250, 50),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                      const SizedBox(height: 15),
+                      // Heading and Subheading
+                      RichText(
+                        textAlign: TextAlign.center,
+                        text: const TextSpan(
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          children: [
+                            TextSpan(text: 'Your Precious Metals,\n'),
+                            TextSpan(
+                              text: 'Your Wealth,\n',
+                              style: TextStyle(color: Colors.yellow),
                             ),
-                          ),
-                          icon: Icon(
-                            Icons.phone_android,
-                            color: Colors.black,
-                          ), // Icon on the left
-                          label: Column(
-                            children: [
-                              Text(
-                                'Start Tracking Your Investments',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: const Color.fromARGB(255, 38, 37, 37),
-                                ),
-                              ),
-                            ],
+                            TextSpan(text: 'Your Control.'),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Your precious metals investment starts with solid, secure returns.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                      const SizedBox(height: 10),
+                      // Feature Cards
+                      const FeatureCard(
+                        icon: Icons.show_chart,
+                        iconColor: Colors.green,
+                        title: 'Track Your Holdings',
+                        description:
+                            'Secure real-time portfolio tracking with detailed analytics.',
+                      ),
+                      const FeatureCard(
+                        icon: Icons.trending_up,
+                        iconColor: Colors.blue,
+                        title: 'View Live Performance',
+                        description:
+                            'Real-time market data and performance insights.',
+                      ),
+                      const FeatureCard(
+                        icon: Icons.circle,
+                        iconColor: Colors.purple,
+                        title: 'Add Predictions',
+                        description:
+                            'AI-powered market predictions and investment guidance.',
+                      ),
+                      const SizedBox(height: 10),
+                      // CTA Button
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.amber,
+                          minimumSize: const Size(250, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        const SizedBox(height: 5),
-                        Text(
-                          'Join thousands of investors securing their financial future',
-                          style: TextStyle(fontSize: 14, color: Colors.white70),
-                          textAlign: TextAlign.center,
+                        icon: const Icon(
+                          Icons.phone_android,
+                          color: Colors.black,
                         ),
-                      ],
-                    ),
-                  ],
+                        label: const Text(
+                          'Start Tracking Your Investments',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: Color.fromARGB(255, 38, 37, 37),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      const Text(
+                        'Join thousands of investors securing their financial future',
+                        style: TextStyle(fontSize: 14, color: Colors.white70),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -214,7 +234,7 @@ class LandingPage extends StatelessWidget {
   }
 }
 
-class FeatureCard extends StatelessWidget {
+class FeatureCard extends StatefulWidget {
   final IconData icon;
   final Color iconColor;
   final String title;
@@ -229,57 +249,95 @@ class FeatureCard extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<FeatureCard> createState() => _FeatureCardState();
+}
+
+class _FeatureCardState extends State<FeatureCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(-1.0, 0.0), // Start from left
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+
+    // Start the animation when the widget is built
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Card(
-      color: const Color.fromARGB(
-        255,
-        16,
-        15,
-        15,
-      ), // Slightly gray background color for the card
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ), // Border with slight transparency
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Row(
-          children: [
-            // Icon with background color
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: iconColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 32, color: Colors.white),
-            ),
-            const SizedBox(width: 20),
-            // Text with title and description
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: Card(
+          color: const Color.fromARGB(255, 16, 15, 15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: widget.iconColor,
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    description,
-                    style: TextStyle(fontSize: 14, color: Colors.white70),
+                  child: Icon(widget.icon, size: 32, color: Colors.white),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        widget.description,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -287,5 +345,5 @@ class FeatureCard extends StatelessWidget {
 }
 
 void main() {
-  runApp(MaterialApp(home: LandingPage()));
+  runApp(const MaterialApp(home: LandingPage()));
 }
