@@ -350,7 +350,7 @@ class _SplashScreenState extends State<SplashScreen> {
           );
         } else {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const Landingsplashpage()),
+            MaterialPageRoute(builder: (context) => LandingPage()),
           );
         }
       }
@@ -360,29 +360,29 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              'assets/images/bold_logo.png',
-              width: 200,
-              height: 100,
-              fit: BoxFit.contain,
+            Image.network(
+              'https://res.cloudinary.com/bold-pm/image/upload/Graphics/bold-portfolio-app-1.png',
+              fit: BoxFit.cover,
+              width: 170,
             ),
+
             const SizedBox(height: 40),
             const Text(
               'BOLD Precious Metals',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: AppColors.black,
+                color: AppColors.background,
               ),
             ),
             const SizedBox(height: 20),
             const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.black),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.background),
             ),
           ],
         ),

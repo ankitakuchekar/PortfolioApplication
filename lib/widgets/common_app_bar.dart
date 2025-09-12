@@ -44,10 +44,15 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: CircularTimerWidget(
-              durationSeconds: timerDurationSeconds,
+            child: CountdownTimerWidget(
+              durationSeconds:
+                  timerDurationSeconds, // or whatever duration you want
               onTimerComplete: () => _onTimerComplete(context),
             ),
+            //  CircularTimerWidget(
+            //   durationSeconds: timerDurationSeconds,
+            //   onTimerComplete: () => _onTimerComplete(context),
+            // ),
           ),
         ],
       ),
