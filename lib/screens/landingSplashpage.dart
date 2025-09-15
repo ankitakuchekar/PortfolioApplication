@@ -134,12 +134,11 @@ class _LandingPageState extends State<LandingPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 80),
-
+                    const SizedBox(height: 10),
                     // Logo
                     Image.network(
                       'https://res.cloudinary.com/bold-pm/image/upload/v1629887471/Graphics/email/BPM-White-Logo.png',
-                      width: 150,
+                      width: 950,
                     ),
                     const SizedBox(height: 15),
 
@@ -206,7 +205,10 @@ class _LandingPageState extends State<LandingPage>
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.amber,
-                        minimumSize: const Size(250, 50),
+                        minimumSize: const Size(
+                          250,
+                          50,
+                        ), // Adjust the size if needed
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -215,12 +217,17 @@ class _LandingPageState extends State<LandingPage>
                         Icons.phone_android,
                         color: Colors.black,
                       ),
-                      label: const Text(
-                        'Start Tracking Your Investments',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                          color: Color.fromARGB(255, 38, 37, 37),
+                      label: Flexible(
+                        child: Text(
+                          'Start Tracking Your Investments',
+                          style: TextStyle(
+                            fontSize: 17, // Adjusted font size if needed
+                            fontWeight: FontWeight.w500,
+                            color: Color.fromARGB(255, 38, 37, 37),
+                          ),
+                          overflow: TextOverflow
+                              .ellipsis, // Prevents overflow with ellipsis
+                          maxLines: 1, // Keeps the text in one line
                         ),
                       ),
                     ),

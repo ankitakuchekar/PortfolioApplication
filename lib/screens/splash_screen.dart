@@ -366,20 +366,20 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.network(
-              'https://res.cloudinary.com/bold-pm/image/upload/Graphics/bold-portfolio-app-1.png',
+              'https://res.cloudinary.com/bold-pm/image/upload/Graphics/bpm-app-logo.png',
               fit: BoxFit.cover,
               width: 170,
             ),
 
             const SizedBox(height: 40),
-            const Text(
-              'BOLD Precious Metals',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppColors.background,
-              ),
-            ),
+            // const Text(
+            //   'BOLD Precious Metals',
+            //   style: TextStyle(
+            //     fontSize: 24,
+            //     fontWeight: FontWeight.bold,
+            //     color: AppColors.background,
+            //   ),
+            // ),
             const SizedBox(height: 20),
             const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.background),
