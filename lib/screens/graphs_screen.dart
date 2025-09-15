@@ -78,7 +78,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
     } else if (hasGoldData && !hasSilverData) {
       return 'Gold';
     } else {
-      return 'Gold'; // Default fallback
+      return 'All'; // Default fallback
     }
   }
 
@@ -189,11 +189,23 @@ class _GraphsScreenState extends State<GraphsScreen> {
                 d.lowSilver != 0 ||
                 d.closeSilver != 0,
           );
+          final hasAllData = metalCandleChartData.any(
+            (d) =>
+                d.openMetal != 0 ||
+                d.highMetal != 0 ||
+                d.lowMetal != 0 ||
+                d.closeMetal != 0,
+          );
           // Dynamically build button list
           final List<String> filterOptions = [];
-          if (hasGoldData) filterOptions.add('Gold');
-          if (hasSilverData) filterOptions.add('Silver');
-          if (hasGoldData && hasSilverData) filterOptions.add('All');
+
+          if (hasAllData) {
+            filterOptions.addAll(['All', 'Gold', 'Silver']);
+          } else if (hasGoldData) {
+            filterOptions.add('Gold');
+          } else if (hasSilverData) {
+            filterOptions.add('Silver');
+          }
 
           return SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 20),
@@ -285,6 +297,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
                                 child: MetalCandleChart(
                                   candleChartData: metalCandleChartData,
                                   selectedMetal: metalFilter,
+                                  showCombined: metalFilter == 'All',
                                 ),
                               ),
                             ],

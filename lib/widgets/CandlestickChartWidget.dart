@@ -16,32 +16,43 @@ class CandleData {
 class MetalCandleChart extends StatefulWidget {
   final List<MetalCandleChartEntry> candleChartData;
   final String selectedMetal;
+  final bool showCombined;
 
   const MetalCandleChart({
-    Key? key,
+    super.key,
     required this.candleChartData,
     required this.selectedMetal,
-  }) : super(key: key);
+    this.showCombined = false,
+  });
 
   @override
   _MetalCandleChartState createState() => _MetalCandleChartState();
 }
 
 class _MetalCandleChartState extends State<MetalCandleChart> {
-  List<CandleData> _groupedData = [];
+  // List<CandleData> _groupedData = [];
   late TooltipBehavior _tooltipBehavior;
   late ZoomPanBehavior _zoomPanBehavior;
   late CrosshairBehavior _crosshairBehavior;
 
+  List<CandleData> _goldData = [];
+  List<CandleData> _silverData = [];
+
   @override
   void initState() {
     super.initState();
-    _groupedData = _groupCandles(
+    _goldData = _groupCandles(
       widget.candleChartData,
       5,
-      widget.selectedMetal == 'Gold',
+      true,
+      widget.selectedMetal,
     );
-
+    _silverData = _groupCandles(
+      widget.candleChartData,
+      5,
+      false,
+      widget.selectedMetal,
+    );
     _tooltipBehavior = TooltipBehavior(
       enable: true,
       tooltipPosition: TooltipPosition.pointer,
@@ -118,12 +129,20 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
   void didUpdateWidget(covariant MetalCandleChart oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.candleChartData != widget.candleChartData ||
-        oldWidget.selectedMetal != widget.selectedMetal) {
+        oldWidget.selectedMetal != widget.selectedMetal ||
+        oldWidget.showCombined != widget.showCombined) {
       setState(() {
-        _groupedData = _groupCandles(
+        _goldData = _groupCandles(
           widget.candleChartData,
           5,
-          widget.selectedMetal == 'Gold',
+          true,
+          widget.selectedMetal,
+        );
+        _silverData = _groupCandles(
+          widget.candleChartData,
+          5,
+          false,
+          widget.selectedMetal,
         );
       });
     }
@@ -133,6 +152,7 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
     List<MetalCandleChartEntry> data,
     int groupSize,
     bool useGold,
+    String selectedMetal,
   ) {
     final groupedData = <CandleData>[];
     for (int i = 0; i < data.length; i += groupSize) {
@@ -141,8 +161,16 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
         i + groupSize <= data.length ? i + groupSize : data.length,
       );
       if (group.isNotEmpty) {
-        final open = useGold ? group[0].openGold : group[0].openSilver;
-        final close = useGold
+        final open = selectedMetal == 'All'
+            ? group[0].openMetal
+            : useGold
+            ? group[0].openGold
+            : group[0].openSilver;
+        final close = selectedMetal == 'All'
+            ? (group.last.closeMetal != 0
+                  ? group.last.closeMetal
+                  : group.last.openMetal)
+            : useGold
             ? (group.last.closeGold != 0
                   ? group.last.closeGold
                   : group.last.openGold)
@@ -150,10 +178,14 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
                   ? group.last.closeSilver
                   : group.last.openSilver);
 
-        final highValues = useGold
+        final highValues = selectedMetal == 'All'
+            ? group.map((d) => d.highMetal).where((v) => v > 0)
+            : useGold
             ? group.map((d) => d.highGold).where((v) => v > 0)
             : group.map((d) => d.highSilver).where((v) => v > 0);
-        final lowValues = useGold
+        final lowValues = selectedMetal == 'All'
+            ? group.map((d) => d.lowMetal).where((v) => v > 0)
+            : useGold
             ? group.map((d) => d.lowGold).where((v) => v > 0)
             : group.map((d) => d.lowSilver).where((v) => v > 0);
 
@@ -215,7 +247,9 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
             children: [
               // Left side: Chart Title
               Text(
-                widget.selectedMetal == 'Gold'
+                widget.showCombined
+                    ? 'Live Both Holdings'
+                    : widget.selectedMetal == 'Gold'
                     ? 'Live Gold Holdings'
                     : 'Live Silver Holdings',
                 style: const TextStyle(
@@ -286,17 +320,49 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
               ),
             ),
             series: <CartesianSeries>[
-              CandleSeries<CandleData, DateTime>(
-                dataSource: _groupedData,
-                xValueMapper: (CandleData data, _) => data.x,
-                openValueMapper: (CandleData data, _) => data.open,
-                highValueMapper: (CandleData data, _) => data.high,
-                lowValueMapper: (CandleData data, _) => data.low,
-                closeValueMapper: (CandleData data, _) => data.close,
-                bearColor: const Color(0xFFff3333),
-                bullColor: const Color(0xFF00cc00),
-                enableSolidCandles: true,
-              ),
+              if (widget.showCombined) ...[
+                CandleSeries<CandleData, DateTime>(
+                  name: 'Gold',
+                  dataSource: _goldData,
+                  xValueMapper: (CandleData data, _) => data.x,
+                  openValueMapper: (CandleData data, _) => data.open,
+                  highValueMapper: (CandleData data, _) => data.high,
+                  lowValueMapper: (CandleData data, _) => data.low,
+                  closeValueMapper: (CandleData data, _) => data.close,
+                  bearColor: const Color(0xFFff3333),
+                  bullColor: const Color(0xFF00cc00),
+                  enableSolidCandles: true,
+                ),
+                CandleSeries<CandleData, DateTime>(
+                  name: 'Silver',
+                  dataSource: _silverData,
+                  xValueMapper: (CandleData data, _) => data.x,
+                  openValueMapper: (CandleData data, _) => data.open,
+                  highValueMapper: (CandleData data, _) => data.high,
+                  lowValueMapper: (CandleData data, _) => data.low,
+                  closeValueMapper: (CandleData data, _) => data.close,
+                  bearColor: const Color(0xFFff3333),
+                  bullColor: const Color(0xFF00cc00),
+                  enableSolidCandles: true,
+                ),
+              ] else ...[
+                CandleSeries<CandleData, DateTime>(
+                  dataSource: widget.selectedMetal == 'Gold'
+                      ? _goldData
+                      : _silverData,
+                  xValueMapper: (CandleData data, _) => data.x,
+                  openValueMapper: (CandleData data, _) => data.open,
+                  highValueMapper: (CandleData data, _) => data.high,
+                  lowValueMapper: (CandleData data, _) => data.low,
+                  closeValueMapper: (CandleData data, _) => data.close,
+                  // bearColor: widget.selectedMetal == 'Gold'
+                  //     ? const Color(0xFFff3333)
+                  //     : Colors.blueGrey.shade300,
+                  bearColor: const Color(0xFFff3333),
+                  bullColor: const Color(0xFF00cc00),
+                  enableSolidCandles: true,
+                ),
+              ],
             ],
           ),
         ),

@@ -99,7 +99,7 @@ class _LandingPageState extends State<LandingPage>
       end: 1,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
 
-    _controller.forward(); // Start animation on page load
+    _controller.forward();
   }
 
   @override
@@ -110,6 +110,8 @@ class _LandingPageState extends State<LandingPage>
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -123,119 +125,114 @@ class _LandingPageState extends State<LandingPage>
 
           // Foreground Content
           SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height,
-              ),
-              child: IntrinsicHeight(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Logo
-                        Image.network(
-                          'https://res.cloudinary.com/bold-pm/image/upload/v1629887471/Graphics/email/BPM-White-Logo.png',
-                          width: 150,
-                        ),
-                        const SizedBox(height: 15),
+            child: Container(
+              width: double.infinity,
+              constraints: BoxConstraints(minHeight: screenHeight),
+              padding: const EdgeInsets.all(16.0),
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 80),
 
-                        // Heading and Subheading
-                        RichText(
-                          textAlign: TextAlign.center,
-                          text: const TextSpan(
-                            style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                            children: [
-                              TextSpan(text: 'Your Precious Metals,\n'),
-                              TextSpan(
-                                text: 'Your Wealth,\n',
-                                style: TextStyle(color: Colors.yellow),
-                              ),
-                              TextSpan(text: 'Your Control.'),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Your precious metals investment starts with solid, secure returns.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Feature Cards
-                        const FeatureCard(
-                          icon: Icons.show_chart,
-                          iconColor: Colors.green,
-                          title: 'Track Your Holdings',
-                          description:
-                              'Secure real-time portfolio tracking with detailed analytics.',
-                        ),
-                        const FeatureCard(
-                          icon: Icons.trending_up,
-                          iconColor: Colors.blue,
-                          title: 'View Live Performance',
-                          description:
-                              'Real-time market data and performance insights.',
-                        ),
-                        const FeatureCard(
-                          icon: Icons.circle,
-                          iconColor: Colors.purple,
-                          title: 'Add Predictions',
-                          description:
-                              'AI-powered market predictions and investment guidance.',
-                        ),
-                        const SizedBox(height: 20),
-
-                        // CTA Button
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginScreen(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.amber,
-                            minimumSize: const Size(250, 50),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          icon: const Icon(
-                            Icons.phone_android,
-                            color: Colors.black,
-                          ),
-                          label: const Text(
-                            'Start Tracking Your Investments',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: Color.fromARGB(255, 38, 37, 37),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Join thousands of investors securing their financial future',
-                          style: TextStyle(fontSize: 14, color: Colors.white70),
-                          textAlign: TextAlign.center,
-                        ),
-
-                        const Spacer(), // Pushes content to bottom if there's extra space
-                      ],
+                    // Logo
+                    Image.network(
+                      'https://res.cloudinary.com/bold-pm/image/upload/v1629887471/Graphics/email/BPM-White-Logo.png',
+                      width: 150,
                     ),
-                  ),
+                    const SizedBox(height: 15),
+
+                    // Heading and Subheading
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: const TextSpan(
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        children: [
+                          TextSpan(text: 'Your Precious Metals,\n'),
+                          TextSpan(
+                            text: 'Your Wealth,\n',
+                            style: TextStyle(color: Colors.yellow),
+                          ),
+                          TextSpan(text: 'Your Control.'),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Your precious metals investment starts with solid, secure returns.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Feature Cards
+                    const FeatureCard(
+                      icon: Icons.show_chart,
+                      iconColor: Colors.green,
+                      title: 'Track Your Holdings',
+                      description:
+                          'Secure real-time portfolio tracking with detailed analytics.',
+                    ),
+                    const FeatureCard(
+                      icon: Icons.trending_up,
+                      iconColor: Colors.blue,
+                      title: 'View Live Performance',
+                      description:
+                          'Real-time market data and performance insights.',
+                    ),
+                    const FeatureCard(
+                      icon: Icons.circle,
+                      iconColor: Colors.purple,
+                      title: 'Add Predictions',
+                      description:
+                          'AI-powered market predictions and investment guidance.',
+                    ),
+                    const SizedBox(height: 20),
+
+                    // CTA Button
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        minimumSize: const Size(250, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      icon: const Icon(
+                        Icons.phone_android,
+                        color: Colors.black,
+                      ),
+                      label: const Text(
+                        'Start Tracking Your Investments',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: Color.fromARGB(255, 38, 37, 37),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Join thousands of investors securing their financial future',
+                      style: TextStyle(fontSize: 14, color: Colors.white70),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    const SizedBox(height: 40), // Bottom spacing
+                  ],
                 ),
               ),
             ),
@@ -246,6 +243,7 @@ class _LandingPageState extends State<LandingPage>
   }
 }
 
+// Reuse FeatureCard
 class FeatureCard extends StatefulWidget {
   final IconData icon;
   final Color iconColor;
@@ -356,5 +354,7 @@ class _FeatureCardState extends State<FeatureCard>
 }
 
 void main() {
-  runApp(const MaterialApp(home: LandingPage()));
+  runApp(
+    const MaterialApp(debugShowCheckedModeBanner: false, home: LandingPage()),
+  );
 }
