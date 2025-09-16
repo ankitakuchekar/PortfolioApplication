@@ -366,7 +366,7 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.network(
-              'https://res.cloudinary.com/bold-pm/image/upload/Graphics/bpm-app-logo.png',
+              'https://res.cloudinary.com/bold-pm/image/upload/Graphics/bpm-app-logo-icon.png',
               fit: BoxFit.cover,
               width: 170,
             ),

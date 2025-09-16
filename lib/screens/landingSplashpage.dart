@@ -137,7 +137,7 @@ class _LandingPageState extends State<LandingPage>
                     const SizedBox(height: 5),
                     // Logo
                     Image.network(
-                      'https://res.cloudinary.com/bold-pm/image/upload/Graphics/bpm-app-logo-icon.png',
+                      'https://res.cloudinary.com/bold-pm/image/upload/v1629887471/Graphics/email/BPM-White-Logo.png',
                       width: 250,
                     ),
                     const SizedBox(height: 15),
