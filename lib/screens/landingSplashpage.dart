@@ -138,7 +138,7 @@ class _LandingPageState extends State<LandingPage>
                     // Logo
                     Image.network(
                       'https://res.cloudinary.com/bold-pm/image/upload/v1629887471/Graphics/email/BPM-White-Logo.png',
-                      width: 450,
+                      width: 250,
                     ),
                     const SizedBox(height: 15),
 
@@ -152,44 +152,50 @@ class _LandingPageState extends State<LandingPage>
                           color: Colors.white,
                         ),
                         children: [
-                          TextSpan(text: 'Your Precious Metals,\n'),
+                          TextSpan(text: 'Track Your \n'),
                           TextSpan(
-                            text: 'Your Wealth,\n',
+                            text: 'Gold & Silver,\n',
                             style: TextStyle(color: Colors.yellow),
                           ),
-                          TextSpan(text: 'Your Control.'),
+                          TextSpan(text: 'Anytime, Anywhere.'),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     const Text(
-                      'Your precious metals investment starts with solid, secure returns.',
+                      'Easily check your investments real-time values with secure, live market data.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Colors.white),
+                      style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                     const SizedBox(height: 20),
 
                     // Feature Cards
                     const FeatureCard(
-                      icon: Icons.show_chart,
-                      iconColor: Colors.green,
-                      title: 'Track Your Holdings',
+                      icon: Text(
+                        '🔒',
+                        style: TextStyle(fontSize: 32), // adjust size as needed
+                      ),
+                      title: 'Secure & Simple Experience',
                       description:
-                          'Secure real-time portfolio tracking with detailed analytics.',
+                          'Your data is protected with an easy-to-use interface.',
                     ),
                     const FeatureCard(
-                      icon: Icons.trending_up,
-                      iconColor: Colors.blue,
-                      title: 'View Live Performance',
+                      icon: Text(
+                        '📊',
+                        style: TextStyle(fontSize: 32), // adjust size as needed
+                      ),
+                      title: 'Real-Time Investment Tracking',
                       description:
-                          'Real-time market data and performance insights.',
+                          'See your gold and silver’s live value anytime.',
                     ),
                     const FeatureCard(
-                      icon: Icons.circle,
-                      iconColor: Colors.purple,
-                      title: 'Add Predictions',
+                      icon: Text(
+                        '📈',
+                        style: TextStyle(fontSize: 32), // adjust size as needed
+                      ),
+                      title: 'Add & Compare Predictions',
                       description:
-                          'AI-powered market predictions and investment guidance.',
+                          'Forecast your investments and compare with market values.',
                     ),
                     const SizedBox(height: 20),
 
@@ -229,13 +235,6 @@ class _LandingPageState extends State<LandingPage>
                         maxLines: 1, // Keeps the text in one line
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Join thousands of investors securing their financial future',
-                      style: TextStyle(fontSize: 14, color: Colors.white70),
-                      textAlign: TextAlign.center,
-                    ),
-
                     const SizedBox(height: 40), // Bottom spacing
                   ],
                 ),
@@ -250,15 +249,15 @@ class _LandingPageState extends State<LandingPage>
 
 // Reuse FeatureCard
 class FeatureCard extends StatefulWidget {
-  final IconData icon;
-  final Color iconColor;
+  final Widget icon;
+  // final Color iconColor;
   final String title;
   final String description;
 
   const FeatureCard({
     Key? key,
     required this.icon,
-    required this.iconColor,
+    // required this.iconColor,
     required this.title,
     required this.description,
   }) : super(key: key);
@@ -320,10 +319,10 @@ class _FeatureCardState extends State<FeatureCard>
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: widget.iconColor,
+                    // color: widget.iconColor,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(widget.icon, size: 32, color: Colors.white),
+                  child: widget.icon,
                 ),
                 const SizedBox(width: 20),
                 Expanded(
