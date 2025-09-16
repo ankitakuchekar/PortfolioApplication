@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -32,6 +33,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
   final TextEditingController spotPriceController = TextEditingController();
   final TextEditingController premiumCostController = TextEditingController();
   final TextEditingController dealerNameController = TextEditingController();
+  final String baseUrl = dotenv.env['API_URL']!;
 
   final FocusNode _productFocusNode = FocusNode();
 
@@ -108,9 +110,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
 
     try {
       final response = await http.post(
-        Uri.parse(
-          'https://mobile-dev-api.boldpreciousmetals.com/api/Product/SearchProductsByKWs',
-        ),
+        Uri.parse('$baseUrl/Product/SearchProductsByKWs'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           "customerId": 0,
@@ -212,7 +212,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
     required String metal,
   }) async {
     final url =
-        'https://mobile-dev-api.boldpreciousmetals.com/api/Portfolio/GetSpotPricesDateWise'
+        '$baseUrl/Portfolio/GetSpotPricesDateWise'
         '?date=$purchaseDate&productName=$productName&metal=$metal';
 
     final response = await http.get(
@@ -324,9 +324,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
       final token = await authService.getToken();
 
       final response = await http.post(
-        Uri.parse(
-          'https://mobile-dev-api.boldpreciousmetals.com/api/Portfolio/AddCustomerHoldings',
-        ),
+        Uri.parse('$baseUrl/Portfolio/AddCustomerHoldings'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',

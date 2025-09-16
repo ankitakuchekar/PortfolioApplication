@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/auth_response_model.dart';
@@ -6,15 +7,14 @@ import '../models/user_model.dart';
 import 'package:flutter/material.dart';
 
 class AuthService extends ChangeNotifier {
-  static const String _baseUrl =
-      'https://mobile-dev-api.boldpreciousmetals.com/api';
+  final String baseUrl = dotenv.env['API_URL']!;
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'user_data';
 
   Future<AuthResponse> login(String username, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/Authentication/authenticate'),
+        Uri.parse('$baseUrl/Authentication/authenticate'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'emailId': username,
@@ -94,7 +94,9 @@ class AuthService extends ChangeNotifier {
   Future<AuthResponse> validateCaptcha(String captchaToken) async {
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl/Authentication/ValidateGoogleReCaptcha?captchaResponse=$captchaToken'),
+        Uri.parse(
+          '$baseUrl/Authentication/ValidateGoogleReCaptcha?captchaResponse=$captchaToken',
+        ),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -105,7 +107,8 @@ class AuthService extends ChangeNotifier {
       } else {
         return AuthResponse(
           success: false,
-          message: responseData['errorMessage'] ?? 'reCAPTCHA validation failed',
+          message:
+              responseData['errorMessage'] ?? 'reCAPTCHA validation failed',
         );
       }
     } catch (e) {
@@ -134,10 +137,8 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
       return captchaValidation;
     }
-
-    final url = Uri.parse(
-      'https://mobile-dev-api.boldpreciousmetals.com/api/Customer/register',
-    );
+    final String baseUrl = dotenv.env['API_URL']!;
+    final url = Uri.parse('$baseUrl/Customer/register');
 
     try {
       final response = await http.post(

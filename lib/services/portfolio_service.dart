@@ -1,16 +1,18 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import '../models/portfolio_model.dart';
 import '../models/spot_price_model.dart';
 import 'auth_service.dart';
 
+final String spotBaseUrl = dotenv.env['SPOT_API_URL']!;
+final String baseUrl = dotenv.env['API_URL']!;
+
 class PortfolioService {
   static Future<SpotPriceData> fetchSpotPrices() async {
     try {
       final response = await http.get(
-        Uri.parse(
-          'https://mobile-dev-spot-api.boldpreciousmetals.com/SpotPrices',
-        ),
+        Uri.parse('$spotBaseUrl/SpotPrices'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -32,11 +34,8 @@ class PortfolioService {
     try {
       final authService = AuthService();
       final token = await authService.getToken();
-
       final response = await http.post(
-        Uri.parse(
-          'https://mobile-dev-api.boldpreciousmetals.com/api/Portfolio/CustomerPortFolio',
-        ),
+        Uri.parse('$baseUrl/Portfolio/CustomerPortFolio'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
@@ -97,7 +96,7 @@ Future<dynamic> fetchSpotPricesDateWise({
   required String metal,
 }) async {
   final url =
-      'https://mobile-dev-api.boldpreciousmetals.com/api/Portfolio/GetSpotPricesDateWise'
+      '$baseUrl/Portfolio/GetSpotPricesDateWise'
       '?date=$purchaseDate&productName=$productName&metal=$metal';
 
   final response = await http.get(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -24,9 +25,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       _errorMessage = null;
       _successMessage = null;
     });
+    final String baseUrl = dotenv.env['API_URL']!;
 
     final url = Uri.parse(
-      'https://mobile-dev-api.boldpreciousmetals.com/api/Authentication/SendResetPasswordLink?email=$email',
+      '$baseUrl/Authentication/SendResetPasswordLink?email=$email',
     );
 
     try {

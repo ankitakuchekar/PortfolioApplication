@@ -4,6 +4,7 @@ import 'package:bold_portfolio/services/portfolio_service.dart';
 import 'package:bold_portfolio/widgets/CandlestickChartWidget.dart';
 import 'package:bold_portfolio/widgets/LineChartWidget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http; // For making HTTP requests
 import 'dart:convert'; // To handle JSON data
@@ -108,11 +109,10 @@ class _GraphsScreenState extends State<GraphsScreen> {
     try {
       final authService = AuthService();
       final token = await authService.getToken();
+      final String baseUrl = dotenv.env['API_URL']!;
 
       final response = await http.post(
-        Uri.parse(
-          'https://mobile-dev-api.boldpreciousmetals.com/api/Portfolio/UpdateCustomerPortfolioSettings',
-        ),
+        Uri.parse('$baseUrl/Portfolio/UpdateCustomerPortfolioSettings'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

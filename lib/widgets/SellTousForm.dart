@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -64,10 +65,8 @@ class _SellFormState extends State<SellForm> {
 
       try {
         Uint8List imageBytes = await image.readAsBytes();
-
-        final uri = Uri.parse(
-          'https://mobile-dev-api.boldpreciousmetals.com/api/Account/UploadProductImageselltobold',
-        );
+        final String baseUrl = dotenv.env['API_URL']!;
+        final uri = Uri.parse('$baseUrl/Account/UploadProductImageselltobold');
         final request = http.MultipartRequest('POST', uri);
 
         request.files.add(
@@ -268,10 +267,9 @@ class _SellFormState extends State<SellForm> {
     };
 
     try {
+      final String baseUrl = dotenv.env['API_URL']!;
       final response = await http.post(
-        Uri.parse(
-          "https://mobile-dev-api.boldpreciousmetals.com/api/Customer/SellToBoldRequests",
-        ),
+        Uri.parse("$baseUrl/Customer/SellToBoldRequests"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(sellRequest),
       );

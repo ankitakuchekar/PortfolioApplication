@@ -4,6 +4,7 @@ import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/widgets/ExitForm.dart';
 import 'package:bold_portfolio/widgets/SellTousForm.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
@@ -413,9 +414,8 @@ Future<void> _removeProduct(
   BuildContext context,
   ProductHolding holding,
 ) async {
-  final url = Uri.parse(
-    'https://mobile-dev-api.boldpreciousmetals.com/api/Portfolio/RemovePortfolioProducts',
-  );
+  final String baseUrl = dotenv.env['API_URL']!;
+  final url = Uri.parse('$baseUrl/Portfolio/RemovePortfolioProducts');
 
   final authService = AuthService();
   final fetchedUserId = await authService.getUser();

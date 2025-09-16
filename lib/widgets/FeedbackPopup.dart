@@ -1,5 +1,6 @@
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -29,10 +30,8 @@ class _FeedbackPopupState extends State<FeedbackPopup> {
     }
 
     setState(() => isLoading = true);
-
-    final url = Uri.parse(
-      "https://mobile-dev-api.boldpreciousmetals.com/api/Portfolio/AddPortfolioCustomerFeedbacks",
-    );
+    final String baseUrl = dotenv.env['API_URL']!;
+    final url = Uri.parse("$baseUrl/Portfolio/AddPortfolioCustomerFeedbacks");
     final authService = AuthService();
     final token = await authService.getToken();
 

@@ -47,6 +47,7 @@ dependencies:
   webview_flutter: ^4.2.2  # Or the latest version
   url_launcher: ^6.2.6
   google_fonts: ^6.1.0 
+  flutter_dotenv: ^5.0.2
 
 flutter_launcher_icons:
   android: true
@@ -71,7 +72,8 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets: 
-   - assets/images/bold_logo.png
+   - assets/env/.env.stagging
+   - assets/env/.env.production
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

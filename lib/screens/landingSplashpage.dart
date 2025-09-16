@@ -217,18 +217,16 @@ class _LandingPageState extends State<LandingPage>
                         Icons.phone_android,
                         color: Colors.black,
                       ),
-                      label: Flexible(
-                        child: Text(
-                          'Start Tracking Your Investments',
-                          style: TextStyle(
-                            fontSize: 17, // Adjusted font size if needed
-                            fontWeight: FontWeight.w500,
-                            color: Color.fromARGB(255, 38, 37, 37),
-                          ),
-                          overflow: TextOverflow
-                              .ellipsis, // Prevents overflow with ellipsis
-                          maxLines: 1, // Keeps the text in one line
+                      label: Text(
+                        'Start Tracking Your Investments',
+                        style: TextStyle(
+                          fontSize: 17, // Adjusted font size if needed
+                          fontWeight: FontWeight.w500,
+                          color: Color.fromARGB(255, 38, 37, 37),
                         ),
+                        overflow: TextOverflow
+                            .ellipsis, // Prevents overflow with ellipsis
+                        maxLines: 1, // Keeps the text in one line
                       ),
                     ),
                     const SizedBox(height: 8),

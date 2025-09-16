@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:bold_portfolio/services/auth_service.dart'; // Assuming AuthService is here
 import 'package:fluttertoast/fluttertoast.dart';
@@ -83,11 +84,10 @@ class _ExitFormState extends State<ExitForm> {
 
     try {
       setState(() => isLoading = true);
+      final String baseUrl = dotenv.env['API_URL']!;
 
       final response = await http.post(
-        Uri.parse(
-          'https://mobile-dev-api.boldpreciousmetals.com/api/Portfolio/AddCustomerHoldings',
-        ),
+        Uri.parse('$baseUrl/Portfolio/AddCustomerHoldings'),
         headers: {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',

@@ -1,5 +1,6 @@
 // services/api_service.dart
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:bold_portfolio/models/portfolio_model.dart';
 
@@ -9,9 +10,8 @@ Future<bool> updatePortfolioSettings({
   required bool showActualPrice,
   required String token,
 }) async {
-  final url = Uri.parse(
-    'https://mobile-dev-api.boldpreciousmetals.com/api/Portfolio/UpdateCustomerPortfolioSettings',
-  );
+  final String baseUrl = dotenv.env['API_URL']!;
+  final url = Uri.parse('$baseUrl/Portfolio/UpdateCustomerPortfolioSettings');
 
   final response = await http.post(
     url,
