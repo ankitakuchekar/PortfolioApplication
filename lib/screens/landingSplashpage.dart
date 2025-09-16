@@ -134,11 +134,11 @@ class _LandingPageState extends State<LandingPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 5),
                     // Logo
                     Image.network(
                       'https://res.cloudinary.com/bold-pm/image/upload/v1629887471/Graphics/email/BPM-White-Logo.png',
-                      width: 950,
+                      width: 450,
                     ),
                     const SizedBox(height: 15),
 
