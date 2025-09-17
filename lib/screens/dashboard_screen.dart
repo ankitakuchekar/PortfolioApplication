@@ -116,7 +116,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CommonAppBar(title: 'Portfolio'),
+      appBar: const CommonAppBar(title: 'Bullion Portfolio'),
       drawer: const CommonDrawer(),
       body: Consumer<PortfolioProvider>(
         builder: (context, portfolioProvider, child) {
