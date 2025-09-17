@@ -202,7 +202,7 @@ class MetalPortfolioSection extends StatelessWidget {
                             context: context,
                             builder: (BuildContext context) {
                               return PortfolioValuationDialog(
-                                metalType: "Silver",
+                                metalType: metalType,
                                 currentValue: currentValue,
                                 purchaseValue: investedAmount,
                                 loss: absProfitOrLoss, // Negative for profit

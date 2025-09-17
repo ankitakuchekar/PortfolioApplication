@@ -75,9 +75,11 @@ class PortfolioValuationDialog extends StatelessWidget {
             // Header with Gradient and Title (FIXED)
             Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF8A2BE2), Color(0xFF9932CC)],
+                  colors: metalType == 'Silver'
+                      ? const [Color(0xFF8A2BE2), Color(0xFF9932CC)]
+                      : const [Color(0xFFB8860B), Color(0xFFFFD700)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -172,7 +174,9 @@ class PortfolioValuationDialog extends StatelessWidget {
                   ),
 
                   Container(
-                    color: Color(0xFFF3E5F5), // 🌿 Light green background
+                    color: metalType == "Silver"
+                        ? Color(0xFFF3E5F5)
+                        : Color(0xFFFFF8E1), // 🌿 Light green background
                     padding: const EdgeInsets.all(
                       5,
                     ), // Optional padding around content
@@ -183,7 +187,9 @@ class PortfolioValuationDialog extends StatelessWidget {
                           width: double.infinity,
                           margin: const EdgeInsets.only(bottom: 5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF3E5F5),
+                            color: metalType == "Silver"
+                                ? const Color(0xFFF3E5F5)
+                                : Color(0xFFFFF8E1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Column(
@@ -199,10 +205,12 @@ class PortfolioValuationDialog extends StatelessWidget {
                               const SizedBox(height: 4),
                               Text(
                                 currencyFormatter.format(currentValue),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF581C87),
+                                  color: metalType == 'Silver'
+                                      ? const Color(0xFF581C87)
+                                      : const Color(0xFFB8860B),
                                 ),
                               ),
                               const Text(
@@ -328,7 +336,10 @@ class PortfolioValuationDialog extends StatelessWidget {
                       .map(
                         (item) => Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: PortfolioItemCard(item: item),
+                          child: PortfolioItemCard(
+                            item: item,
+                            metalType: metalType,
+                          ),
                         ),
                       )
                       .toList(),
@@ -360,8 +371,13 @@ class PortfolioItem {
 
 class PortfolioItemCard extends StatelessWidget {
   final PortfolioItem item;
+  final String metalType;
 
-  const PortfolioItemCard({super.key, required this.item});
+  const PortfolioItemCard({
+    super.key,
+    required this.item,
+    required this.metalType,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -428,14 +444,18 @@ class PortfolioItemCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF3E5F5),
+                        color: metalType == 'Silver'
+                            ? Color(0xFFF3E5F5)
+                            : Color(0xFFFFF8E1),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
                         item.quantity.toString(),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF8A2BE2),
+                          color: metalType == 'Silver'
+                              ? const Color(0xFF8A2BE2)
+                              : const Color(0xFFB8860B),
                         ),
                       ),
                     ),
