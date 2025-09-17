@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/portfolio_model.dart';
+import 'package:intl/intl.dart';
 
 class ValueCostCards extends StatelessWidget {
   final PortfolioData portfolioData;
@@ -95,7 +96,7 @@ class ValueCostCards extends StatelessWidget {
         _buildCard(
           context: context,
           title: 'Current Value',
-          value: '\$${totalCurrentValue.toStringAsFixed(2)}',
+          value: '\$${NumberFormat("#,##0.00").format(totalCurrentValue)}',
           backgroundColor: const Color(0xFF6A4CAF),
           icon: Icons.info_outline,
         ),
@@ -103,7 +104,7 @@ class ValueCostCards extends StatelessWidget {
         _buildCard(
           context: context,
           title: 'Purchase Cost',
-          value: '\$${totalAcquisitionCost.toStringAsFixed(2)}',
+          value: '\$${NumberFormat("#,##0.00").format(totalAcquisitionCost)}',
           backgroundColor: const Color(0xFF3F51B5),
           icon: Icons.info_outline,
         ),

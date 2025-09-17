@@ -161,7 +161,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
               : CustomerData.empty();
 
           final portfolioSettings = customerData.portfolioSettings;
-
+          final spotPrices = portfolioProvider.spotPrices?.data;
+          final holdingData =
+              portfolioProvider.portfolioData?.data[0].productHoldings;
+          final silverHoldings =
+              holdingData
+                  ?.where((holding) => holding.metal == "Silver")
+                  .toList() ??
+              [];
+          final goldrHoldings =
+              holdingData
+                  ?.where((holding) => holding.metal == "Gold")
+                  .toList() ??
+              [];
           if (customerData.productHoldings.isEmpty ||
               portfolioData == null ||
               portfolioData.data.isEmpty) {
@@ -264,11 +276,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 MetalPortfolioSection(
                   portfolioData: portfolioData,
                   metalType: "Silver",
+                  spotPrice: spotPrices,
+                  holdingData: silverHoldings,
                 ),
                 const SizedBox(height: 16),
                 MetalPortfolioSection(
                   portfolioData: portfolioData,
                   metalType: "Gold",
+                  spotPrice: spotPrices,
+                  holdingData: goldrHoldings,
                 ),
               ],
             ),

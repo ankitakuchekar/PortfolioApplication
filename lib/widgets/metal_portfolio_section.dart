@@ -1,15 +1,22 @@
+import 'package:bold_portfolio/models/spot_price_model.dart';
+import 'package:bold_portfolio/widgets/portfolioValuation.dart';
 import 'package:flutter/material.dart';
 import '../models/portfolio_model.dart';
 import '../utils/app_colors.dart';
+import 'package:intl/intl.dart';
 
 class MetalPortfolioSection extends StatelessWidget {
   final PortfolioData portfolioData;
   final String metalType; // "Gold" or "Silver"
+  final SpotData? spotPrice;
+  final List<ProductHolding> holdingData;
 
   const MetalPortfolioSection({
     super.key,
     required this.portfolioData,
     required this.metalType,
+    required this.spotPrice,
+    required this.holdingData,
   });
 
   void _showSilverCurrentValueDialog(BuildContext context) {
@@ -189,12 +196,43 @@ class MetalPortfolioSection extends StatelessWidget {
                         color: AppColors.textPrimary,
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        '$metalType Portfolio Valuation',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return PortfolioValuationDialog(
+                                metalType: "Silver",
+                                currentValue: currentValue,
+                                purchaseValue: investedAmount,
+                                loss: absProfitOrLoss, // Negative for profit
+                                percentageLoss: percentageChange,
+                                metalSpotPrice: spotPrice!.silverAsk,
+                                metalPriceChange: spotPrice!.silverChange,
+                                metalPriceChangePercent:
+                                    spotPrice!.silverChangePercent,
+                                items: holdingData
+                                    .map(
+                                      (holding) => PortfolioItem(
+                                        name: holding.name,
+                                        imageUrl: holding.productImage,
+                                        quantity: holding.totalQtyOrdered,
+                                        purchasePrice: holding.avgPrice,
+                                        currentPrice: holding.currentPrice,
+                                      ),
+                                    )
+                                    .toList(),
+                              );
+                            },
+                          );
+                        },
+                        child: Text(
+                          '$metalType Portfolio Valuation',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
                       ),
                     ],
@@ -241,7 +279,7 @@ class MetalPortfolioSection extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _labelWithIcon("Purchased $metalType (oz)", context),
+                          _labelWithIcon("Purchased $metalType(oz)", context),
                           const SizedBox(height: 4),
                           _valueText("${ounces.toStringAsFixed(2)} oz"),
                           const SizedBox(height: 16),
@@ -297,13 +335,14 @@ class MetalPortfolioSection extends StatelessWidget {
                                     ),
                                   const SizedBox(width: 2),
                                   Text(
-                                    "${percentageChange.toStringAsFixed(2)}%",
+                                    "${NumberFormat("#,##0.00").format(percentageChange)}%",
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                       color: profitColor,
                                     ),
                                   ),
+
                                   Text(
                                     " )",
                                     style: TextStyle(
