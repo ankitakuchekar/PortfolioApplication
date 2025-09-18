@@ -18,51 +18,76 @@ class AssetAllocationPieChart extends StatelessWidget {
       _PieData('Silver', silverPercentage, const Color(0xFFC0C0C0)),
     ];
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: SfCircularChart(
-        backgroundColor: Colors.transparent,
-        tooltipBehavior: TooltipBehavior(enable: true),
-        // Reduce the chart's margin to give more space for the labels
-        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        title: ChartTitle(
-          text: 'Asset Allocation',
-          textStyle: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: Colors.black,
-          ),
-          alignment: ChartAlignment.near,
-        ),
-        series: <CircularSeries>[
-          PieSeries<_PieData, String>(
-            dataSource: data,
-            xValueMapper: (_PieData data, _) => data.name,
-            yValueMapper: (_PieData data, _) => data.value,
-            pointColorMapper: (_PieData data, _) => data.color,
-            // Reduce the radius to create more space for the labels
-            radius: '70%',
-            dataLabelMapper: (_PieData data, _) =>
-                '${data.name} ${data.value.toStringAsFixed(0)}%',
-            dataLabelSettings: const DataLabelSettings(
-              isVisible: true,
-              labelPosition: ChartDataLabelPosition.outside,
-              // Use a smart overflow mode to prevent cropping
-              overflowMode: OverflowMode.shift,
-              connectorLineSettings: ConnectorLineSettings(
-                type: ConnectorType.line,
-                width: 1.5,
-                length: '10%',
-              ),
-              textStyle: TextStyle(
-                fontSize: 13,
+    return Column(
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(bottom: 16),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Asset Allocation',
+              style: TextStyle(
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+        SizedBox(
+          width: 200,
+          height: 240, // More height to separate labels from pie
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Pie chart
+              SizedBox(
+                height: 200,
+                width: 200,
+                child: SfCircularChart(
+                  margin: EdgeInsets.zero,
+                  series: <CircularSeries>[
+                    PieSeries<_PieData, String>(
+                      dataSource: data,
+                      xValueMapper: (_PieData data, _) => data.name,
+                      yValueMapper: (_PieData data, _) => data.value,
+                      pointColorMapper: (_PieData data, _) => data.color,
+                      radius: '100%',
+                      dataLabelSettings: const DataLabelSettings(
+                        isVisible: false, // Disable default labels
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Gold label above the pie
+              Positioned(
+                bottom: 0,
+                child: Text(
+                  'Gold ${goldPercentage.toStringAsFixed(0)}%',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFFFFD700),
+                  ),
+                ),
+              ),
+              // Silver label below the pie
+              Positioned(
+                top: 0,
+                child: Text(
+                  'Silver ${silverPercentage.toStringAsFixed(0)}%',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFFC0C0C0),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

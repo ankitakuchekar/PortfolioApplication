@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
@@ -12,15 +13,16 @@ import 'utils/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Required for async + background service
 
-  // ✅ Configure background service before runApp
-  FlutterBackgroundService().configure(
-    androidConfiguration: AndroidConfiguration(
-      onStart: onStart,
-      isForegroundMode: true, // persistent notification required on Android
-    ),
-    iosConfiguration: IosConfiguration(), // iOS has limited support
-  );
-
+  if (!kIsWeb) {
+    // ✅ Configure background service before runApp
+    FlutterBackgroundService().configure(
+      androidConfiguration: AndroidConfiguration(
+        onStart: onStart,
+        isForegroundMode: true, // persistent notification required on Android
+      ),
+      iosConfiguration: IosConfiguration(), // iOS has limited support
+    );
+  }
   // ✅ Load environment variables
   const envFile = String.fromEnvironment(
     'ENV_FILE',
