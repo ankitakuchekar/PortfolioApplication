@@ -26,9 +26,23 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: AppColors.black,
       elevation: 0,
+      titleSpacing: 0.0, // Set titleSpacing to 0 to remove the space
+      leading: Builder(
+        builder: (BuildContext context) {
+          return IconButton(
+            icon: const Icon(Icons.menu),
+            color: Colors.white,
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+            tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+          );
+        },
+      ),
       title: Row(
         children: [
-          // Moved the title to the left side
+          const SizedBox(width: 8), // Add a small space for better readability
+          // The title is now positioned after the leading menu icon
           Text(
             title,
             style: const TextStyle(
@@ -37,7 +51,8 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
               color: Colors.white,
             ),
           ),
-          // Moved the timer widget to the right side
+          const Spacer(), // This will push the timer to the far right
+          // The timer widget is now on the right side
           CountdownTimerWidget(
             durationSeconds: timerDurationSeconds,
             onTimerComplete: () => _onTimerComplete(context),
