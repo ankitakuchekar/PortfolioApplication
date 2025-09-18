@@ -1,5 +1,11 @@
+import 'dart:convert';
+
+import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
 
 // Data class to hold controllers for each prediction quarter
 class Prediction {
@@ -20,13 +26,13 @@ class PredictionPopup extends StatefulWidget {
 }
 
 class _PredictionPopupState extends State<PredictionPopup> {
-  // A list to hold the prediction data for each quarter
   final List<Prediction> predictions = [Prediction(quarter: "Q3 2025")];
-
-  // State for enabling/disabling the "Add Quarter" button
   bool _isAddQuarterButtonEnabled = true;
 
-  // Colors derived from the UI screenshot for accuracy
+  // New loading state
+  bool _isSaving = false;
+
+  // Colors etc.
   final Color _optimalColor = const Color(0xFF28A745);
   final Color _worstColor = const Color(0xFFDC3545);
   final Color _quarterTitleColor = const Color(0xFF4C51BF);
@@ -35,16 +41,13 @@ class _PredictionPopupState extends State<PredictionPopup> {
   @override
   void initState() {
     super.initState();
-    // Add listeners to the initial quarter's text fields to handle validation
     if (predictions.isNotEmpty) {
       _addListenersToLastQuarter();
     }
   }
 
-  // It's important to dispose of controllers to free up resources
   @override
   void dispose() {
-    // Remove listeners before disposing controllers
     if (predictions.isNotEmpty) {
       _removeListenersFromLastQuarter();
     }
@@ -57,24 +60,23 @@ class _PredictionPopupState extends State<PredictionPopup> {
     super.dispose();
   }
 
-  /// Validates that all text fields in the last quarter contain valid numbers.
   void _validateLastQuarter() {
     if (predictions.isEmpty) return;
-    final lastPrediction = predictions.last;
+    final last = predictions.last;
 
-    bool isValid(TextEditingController controller) {
-      final text = controller.text.trim();
+    bool isValid(TextEditingController c) {
+      final text = c.text.trim();
+      if (text.isEmpty) return false;
       final value = double.tryParse(text);
       return value != null && value >= 0;
     }
 
     final silverValid =
-        isValid(lastPrediction.silverOptimalController) &&
-        isValid(lastPrediction.silverWorstController);
-
+        isValid(last.silverOptimalController) &&
+        isValid(last.silverWorstController);
     final goldValid =
-        isValid(lastPrediction.goldOptimalController) &&
-        isValid(lastPrediction.goldWorstController);
+        isValid(last.goldOptimalController) &&
+        isValid(last.goldWorstController);
 
     final shouldEnable = silverValid || goldValid;
 
@@ -85,7 +87,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
     }
   }
 
-  /// Adds validation listeners to the controllers of the last prediction in the list.
   void _addListenersToLastQuarter() {
     final last = predictions.last;
     last.silverOptimalController.addListener(_validateLastQuarter);
@@ -102,26 +103,304 @@ class _PredictionPopupState extends State<PredictionPopup> {
     last.goldWorstController.removeListener(_validateLastQuarter);
   }
 
-  /// Logic to add the next quarter dynamically
   void _addQuarter() {
-    // Remove listeners from the current last quarter before adding a new one
     _removeListenersFromLastQuarter();
-
     setState(() {
-      final lastQuarterStr = predictions.last.quarter;
-      final year = int.parse(lastQuarterStr.substring(3));
-      int quarterNum = int.parse(lastQuarterStr.substring(1, 2));
-
-      if (quarterNum == 4) {
+      final lastQuarterStr = predictions.last.quarter; // e.g. "Q3 2025"
+      final parts = lastQuarterStr.split(' ');
+      final q = parts[0]; // e.g "Q3"
+      final year = int.parse(parts[1]);
+      final qNum = int.parse(q.substring(1));
+      if (qNum == 4) {
         predictions.add(Prediction(quarter: "Q1 ${year + 1}"));
       } else {
-        predictions.add(Prediction(quarter: "Q${quarterNum + 1} $year"));
+        predictions.add(Prediction(quarter: "Q${qNum + 1} $year"));
       }
     });
-
-    // Add listeners to the new last quarter and validate its initial state
     _addListenersToLastQuarter();
     _validateLastQuarter();
+  }
+
+  // Utility methods similar to your JS code
+
+  bool _isPredictionEmpty(Prediction pred) {
+    bool emptyOrZero(String? s) {
+      if (s == null || s.trim().isEmpty) return true;
+      final v = double.tryParse(s.trim());
+      return v == null || v == 0.0;
+    }
+
+    return emptyOrZero(pred.silverOptimalController.text) &&
+        emptyOrZero(pred.silverWorstController.text) &&
+        emptyOrZero(pred.goldOptimalController.text) &&
+        emptyOrZero(pred.goldWorstController.text);
+  }
+
+  bool _isSilverFilled(Prediction pred) {
+    final opt = pred.silverOptimalController.text.trim();
+    final worst = pred.silverWorstController.text.trim();
+    final optVal = double.tryParse(opt) ?? 0.0;
+    final worstVal = double.tryParse(worst) ?? 0.0;
+    return opt.isNotEmpty && worst.isNotEmpty && optVal > 0 && worstVal > 0;
+  }
+
+  bool _isGoldFilled(Prediction pred) {
+    final opt = pred.goldOptimalController.text.trim();
+    final worst = pred.goldWorstController.text.trim();
+    final optVal = double.tryParse(opt) ?? 0.0;
+    final worstVal = double.tryParse(worst) ?? 0.0;
+    return opt.isNotEmpty && worst.isNotEmpty && optVal > 0 && worstVal > 0;
+  }
+
+  bool _isFullyFilled(Prediction pred) {
+    return _isSilverFilled(pred) && _isGoldFilled(pred);
+  }
+
+  bool _hasEmptyEarlierRows() {
+    // If any earlier prediction is empty while a later one is filled
+    for (int i = 0; i < predictions.length; i++) {
+      final p = predictions[i];
+      if (_isPredictionEmpty(p)) {
+        // see if any later predictions are non-empty
+        for (int j = i + 1; j < predictions.length; j++) {
+          if (!_isPredictionEmpty(predictions[j])) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  bool _areQuartersSequential() {
+    // Assuming you want no gaps, i.e. Q1 2025 then Q2 2025, etc.
+    // Here we check based on the list you built; if you only add sequentially it's OK.
+    // Could add more checks if quarters might be missing.
+    // For simplicity assume it's sequential since you control AddQuarter.
+    return true;
+  }
+
+  // The save logic
+
+  Future<void> handleSave() async {
+    // First validation: all empty
+    final allEmpty = predictions.every((pred) => _isPredictionEmpty(pred));
+    if (allEmpty) {
+      Fluttertoast.showToast(
+        msg: "Please enter at least one complete set of predictions.",
+      );
+      return;
+    }
+
+    final filtered = predictions
+        .where((pred) => !_isPredictionEmpty(pred))
+        .toList();
+    if (filtered.isEmpty) {
+      Fluttertoast.showToast(
+        msg: "Please enter at least one complete set of predictions.",
+      );
+      return;
+    }
+
+    if (_hasEmptyEarlierRows()) {
+      Fluttertoast.showToast(
+        msg: "Ensure all previous quarters are filled before proceeding.",
+      );
+      return;
+    }
+
+    // Loop through filtered for detailed validations
+    for (var pred in filtered) {
+      final optSilverStr = pred.silverOptimalController.text.trim();
+      final worstSilverStr = pred.silverWorstController.text.trim();
+      final optGoldStr = pred.goldOptimalController.text.trim();
+      final worstGoldStr = pred.goldWorstController.text.trim();
+
+      final optSilver = double.tryParse(optSilverStr) ?? 0.0;
+      final worstSilver = double.tryParse(worstSilverStr) ?? 0.0;
+      final optGold = double.tryParse(optGoldStr) ?? 0.0;
+      final worstGold = double.tryParse(worstGoldStr) ?? 0.0;
+
+      // Check for non-zero when something is entered
+      if ((optSilverStr.isNotEmpty && optSilver == 0.0) ||
+          (worstSilverStr.isNotEmpty && worstSilver == 0.0) ||
+          (optGoldStr.isNotEmpty && optGold == 0.0) ||
+          (worstGoldStr.isNotEmpty && worstGold == 0.0)) {
+        Fluttertoast.showToast(
+          msg: "Predictions cannot be 0. Please enter a value greater than 0.",
+        );
+        return;
+      }
+
+      final silverPartiallyFilled =
+          (optSilver > 0 && worstSilver == 0) ||
+          (optSilver == 0 && worstSilver > 0);
+      final goldPartiallyFilled =
+          (optGold > 0 && worstGold == 0) || (optGold == 0 && worstGold > 0);
+
+      final silverFilled = _isSilverFilled(pred);
+      final goldFilled = _isGoldFilled(pred);
+
+      if ((silverPartiallyFilled && !goldFilled) ||
+          (goldPartiallyFilled && !silverFilled) ||
+          (silverPartiallyFilled && goldPartiallyFilled) ||
+          (silverFilled && goldPartiallyFilled) ||
+          (goldFilled && silverPartiallyFilled)) {
+        Fluttertoast.showToast(
+          msg:
+              "Please complete both optimal and worst predictions for either silver, gold, or both.",
+        );
+        return;
+      }
+
+      // Ensure earlier quarters have silver/gold before later ones
+      final currentIndex = filtered.indexOf(pred);
+      final later = filtered.sublist(currentIndex + 1);
+
+      if (!silverFilled &&
+          later.any(
+            (p) =>
+                double.tryParse(p.silverOptimalController.text.trim()) !=
+                        null &&
+                    (double.tryParse(p.silverOptimalController.text.trim())! >
+                        0) ||
+                double.tryParse(p.silverWorstController.text.trim()) != null &&
+                    (double.tryParse(p.silverWorstController.text.trim())! > 0),
+          )) {
+        Fluttertoast.showToast(
+          msg:
+              "Please complete silver predictions in earlier quarters before filling later quarters.",
+        );
+        return;
+      }
+
+      if (!goldFilled &&
+          later.any(
+            (p) =>
+                double.tryParse(p.goldOptimalController.text.trim()) != null &&
+                    (double.tryParse(p.goldOptimalController.text.trim())! >
+                        0) ||
+                double.tryParse(p.goldWorstController.text.trim()) != null &&
+                    (double.tryParse(p.goldWorstController.text.trim())! > 0),
+          )) {
+        Fluttertoast.showToast(
+          msg:
+              "Please complete gold predictions in earlier quarters before filling later quarters.",
+        );
+        return;
+      }
+    }
+
+    if (!_areQuartersSequential()) {
+      Fluttertoast.showToast(
+        msg: "Quarters must be added sequentially without gaps.",
+      );
+      return;
+    }
+
+    // All validations passed — proceed to save
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final authService = AuthService();
+      final fetchedUser = await authService.getUser();
+      // Replace these with your actual values
+      final userId = fetchedUser?.id;
+      final token = fetchedUser?.token;
+      final String baseUrl = dotenv.env['API_URL']!;
+
+      for (var pred in filtered) {
+        final optSilverStr = pred.silverOptimalController.text.trim();
+        final worstSilverStr = pred.silverWorstController.text.trim();
+        final optGoldStr = pred.goldOptimalController.text.trim();
+        final worstGoldStr = pred.goldWorstController.text.trim();
+
+        double? optSilver = optSilverStr.isEmpty
+            ? null
+            : double.tryParse(optSilverStr);
+        double? worstSilver = worstSilverStr.isEmpty
+            ? null
+            : double.tryParse(worstSilverStr);
+        double? optGold = optGoldStr.isEmpty
+            ? null
+            : double.tryParse(optGoldStr);
+        double? worstGold = worstGoldStr.isEmpty
+            ? null
+            : double.tryParse(worstGoldStr);
+
+        final silverFilled = _isSilverFilled(pred);
+        final goldFilled = _isGoldFilled(pred);
+
+        // Following logic: if gold is filled but silver not, set silver optimal and worst to null etc.
+        final finalOptSilver = (!silverFilled && goldFilled) ? null : optSilver;
+        final finalWorstSilver = (!silverFilled && goldFilled)
+            ? null
+            : worstSilver;
+        final finalOptGold = (!goldFilled && silverFilled) ? null : optGold;
+        final finalWorstGold = (!goldFilled && silverFilled) ? null : worstGold;
+
+        // Construct request payload
+        final body = jsonEncode({
+          "customerId": int.parse(userId ?? '0'),
+          "dateNTime": _getQuarterStartDate(
+            pred.quarter,
+          ), // implement this helper
+          "goldOptimalPrediction": finalOptGold ?? 0,
+          "silverOptimalPrediction": finalOptSilver ?? 0,
+          "goldWorstPrediction": finalWorstGold ?? 0,
+          "silverWorstPrediction": finalWorstSilver ?? 0,
+        });
+
+        final response = await http.post(
+          Uri.parse(
+            "$baseUrl/Portfolio/AddOrUpdateQuarterlyPredictedSpotPrices",
+          ),
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json",
+          },
+          body: body,
+        );
+
+        if (response.statusCode != 200) {
+          // optionally log or inspect response.body
+          throw Exception("API error: ${response.statusCode}");
+        }
+      }
+
+      Fluttertoast.showToast(msg: "Predictions saved successfully!");
+      // optionally refresh data, close popup etc.
+      Navigator.of(context).pop();
+    } catch (e) {
+      Fluttertoast.showToast(msg: "Failed to save predictions.");
+      print("Error saving predictions: $e");
+    } finally {
+      setState(() {
+        _isSaving = false;
+      });
+    }
+  }
+
+  String _getQuarterStartDate(String quarter) {
+    // Based on your JS helper getQuarterStartDate
+    // Implement mapping: e.g. "Q1 2025" -> "2025-01-01", etc.
+    final parts = quarter.split(' ');
+    final q = parts[0]; // Q1, Q2...
+    final year = int.parse(parts[1]);
+    switch (q) {
+      case "Q1":
+        return "${year}-01-01";
+      case "Q2":
+        return "${year}-04-01";
+      case "Q3":
+        return "${year}-07-01";
+      case "Q4":
+        return "${year}-10-01";
+      default:
+        return "${year}-01-01";
+    }
   }
 
   @override
@@ -147,7 +426,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: SingleChildScrollView(
-            // 👈 Wrap everything in a SingleChildScrollView
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -283,22 +561,28 @@ class _PredictionPopupState extends State<PredictionPopup> {
           ),
         ),
         const SizedBox(width: 16),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: () {
-              // Add your save logic here
-              Navigator.of(context).pop();
-            },
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+        ElevatedButton(
+          onPressed: _isSaving
+              ? null // Disable the button while saving
+              : handleSave,
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text("Save Predictions"),
           ),
+          child: _isSaving
+              ? const SizedBox(
+                  height: 16,
+                  width: 16,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              : const Text("Save Predictions"),
         ),
       ],
     );
