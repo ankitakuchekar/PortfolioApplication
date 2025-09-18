@@ -1,3 +1,4 @@
+import 'package:bold_portfolio/widgets/PredictionPopup.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart'; // For DateFormat
@@ -122,21 +123,33 @@ class MetalHoldingsLineChart extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Row(
-                  children: [
-                    Text(
-                      isPredictionView ? 'View Prediction' : 'View Prediction',
-                      style: const TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
+                const Spacer(),
+                Switch(
+                  value: isPredictionView,
+                  onChanged: onToggleView,
+                  activeColor: Colors.blue,
+                ),
+                const Spacer(),
+                TextButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => PredictionPopup(), // This shows the popup
+                    );
+                  },
+                  style: TextButton.styleFrom(
+                    side: const BorderSide(color: Colors.black), // Black border
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
                     ),
-                    Switch(
-                      value: isPredictionView,
-                      onChanged: onToggleView,
-                      activeColor: Colors.blue,
+                  ),
+                  child: const Text(
+                    'Add Prediction',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w500,
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),
