@@ -27,32 +27,20 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: AppColors.black,
       elevation: 0,
       title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 16),
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
+          // Moved the title to the left side
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: CountdownTimerWidget(
-              durationSeconds:
-                  timerDurationSeconds, // or whatever duration you want
-              onTimerComplete: () => _onTimerComplete(context),
-            ),
-            //  CircularTimerWidget(
-            //   durationSeconds: timerDurationSeconds,
-            //   onTimerComplete: () => _onTimerComplete(context),
-            // ),
+          // Moved the timer widget to the right side
+          CountdownTimerWidget(
+            durationSeconds: timerDurationSeconds,
+            onTimerComplete: () => _onTimerComplete(context),
           ),
         ],
       ),
