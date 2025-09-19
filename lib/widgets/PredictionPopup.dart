@@ -19,18 +19,20 @@ class Prediction {
 }
 
 class PredictionPopup extends StatefulWidget {
-  const PredictionPopup({super.key});
+  const PredictionPopup({Key? key}) : super(key: key);
 
   @override
   _PredictionPopupState createState() => _PredictionPopupState();
 }
 
 class _PredictionPopupState extends State<PredictionPopup> {
-  final List<Prediction> predictions = [Prediction(quarter: "Q3 2025")];
-  bool _isAddQuarterButtonEnabled = true;
-
-  // New loading state
+  List<Prediction> predictionsData = [];
+  bool _isAddQuarterButtonEnabled = false;
   bool _isSaving = false;
+  bool _isLoading = true;
+
+  // For showing market data (analyst averages) if needed
+  List<Map<String, String>> marketData = [];
 
   // Colors etc.
   final Color _optimalColor = const Color(0xFF28A745);
@@ -41,17 +43,18 @@ class _PredictionPopupState extends State<PredictionPopup> {
   @override
   void initState() {
     super.initState();
-    if (predictions.isNotEmpty) {
-      _addListenersToLastQuarter();
-    }
+    // Initialize with a default (in case fetch fails or no data)
+    predictionsData = [Prediction(quarter: _nextFourQuarters().first)];
+    _addListenersToLastQuarter();
+    _fetchInitialData();
   }
 
   @override
   void dispose() {
-    if (predictions.isNotEmpty) {
+    if (predictionsData.isNotEmpty) {
       _removeListenersFromLastQuarter();
     }
-    for (var p in predictions) {
+    for (var p in predictionsData) {
       p.silverOptimalController.dispose();
       p.silverWorstController.dispose();
       p.goldOptimalController.dispose();
@@ -60,9 +63,293 @@ class _PredictionPopupState extends State<PredictionPopup> {
     super.dispose();
   }
 
+  List<String> getNextFourQuarters() {
+    final currentQuarter = getCurrentQuarter();
+    List<String> quarters = [];
+    String nextQuarter = currentQuarter;
+
+    if (!isQuarterEnded(currentQuarter)) {
+      quarters.add(currentQuarter);
+    }
+
+    while (quarters.length < 4) {
+      nextQuarter = getNextQuarter(nextQuarter);
+      if (!isQuarterEnded(nextQuarter)) {
+        quarters.add(nextQuarter);
+      }
+    }
+
+    // Safety net — optional if the first loop is enough
+    while (quarters.length < 4) {
+      nextQuarter = getNextQuarter(nextQuarter);
+      quarters.add(nextQuarter);
+    }
+
+    return quarters;
+  }
+
+  String getCurrentQuarter() {
+    final now = DateTime.now();
+    final year = now.year;
+    final month = now.month;
+
+    if (month >= 1 && month <= 3) return 'Q1 $year';
+    if (month >= 4 && month <= 6) return 'Q2 $year';
+    if (month >= 7 && month <= 9) return 'Q3 $year';
+    return 'Q4 $year';
+  }
+
+  String getNextQuarter(String currentQuarter) {
+    final parts = currentQuarter.split(' ');
+    final currentQ = parts[0]; // e.g., "Q4"
+    final year = int.parse(parts[1]);
+
+    final nextQMap = {'Q1': 'Q2', 'Q2': 'Q3', 'Q3': 'Q4', 'Q4': 'Q1'};
+
+    final nextQ = nextQMap[currentQ]!;
+    final nextYear = currentQ == 'Q4' ? year + 1 : year;
+
+    return '$nextQ $nextYear';
+  }
+
+  bool isQuarterEnded(String quarter) {
+    final today = DateTime.now();
+    final parts = quarter.split(' ');
+    final q = parts[0]; // e.g. "Q1"
+    final year = int.parse(parts[1]);
+
+    final endDates = {
+      'Q1': DateTime(year, 4, 1), // April 1 (Q1 ends March 31)
+      'Q2': DateTime(year, 7, 1), // July 1 (Q2 ends June 30)
+      'Q3': DateTime(year, 10, 1), // October 1 (Q3 ends Sep 30)
+      'Q4': DateTime(year + 1, 1, 1), // Jan 1 of next year (Q4 ends Dec 31)
+    };
+
+    return today.isAfter(endDates[q]!);
+  }
+
+  String dateToQuarter(String dateString) {
+    final parts = dateString.split('/');
+    if (parts.length != 3) {
+      throw FormatException('Invalid date format. Expected MM/DD/YYYY');
+    }
+
+    final month = int.parse(parts[0]);
+    final year = int.parse(parts[2]);
+
+    if (month >= 1 && month <= 3) return 'Q1 $year';
+    if (month >= 4 && month <= 6) return 'Q2 $year';
+    if (month >= 7 && month <= 9) return 'Q3 $year';
+    return 'Q4 $year';
+  }
+
+  // === Fetch & process data ===
+  Future<void> _fetchInitialData() async {
+    try {
+      final authService = AuthService();
+      final fetchedUser = await authService.getUser();
+      final userId = fetchedUser?.id;
+      final token = fetchedUser?.token;
+      if (userId == null || token == null) {
+        throw Exception("User not logged in");
+      }
+      final String baseUrl = dotenv.env['API_URL']!;
+      final url = Uri.parse(
+        "$baseUrl/Portfolio/GetCustomerPredictions?customerId=$userId",
+      );
+      final response = await http.get(
+        url,
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("API error: ${response.statusCode}");
+      }
+
+      final decoded = jsonDecode(response.body);
+      final marketAnalystPredictions =
+          decoded['data']['marketAnalystPredictions'] as List<dynamic>? ?? [];
+      // Get next four quarters
+      final nextFourQuarters = getNextFourQuarters();
+      print('marketAnalystPredictions: $marketAnalystPredictions,$decoded');
+
+      // Transform analyst predictions
+      final analystPredictions = marketAnalystPredictions
+          .map((item) {
+            final dateStr = item['dateNTime']?.split(' ')?.first;
+            final quarter = dateToQuarter(dateStr);
+
+            return {
+              'quarter': quarter,
+              'silver': item['silver'],
+              'gold': item['gold'],
+            };
+          })
+          .where((pred) => !isQuarterEnded(pred['quarter']))
+          .toList();
+
+      print('analystPredictions: $analystPredictions');
+      print('nextFourQuarters: $nextFourQuarters');
+
+      // ✅ Group by quarter
+      final groupedByQuarter = <String, Map<String, List<dynamic>>>{};
+
+      for (final prediction in analystPredictions) {
+        final quarter = prediction['quarter'];
+        final silver = prediction['silver'];
+        final gold = prediction['gold'];
+
+        if (!groupedByQuarter.containsKey(quarter)) {
+          groupedByQuarter[quarter] = {'silver': [], 'gold': []};
+        }
+
+        groupedByQuarter[quarter]!['silver']!.add(silver);
+        groupedByQuarter[quarter]!['gold']!.add(gold);
+      }
+
+      print('groupedByQuarter: $groupedByQuarter');
+
+      // Format and average market data
+      final formattedMarketData = groupedByQuarter.entries
+          .map((entry) {
+            final quarter = entry.key;
+            final values = entry.value;
+
+            final silverAvg =
+                (values['silver']!.reduce((a, b) => a + b)) /
+                values['silver']!.length;
+            final goldAvg =
+                (values['gold']!.reduce((a, b) => a + b)) /
+                values['gold']!.length;
+
+            return {
+              'quarter': quarter,
+              'silver': silverAvg.toStringAsFixed(2),
+              'gold': goldAvg.toStringAsFixed(2),
+            };
+          })
+          .where((data) => nextFourQuarters.contains(data['quarter']))
+          .toList();
+
+      // Sort by year then by quarter
+      formattedMarketData.sort((a, b) {
+        final qa = a['quarter']!.split(' ');
+        final qb = b['quarter']!.split(' ');
+
+        final ya = int.parse(qa[1]);
+        final yb = int.parse(qb[1]);
+
+        if (ya == yb) {
+          const order = ['Q1', 'Q2', 'Q3', 'Q4'];
+          return order.indexOf(qa[0]) - order.indexOf(qb[0]);
+        }
+        return ya - yb;
+      });
+
+      marketData = formattedMarketData
+          .map(
+            (item) => item.map((key, value) => MapEntry(key, value.toString())),
+          )
+          .toList();
+      // Limit to 4 items
+      final slicedFormattedMarketData = formattedMarketData.take(4).toList();
+
+      print('formattedMarketData: $slicedFormattedMarketData');
+      // Step 1: Extract available quarters from formattedMarketData
+      final availableQuarters = formattedMarketData
+          .map((data) => data['quarter'] as String)
+          .toList();
+
+      print('availableQuarters: $availableQuarters');
+
+      // Step 2: Get quarterlyPredictedSpotPrices from decoded response
+      final rawUserPredictions =
+          decoded['data']['quarterlyPredictedSpotPrices'] as List<dynamic>? ??
+          [];
+
+      // Step 3: Map and filter user predictions
+      List<Map<String, dynamic>> fetchedPredictions;
+
+      if (rawUserPredictions.isNotEmpty) {
+        fetchedPredictions = rawUserPredictions
+            .map<Map<String, dynamic>>((item) {
+              final dateStr = (item['dateNTime'] as String?)?.split(' ')?.first;
+              final quarter = dateStr != null
+                  ? dateToQuarter(dateStr)
+                  : (availableQuarters.isNotEmpty
+                        ? availableQuarters[0]
+                        : nextFourQuarters[0]);
+
+              String formatValue(dynamic val) {
+                if (val == 0) return '';
+                if (val == null) return '';
+                return val.toString();
+              }
+
+              return {
+                'quarter': quarter,
+                'optimal': {
+                  'silver': formatValue(item['silverOptimalPrediction']),
+                  'gold': formatValue(item['goldOptimalPrediction']),
+                },
+                'worst': {
+                  'silver': formatValue(item['silverWorstPrediction']),
+                  'gold': formatValue(item['goldWorstPrediction']),
+                },
+              };
+            })
+            .where((pred) => availableQuarters.contains(pred['quarter']))
+            .toList();
+
+        // Sort by quarter (Q1 before Q2, etc.)
+        fetchedPredictions.sort((a, b) {
+          final qa = (a['quarter'] as String).split(' ');
+          final qb = (b['quarter'] as String).split(' ');
+
+          final ya = int.parse(qa[1]);
+          final yb = int.parse(qb[1]);
+
+          if (ya == yb) {
+            const order = ['Q1', 'Q2', 'Q3', 'Q4'];
+            return order.indexOf(qa[0]) - order.indexOf(qb[0]);
+          }
+
+          return ya - yb;
+        });
+      } else if (availableQuarters.isNotEmpty) {
+        fetchedPredictions = [
+          {
+            'quarter': availableQuarters[0],
+            'optimal': {'silver': '', 'gold': ''},
+            'worst': {'silver': '', 'gold': ''},
+          },
+        ];
+      } else {
+        fetchedPredictions = [];
+      }
+
+      print('fetchedPredictions: $fetchedPredictions');
+      setState(() {
+        //   predictionsData = fetchedPredictions
+        // .map((item) => Prediction.fromJson(item))
+        // .toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      print("Error fetching initial data: $e");
+      Fluttertoast.showToast(msg: "Failed to load prediction data.");
+      // Leave predictions as the default
+    }
+  }
+
+  // === Validations, listeners, helpers, UI building etc. (all your previous code) ===
+
   void _validateLastQuarter() {
-    if (predictions.isEmpty) return;
-    final last = predictions.last;
+    if (predictionsData.isEmpty) return;
+    final last = predictionsData.last;
 
     bool isValid(TextEditingController c) {
       final text = c.text.trim();
@@ -88,7 +375,8 @@ class _PredictionPopupState extends State<PredictionPopup> {
   }
 
   void _addListenersToLastQuarter() {
-    final last = predictions.last;
+    if (predictionsData.isEmpty) return;
+    final last = predictionsData.last;
     last.silverOptimalController.addListener(_validateLastQuarter);
     last.silverWorstController.addListener(_validateLastQuarter);
     last.goldOptimalController.addListener(_validateLastQuarter);
@@ -96,7 +384,8 @@ class _PredictionPopupState extends State<PredictionPopup> {
   }
 
   void _removeListenersFromLastQuarter() {
-    final last = predictions.last;
+    if (predictionsData.isEmpty) return;
+    final last = predictionsData.last;
     last.silverOptimalController.removeListener(_validateLastQuarter);
     last.silverWorstController.removeListener(_validateLastQuarter);
     last.goldOptimalController.removeListener(_validateLastQuarter);
@@ -106,22 +395,20 @@ class _PredictionPopupState extends State<PredictionPopup> {
   void _addQuarter() {
     _removeListenersFromLastQuarter();
     setState(() {
-      final lastQuarterStr = predictions.last.quarter; // e.g. "Q3 2025"
+      final lastQuarterStr = predictionsData.last.quarter;
       final parts = lastQuarterStr.split(' ');
-      final q = parts[0]; // e.g "Q3"
+      final q = parts[0];
       final year = int.parse(parts[1]);
       final qNum = int.parse(q.substring(1));
       if (qNum == 4) {
-        predictions.add(Prediction(quarter: "Q1 ${year + 1}"));
+        predictionsData.add(Prediction(quarter: "Q1 ${year + 1}"));
       } else {
-        predictions.add(Prediction(quarter: "Q${qNum + 1} $year"));
+        predictionsData.add(Prediction(quarter: "Q${qNum + 1} $year"));
       }
     });
     _addListenersToLastQuarter();
     _validateLastQuarter();
   }
-
-  // Utility methods similar to your JS code
 
   bool _isPredictionEmpty(Prediction pred) {
     bool emptyOrZero(String? s) {
@@ -152,18 +439,11 @@ class _PredictionPopupState extends State<PredictionPopup> {
     return opt.isNotEmpty && worst.isNotEmpty && optVal > 0 && worstVal > 0;
   }
 
-  bool _isFullyFilled(Prediction pred) {
-    return _isSilverFilled(pred) && _isGoldFilled(pred);
-  }
-
   bool _hasEmptyEarlierRows() {
-    // If any earlier prediction is empty while a later one is filled
-    for (int i = 0; i < predictions.length; i++) {
-      final p = predictions[i];
-      if (_isPredictionEmpty(p)) {
-        // see if any later predictions are non-empty
-        for (int j = i + 1; j < predictions.length; j++) {
-          if (!_isPredictionEmpty(predictions[j])) {
+    for (int i = 0; i < predictionsData.length; i++) {
+      if (_isPredictionEmpty(predictionsData[i])) {
+        for (int j = i + 1; j < predictionsData.length; j++) {
+          if (!_isPredictionEmpty(predictionsData[j])) {
             return true;
           }
         }
@@ -173,18 +453,12 @@ class _PredictionPopupState extends State<PredictionPopup> {
   }
 
   bool _areQuartersSequential() {
-    // Assuming you want no gaps, i.e. Q1 2025 then Q2 2025, etc.
-    // Here we check based on the list you built; if you only add sequentially it's OK.
-    // Could add more checks if quarters might be missing.
-    // For simplicity assume it's sequential since you control AddQuarter.
+    // You can implement more checks if needed
     return true;
   }
 
-  // The save logic
-
   Future<void> handleSave() async {
-    // First validation: all empty
-    final allEmpty = predictions.every((pred) => _isPredictionEmpty(pred));
+    final allEmpty = predictionsData.every((pred) => _isPredictionEmpty(pred));
     if (allEmpty) {
       Fluttertoast.showToast(
         msg: "Please enter at least one complete set of predictions.",
@@ -192,7 +466,7 @@ class _PredictionPopupState extends State<PredictionPopup> {
       return;
     }
 
-    final filtered = predictions
+    final filtered = predictionsData
         .where((pred) => !_isPredictionEmpty(pred))
         .toList();
     if (filtered.isEmpty) {
@@ -201,7 +475,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
       );
       return;
     }
-
     if (_hasEmptyEarlierRows()) {
       Fluttertoast.showToast(
         msg: "Ensure all previous quarters are filled before proceeding.",
@@ -209,7 +482,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
       return;
     }
 
-    // Loop through filtered for detailed validations
     for (var pred in filtered) {
       final optSilverStr = pred.silverOptimalController.text.trim();
       final worstSilverStr = pred.silverWorstController.text.trim();
@@ -221,7 +493,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
       final optGold = double.tryParse(optGoldStr) ?? 0.0;
       final worstGold = double.tryParse(worstGoldStr) ?? 0.0;
 
-      // Check for non-zero when something is entered
       if ((optSilverStr.isNotEmpty && optSilver == 0.0) ||
           (worstSilverStr.isNotEmpty && worstSilver == 0.0) ||
           (optGoldStr.isNotEmpty && optGold == 0.0) ||
@@ -253,19 +524,17 @@ class _PredictionPopupState extends State<PredictionPopup> {
         return;
       }
 
-      // Ensure earlier quarters have silver/gold before later ones
       final currentIndex = filtered.indexOf(pred);
       final later = filtered.sublist(currentIndex + 1);
 
       if (!silverFilled &&
           later.any(
             (p) =>
-                double.tryParse(p.silverOptimalController.text.trim()) !=
-                        null &&
-                    (double.tryParse(p.silverOptimalController.text.trim())! >
-                        0) ||
-                double.tryParse(p.silverWorstController.text.trim()) != null &&
-                    (double.tryParse(p.silverWorstController.text.trim())! > 0),
+                (double.tryParse(p.silverOptimalController.text.trim()) ??
+                        0.0) >
+                    0 ||
+                (double.tryParse(p.silverWorstController.text.trim()) ?? 0.0) >
+                    0,
           )) {
         Fluttertoast.showToast(
           msg:
@@ -277,11 +546,9 @@ class _PredictionPopupState extends State<PredictionPopup> {
       if (!goldFilled &&
           later.any(
             (p) =>
-                double.tryParse(p.goldOptimalController.text.trim()) != null &&
-                    (double.tryParse(p.goldOptimalController.text.trim())! >
-                        0) ||
-                double.tryParse(p.goldWorstController.text.trim()) != null &&
-                    (double.tryParse(p.goldWorstController.text.trim())! > 0),
+                (double.tryParse(p.goldOptimalController.text.trim()) ?? 0.0) >
+                    0 ||
+                (double.tryParse(p.goldWorstController.text.trim()) ?? 0.0) > 0,
           )) {
         Fluttertoast.showToast(
           msg:
@@ -298,7 +565,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
       return;
     }
 
-    // All validations passed — proceed to save
     setState(() {
       _isSaving = true;
     });
@@ -306,7 +572,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
     try {
       final authService = AuthService();
       final fetchedUser = await authService.getUser();
-      // Replace these with your actual values
       final userId = fetchedUser?.id;
       final token = fetchedUser?.token;
       final String baseUrl = dotenv.env['API_URL']!;
@@ -333,7 +598,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
         final silverFilled = _isSilverFilled(pred);
         final goldFilled = _isGoldFilled(pred);
 
-        // Following logic: if gold is filled but silver not, set silver optimal and worst to null etc.
         final finalOptSilver = (!silverFilled && goldFilled) ? null : optSilver;
         final finalWorstSilver = (!silverFilled && goldFilled)
             ? null
@@ -341,19 +605,16 @@ class _PredictionPopupState extends State<PredictionPopup> {
         final finalOptGold = (!goldFilled && silverFilled) ? null : optGold;
         final finalWorstGold = (!goldFilled && silverFilled) ? null : worstGold;
 
-        // Construct request payload
         final body = jsonEncode({
-          "customerId": int.parse(userId ?? '0'),
-          "dateNTime": _getQuarterStartDate(
-            pred.quarter,
-          ), // implement this helper
+          "customerId": int.parse(userId!),
+          "dateNTime": _getQuarterStartDate(pred.quarter),
           "goldOptimalPrediction": finalOptGold ?? 0,
           "silverOptimalPrediction": finalOptSilver ?? 0,
           "goldWorstPrediction": finalWorstGold ?? 0,
           "silverWorstPrediction": finalWorstSilver ?? 0,
         });
 
-        final response = await http.post(
+        final resp = await http.post(
           Uri.parse(
             "$baseUrl/Portfolio/AddOrUpdateQuarterlyPredictedSpotPrices",
           ),
@@ -364,18 +625,16 @@ class _PredictionPopupState extends State<PredictionPopup> {
           body: body,
         );
 
-        if (response.statusCode != 200) {
-          // optionally log or inspect response.body
-          throw Exception("API error: ${response.statusCode}");
+        if (resp.statusCode != 200) {
+          throw Exception("API error on save: ${resp.statusCode}");
         }
       }
 
       Fluttertoast.showToast(msg: "Predictions saved successfully!");
-      // optionally refresh data, close popup etc.
       Navigator.of(context).pop();
     } catch (e) {
-      Fluttertoast.showToast(msg: "Failed to save predictions.");
       print("Error saving predictions: $e");
+      Fluttertoast.showToast(msg: "Failed to save predictions.");
     } finally {
       setState(() {
         _isSaving = false;
@@ -383,11 +642,10 @@ class _PredictionPopupState extends State<PredictionPopup> {
     }
   }
 
+  // Helper: Get the first day of the quarter
   String _getQuarterStartDate(String quarter) {
-    // Based on your JS helper getQuarterStartDate
-    // Implement mapping: e.g. "Q1 2025" -> "2025-01-01", etc.
     final parts = quarter.split(' ');
-    final q = parts[0]; // Q1, Q2...
+    final q = parts[0];
     final year = int.parse(parts[1]);
     switch (q) {
       case "Q1":
@@ -402,6 +660,75 @@ class _PredictionPopupState extends State<PredictionPopup> {
         return "${year}-01-01";
     }
   }
+
+  // Helpers for market-data and quarter utilities
+
+  List<String> _nextFourQuarters() {
+    final now = DateTime.now();
+    final List<String> quarters = [];
+    int currentQuarter = ((now.month - 1) ~/ 3) + 1;
+    int year = now.year;
+
+    for (int i = 0; i < 4; i++) {
+      quarters.add("Q$currentQuarter $year");
+      currentQuarter++;
+      if (currentQuarter > 4) {
+        currentQuarter = 1;
+        year++;
+      }
+    }
+    return quarters;
+  }
+
+  String _dateToQuarter(String date) {
+    try {
+      final parts = date.split('-');
+      final year = parts[0];
+      final month = int.parse(parts[1]);
+      if (month >= 1 && month <= 3) return 'Q1 $year';
+      if (month >= 4 && month <= 6) return 'Q2 $year';
+      if (month >= 7 && month <= 9) return 'Q3 $year';
+      return 'Q4 $year';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  bool _isQuarterEnded(String quarter) {
+    final parts = quarter.split(' ');
+    if (parts.length < 2) return false;
+    final q = parts[0];
+    final year = int.tryParse(parts[1]) ?? 0;
+    int month = 1;
+    switch (q) {
+      case 'Q1':
+        month = 3;
+        break;
+      case 'Q2':
+        month = 6;
+        break;
+      case 'Q3':
+        month = 9;
+        break;
+      case 'Q4':
+        month = 12;
+        break;
+    }
+    final endDate = DateTime(year, month, 31);
+    return DateTime.now().isAfter(endDate);
+  }
+
+  int _compareQuarters(String a, String b) {
+    final partsA = a.split(' ');
+    final partsB = b.split(' ');
+    final yearA = int.tryParse(partsA[1]) ?? 0;
+    final yearB = int.tryParse(partsB[1]) ?? 0;
+    final order = ['Q1', 'Q2', 'Q3', 'Q4'];
+    if (yearA != yearB) return yearA - yearB;
+    return order.indexOf(partsA[0]) - order.indexOf(partsB[0]);
+  }
+
+  // === Build UI ===
 
   @override
   Widget build(BuildContext context) {
@@ -433,13 +760,22 @@ class _PredictionPopupState extends State<PredictionPopup> {
                 const SizedBox(height: 10),
                 _buildDisclaimer(),
                 const SizedBox(height: 10),
-                ...predictions
-                    .map((p) => _PredictionQuarterCard(prediction: p))
-                    .toList(),
-                const SizedBox(height: 16),
-                _buildAddQuarterButton(),
-                const SizedBox(height: 24),
-                _buildActionButtons(),
+
+                if (_isLoading) ...[
+                  const Center(child: CircularProgressIndicator()),
+                  const SizedBox(height: 20),
+                ] else if (predictionsData.isEmpty) ...[
+                  const Center(child: Text('No predictions available.')),
+                  const SizedBox(height: 20),
+                ] else ...[
+                  ...predictionsData
+                      .map((p) => _predictionQuarterCard(prediction: p))
+                      .toList(),
+                  const SizedBox(height: 16),
+                  _buildAddQuarterButton(),
+                  const SizedBox(height: 24),
+                  _buildActionButtons(),
+                ],
               ],
             ),
           ),
@@ -448,7 +784,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
     );
   }
 
-  /// Builds the header with a title and a close button
   Widget _buildHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -471,7 +806,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
     );
   }
 
-  /// 3) BUILDS THE DISCLAIMER SECTION WITH UPDATED STYLING
   Widget _buildDisclaimer() {
     return RichText(
       text: TextSpan(
@@ -525,10 +859,8 @@ class _PredictionPopupState extends State<PredictionPopup> {
     );
   }
 
-  /// 2) BUILDS THE "ADD QUARTER" BUTTON WITH ENABLE/DISABLE LOGIC
   Widget _buildAddQuarterButton() {
     return OutlinedButton.icon(
-      // Disable the button by setting onPressed to null if state is false
       onPressed: _isAddQuarterButtonEnabled ? _addQuarter : null,
       icon: const Icon(Icons.add),
       label: const Text("Add Quarter"),
@@ -536,13 +868,11 @@ class _PredictionPopupState extends State<PredictionPopup> {
         foregroundColor: Colors.grey[800],
         side: BorderSide(color: Colors.grey[300]!),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        // Change color when disabled to provide visual feedback
         disabledForegroundColor: Colors.grey[400],
       ),
     );
   }
 
-  /// Builds the bottom action buttons ("Cancel" and "Save Predictions")
   Widget _buildActionButtons() {
     return Row(
       children: [
@@ -561,40 +891,52 @@ class _PredictionPopupState extends State<PredictionPopup> {
           ),
         ),
         const SizedBox(width: 16),
-        ElevatedButton(
-          onPressed: _isSaving
-              ? null // Disable the button while saving
-              : handleSave,
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: _isSaving ? null : handleSave,
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
+            child: _isSaving
+                ? const SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Text("Save Predictions"),
           ),
-          child: _isSaving
-              ? const SizedBox(
-                  height: 16,
-                  width: 16,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                )
-              : const Text("Save Predictions"),
         ),
       ],
     );
   }
 
-  /// A reusable widget for displaying the prediction card for a single quarter
-  Widget _PredictionQuarterCard({required Prediction prediction}) {
+  Widget _predictionQuarterCard({required Prediction prediction}) {
+    // Optionally, find matching market average to display
+    String marketSilver = '';
+    String marketGold = '';
+    print("marketData${prediction}");
+    var md = marketData.firstWhere(
+      (e) => e['quarter'] == prediction.quarter,
+      orElse: () => {},
+    );
+    if (md.isNotEmpty) {
+      marketSilver = md['silver'] ?? '';
+      marketGold = md['gold'] ?? '';
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FA), // Light background for the card
+        color: const Color(0xFFF8F9FA),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey[200]!),
       ),
@@ -610,24 +952,25 @@ class _PredictionPopupState extends State<PredictionPopup> {
             ),
           ),
           const SizedBox(height: 12),
-          // Silver Predictions
+          // Silver section
           Text(
             "Market Analyst Prediction (Silver)",
             style: TextStyle(color: _primaryTextColor, fontSize: 14),
           ),
-          Text(
-            "\$35.82",
-            style: TextStyle(
-              color: _primaryTextColor,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
+          if (marketSilver.isNotEmpty)
+            Text(
+              "\$$marketSilver",
+              style: TextStyle(
+                color: _primaryTextColor,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
           const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
-                child: _PredictionTextField(
+                child: _predictionTextField(
                   label: "Optimal Case",
                   icon: Icons.check_circle,
                   color: _optimalColor,
@@ -636,7 +979,7 @@ class _PredictionPopupState extends State<PredictionPopup> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _PredictionTextField(
+                child: _predictionTextField(
                   label: "Worst Case",
                   icon: Icons.warning,
                   color: _worstColor,
@@ -646,24 +989,25 @@ class _PredictionPopupState extends State<PredictionPopup> {
             ],
           ),
           const SizedBox(height: 16),
-          // Gold Predictions
+          // Gold section
           Text(
             "Market Analyst Prediction (Gold)",
             style: TextStyle(color: _primaryTextColor, fontSize: 14),
           ),
-          Text(
-            "\$3163.93",
-            style: TextStyle(
-              color: _primaryTextColor,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
+          if (marketGold.isNotEmpty)
+            Text(
+              "\$$marketGold",
+              style: TextStyle(
+                color: _primaryTextColor,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
           const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
-                child: _PredictionTextField(
+                child: _predictionTextField(
                   label: "Optimal Case",
                   icon: Icons.check_circle,
                   color: _optimalColor,
@@ -672,7 +1016,7 @@ class _PredictionPopupState extends State<PredictionPopup> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _PredictionTextField(
+                child: _predictionTextField(
                   label: "Worst Case",
                   icon: Icons.warning,
                   color: _worstColor,
@@ -686,8 +1030,7 @@ class _PredictionPopupState extends State<PredictionPopup> {
     );
   }
 
-  /// A reusable widget for the custom-styled text fields
-  Widget _PredictionTextField({
+  Widget _predictionTextField({
     required String label,
     required IconData icon,
     required Color color,
@@ -720,7 +1063,7 @@ class _PredictionPopupState extends State<PredictionPopup> {
               FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
             ],
             decoration: InputDecoration(
-              hintText: '0.00', // 👈 This is the placeholder
+              hintText: '0.00',
               filled: true,
               fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(horizontal: 10),
