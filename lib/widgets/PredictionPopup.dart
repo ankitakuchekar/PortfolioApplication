@@ -9,13 +9,49 @@ import 'package:http/http.dart' as http;
 
 // Data class to hold controllers for each prediction quarter
 class Prediction {
-  String quarter;
-  final TextEditingController silverOptimalController = TextEditingController();
-  final TextEditingController silverWorstController = TextEditingController();
-  final TextEditingController goldOptimalController = TextEditingController();
-  final TextEditingController goldWorstController = TextEditingController();
+  final String quarter;
+  final Map<String, String> optimal;
+  final Map<String, String> worst;
 
-  Prediction({required this.quarter});
+  // Add these controller fields
+  final TextEditingController silverOptimalController;
+  final TextEditingController silverWorstController;
+  final TextEditingController goldOptimalController;
+  final TextEditingController goldWorstController;
+
+  Prediction({
+    required this.quarter,
+    required this.optimal,
+    required this.worst,
+  }) : silverOptimalController = TextEditingController(text: optimal['silver']),
+       silverWorstController = TextEditingController(text: worst['silver']),
+       goldOptimalController = TextEditingController(text: optimal['gold']),
+       goldWorstController = TextEditingController(text: worst['gold']);
+
+  factory Prediction.fromJson(Map<String, dynamic> json) {
+    final optimal = Map<String, String>.from(json['optimal'] ?? {});
+    final worst = Map<String, String>.from(json['worst'] ?? {});
+
+    return Prediction(
+      quarter: json['quarter'] ?? '',
+      optimal: optimal,
+      worst: worst,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'quarter': quarter,
+      'optimal': {
+        'silver': silverOptimalController.text,
+        'gold': goldOptimalController.text,
+      },
+      'worst': {
+        'silver': silverWorstController.text,
+        'gold': goldWorstController.text,
+      },
+    };
+  }
 }
 
 class PredictionPopup extends StatefulWidget {
@@ -44,7 +80,9 @@ class _PredictionPopupState extends State<PredictionPopup> {
   void initState() {
     super.initState();
     // Initialize with a default (in case fetch fails or no data)
-    predictionsData = [Prediction(quarter: _nextFourQuarters().first)];
+    predictionsData = [
+      Prediction(quarter: _nextFourQuarters().first, optimal: {}, worst: {}),
+    ];
     _addListenersToLastQuarter();
     _fetchInitialData();
   }
@@ -174,7 +212,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
           decoded['data']['marketAnalystPredictions'] as List<dynamic>? ?? [];
       // Get next four quarters
       final nextFourQuarters = getNextFourQuarters();
-      print('marketAnalystPredictions: $marketAnalystPredictions,$decoded');
 
       // Transform analyst predictions
       final analystPredictions = marketAnalystPredictions
@@ -190,10 +227,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
           })
           .where((pred) => !isQuarterEnded(pred['quarter']))
           .toList();
-
-      print('analystPredictions: $analystPredictions');
-      print('nextFourQuarters: $nextFourQuarters');
-
       // ✅ Group by quarter
       final groupedByQuarter = <String, Map<String, List<dynamic>>>{};
 
@@ -209,8 +242,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
         groupedByQuarter[quarter]!['silver']!.add(silver);
         groupedByQuarter[quarter]!['gold']!.add(gold);
       }
-
-      print('groupedByQuarter: $groupedByQuarter');
 
       // Format and average market data
       final formattedMarketData = groupedByQuarter.entries
@@ -256,15 +287,10 @@ class _PredictionPopupState extends State<PredictionPopup> {
           .toList();
       // Limit to 4 items
       final slicedFormattedMarketData = formattedMarketData.take(4).toList();
-
-      print('formattedMarketData: $slicedFormattedMarketData');
       // Step 1: Extract available quarters from formattedMarketData
       final availableQuarters = formattedMarketData
           .map((data) => data['quarter'] as String)
           .toList();
-
-      print('availableQuarters: $availableQuarters');
-
       // Step 2: Get quarterlyPredictedSpotPrices from decoded response
       final rawUserPredictions =
           decoded['data']['quarterlyPredictedSpotPrices'] as List<dynamic>? ??
@@ -276,7 +302,7 @@ class _PredictionPopupState extends State<PredictionPopup> {
       if (rawUserPredictions.isNotEmpty) {
         fetchedPredictions = rawUserPredictions
             .map<Map<String, dynamic>>((item) {
-              final dateStr = (item['dateNTime'] as String?)?.split(' ')?.first;
+              final dateStr = (item['dateNTime'] as String?)?.split(' ').first;
               final quarter = dateStr != null
                   ? dateToQuarter(dateStr)
                   : (availableQuarters.isNotEmpty
@@ -331,11 +357,10 @@ class _PredictionPopupState extends State<PredictionPopup> {
         fetchedPredictions = [];
       }
 
-      print('fetchedPredictions: $fetchedPredictions');
       setState(() {
-        //   predictionsData = fetchedPredictions
-        // .map((item) => Prediction.fromJson(item))
-        // .toList();
+        predictionsData = fetchedPredictions
+            .map((item) => Prediction.fromJson(item))
+            .toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -401,9 +426,13 @@ class _PredictionPopupState extends State<PredictionPopup> {
       final year = int.parse(parts[1]);
       final qNum = int.parse(q.substring(1));
       if (qNum == 4) {
-        predictionsData.add(Prediction(quarter: "Q1 ${year + 1}"));
+        predictionsData.add(
+          Prediction(quarter: "Q1 ${year + 1}", optimal: {}, worst: {}),
+        );
       } else {
-        predictionsData.add(Prediction(quarter: "Q${qNum + 1} $year"));
+        predictionsData.add(
+          Prediction(quarter: "Q${qNum + 1} $year", optimal: {}, worst: {}),
+        );
       }
     });
     _addListenersToLastQuarter();
@@ -680,56 +709,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
     return quarters;
   }
 
-  String _dateToQuarter(String date) {
-    try {
-      final parts = date.split('-');
-      final year = parts[0];
-      final month = int.parse(parts[1]);
-      if (month >= 1 && month <= 3) return 'Q1 $year';
-      if (month >= 4 && month <= 6) return 'Q2 $year';
-      if (month >= 7 && month <= 9) return 'Q3 $year';
-      return 'Q4 $year';
-    } catch (e) {
-      return '';
-    }
-  }
-
-  bool _isQuarterEnded(String quarter) {
-    final parts = quarter.split(' ');
-    if (parts.length < 2) return false;
-    final q = parts[0];
-    final year = int.tryParse(parts[1]) ?? 0;
-    int month = 1;
-    switch (q) {
-      case 'Q1':
-        month = 3;
-        break;
-      case 'Q2':
-        month = 6;
-        break;
-      case 'Q3':
-        month = 9;
-        break;
-      case 'Q4':
-        month = 12;
-        break;
-    }
-    final endDate = DateTime(year, month, 31);
-    return DateTime.now().isAfter(endDate);
-  }
-
-  int _compareQuarters(String a, String b) {
-    final partsA = a.split(' ');
-    final partsB = b.split(' ');
-    final yearA = int.tryParse(partsA[1]) ?? 0;
-    final yearB = int.tryParse(partsB[1]) ?? 0;
-    final order = ['Q1', 'Q2', 'Q3', 'Q4'];
-    if (yearA != yearB) return yearA - yearB;
-    return order.indexOf(partsA[0]) - order.indexOf(partsB[0]);
-  }
-
-  // === Build UI ===
-
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -763,9 +742,6 @@ class _PredictionPopupState extends State<PredictionPopup> {
 
                 if (_isLoading) ...[
                   const Center(child: CircularProgressIndicator()),
-                  const SizedBox(height: 20),
-                ] else if (predictionsData.isEmpty) ...[
-                  const Center(child: Text('No predictions available.')),
                   const SizedBox(height: 20),
                 ] else ...[
                   ...predictionsData
@@ -859,9 +835,52 @@ class _PredictionPopupState extends State<PredictionPopup> {
     );
   }
 
+  bool canAddPrediction() {
+    if (predictionsData.isEmpty) return true;
+    if (predictionsData.length >= 4 ||
+        predictionsData.length >= marketData.length)
+      return false;
+
+    final lastPrediction = predictionsData.last;
+    final nextQuarter = getNextQuarter(lastPrediction.quarter);
+
+    return (isSilverFilled(lastPrediction) ||
+            isGoldFilled(lastPrediction) ||
+            isFullyFilled(lastPrediction)) &&
+        marketData.any((data) => data['quarter'] == nextQuarter);
+  }
+
+  bool isSilverFilled(Prediction pred) {
+    final optimalSilver = double.tryParse(pred.optimal['silver'] ?? '') ?? 0;
+    final worstSilver = double.tryParse(pred.worst['silver'] ?? '') ?? 0;
+
+    return optimalSilver > 0 && worstSilver > 0;
+  }
+
+  bool isGoldFilled(Prediction pred) {
+    final optimalGold = double.tryParse(pred.optimal['gold'] ?? '') ?? 0;
+    final worstGold = double.tryParse(pred.worst['gold'] ?? '') ?? 0;
+
+    return optimalGold > 0 && worstGold > 0;
+  }
+
+  bool isFullyFilled(Prediction pred) {
+    final optimalSilver = double.tryParse(pred.optimal['silver'] ?? '') ?? 0;
+    final worstSilver = double.tryParse(pred.worst['silver'] ?? '') ?? 0;
+    final optimalGold = double.tryParse(pred.optimal['gold'] ?? '') ?? 0;
+    final worstGold = double.tryParse(pred.worst['gold'] ?? '') ?? 0;
+
+    return optimalSilver > 0 &&
+        worstSilver > 0 &&
+        optimalGold > 0 &&
+        worstGold > 0;
+  }
+
   Widget _buildAddQuarterButton() {
     return OutlinedButton.icon(
-      onPressed: _isAddQuarterButtonEnabled ? _addQuarter : null,
+      onPressed: (canAddPrediction() || _isAddQuarterButtonEnabled)
+          ? _addQuarter
+          : null,
       icon: const Icon(Icons.add),
       label: const Text("Add Quarter"),
       style: OutlinedButton.styleFrom(
@@ -922,7 +941,7 @@ class _PredictionPopupState extends State<PredictionPopup> {
     // Optionally, find matching market average to display
     String marketSilver = '';
     String marketGold = '';
-    print("marketData${prediction}");
+
     var md = marketData.firstWhere(
       (e) => e['quarter'] == prediction.quarter,
       orElse: () => {},
