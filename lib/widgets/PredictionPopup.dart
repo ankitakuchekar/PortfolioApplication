@@ -783,55 +783,53 @@ class _PredictionPopupState extends State<PredictionPopup> {
   }
 
   Widget _buildDisclaimer() {
-    return RichText(
-      text: TextSpan(
-        children: <TextSpan>[
-          TextSpan(
-            text: 'Optimal Prices - ',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: Colors.green,
-              fontSize: 16,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Optimal Prices - ',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.green,
+            fontSize: 16,
           ),
-          const TextSpan(
-            text:
-                'The potential highest that the metal price can reach in the respective Quarter.\n\n',
-            style: TextStyle(color: Colors.black, fontSize: 15),
+        ),
+        Text(
+          'The potential highest that the metal price can reach in the respective Quarter.\n',
+          style: TextStyle(color: Colors.black, fontSize: 15),
+        ),
+        SizedBox(height: 8),
+        Text(
+          'Worst Prices - ',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.red,
+            fontSize: 16,
           ),
-          TextSpan(
-            text: 'Worst Prices - ',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: Colors.red,
-              fontSize: 16,
-            ),
+        ),
+        Text(
+          'The potential lowest that the metal price can drop to in the respective Quarter.\n',
+          style: TextStyle(color: Colors.black, fontSize: 15),
+        ),
+        SizedBox(height: 8),
+        Text(
+          'Disclaimer - ',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontStyle: FontStyle.italic,
+            color: Colors.black,
+            fontSize: 16,
           ),
-          const TextSpan(
-            text:
-                'The potential lowest that the metal price can drop to in the respective Quarter.\n\n',
-            style: TextStyle(color: Colors.black, fontSize: 15),
+        ),
+        Text(
+          'Analyst estimates are based on available data and market trends. They are not guarantees of future performance, and we are not liable for any decisions made based on this information.',
+          style: TextStyle(
+            fontStyle: FontStyle.italic,
+            color: Colors.black,
+            fontSize: 15,
           ),
-          TextSpan(
-            text: 'Disclaimer - ',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontStyle: FontStyle.italic,
-              color: Colors.black,
-              fontSize: 16,
-            ),
-          ),
-          const TextSpan(
-            text:
-                'Analyst estimates are based on available data and market trends. They are not guarantees of future performance, and we are not liable for any decisions made based on this information.',
-            style: TextStyle(
-              fontStyle: FontStyle.italic,
-              color: Colors.black,
-              fontSize: 15,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

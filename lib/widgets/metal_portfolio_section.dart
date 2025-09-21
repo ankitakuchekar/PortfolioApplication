@@ -218,7 +218,7 @@ class MetalPortfolioSection extends StatelessWidget {
                                         imageUrl: holding.productImage,
                                         quantity: holding.totalQtyOrdered,
                                         purchasePrice: holding.avgPrice,
-                                        currentPrice: holding.currentPrice,
+                                        currentPrice: holding.currentMetalValue,
                                       ),
                                     )
                                     .toList(),

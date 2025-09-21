@@ -93,7 +93,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
+          // margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
           content: Text(
             value ? 'Premium price included' : 'Premium price excluded',
             style: const TextStyle(fontWeight: FontWeight.bold),

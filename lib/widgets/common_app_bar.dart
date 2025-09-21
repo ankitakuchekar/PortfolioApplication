@@ -70,14 +70,14 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: (spotPrices == null)
                   ? const Center(
-                      child: Text(
-                        "Loading prices...",
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black54,
-                        ),
-                      ),
+                      // child: Text(
+                      //   "Loading prices...",
+                      //   style: TextStyle(
+                      //     fontSize: 13,
+                      //     fontWeight: FontWeight.w500,
+                      //     color: Colors.black54,
+                      //   ),
+                      // ),
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
