@@ -217,17 +217,21 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
     String tooltip,
     VoidCallback onPressed,
   ) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF2c2c2c),
-        shape: BoxShape.circle,
-      ),
-      child: IconButton(
-        icon: Icon(icon, color: Colors.white, size: 20),
-        tooltip: tooltip,
-        onPressed: onPressed,
-        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-        padding: EdgeInsets.zero,
+    return SizedBox(
+      width: 28, // Adjust width/height for smaller/larger button
+      height: 28,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF2c2c2c),
+          shape: BoxShape.circle,
+        ),
+        child: IconButton(
+          icon: Icon(icon, color: Colors.white, size: 12), // Smaller icon size
+          tooltip: tooltip,
+          onPressed: onPressed,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(), // Remove min constraints
+        ),
       ),
     );
   }
