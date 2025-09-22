@@ -121,7 +121,7 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
       activationMode: ActivationMode.singleTap,
       lineColor: Colors.white,
       lineDashArray: [4, 4],
-      shouldAlwaysShow: true,
+      shouldAlwaysShow: false,
     );
   }
 
