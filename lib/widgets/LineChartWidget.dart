@@ -183,9 +183,86 @@ class MetalHoldingsLineChart extends StatelessWidget {
             const SizedBox(height: 16),
             Expanded(
               child: SfCartesianChart(
-                backgroundColor:
-                    Colors.transparent, // Set the plot area border color
-                plotAreaBorderWidth: 1.0, // Set the plot area border width
+                backgroundColor: Colors.transparent,
+                plotAreaBorderWidth: 1.0,
+
+                // Disable default tooltip, we’ll use trackball
+                tooltipBehavior: TooltipBehavior(enable: false),
+
+                // ✅ Trackball for crosshair + custom tooltip
+                trackballBehavior: TrackballBehavior(
+                  enable: true,
+                  activationMode:
+                      ActivationMode.singleTap, // or .longPress, .doubleTap
+                  lineType: TrackballLineType.vertical,
+                  lineColor: Colors.grey,
+                  lineWidth: 1,
+                  markerSettings: const TrackballMarkerSettings(
+                    markerVisibility: TrackballVisibilityMode.visible,
+                  ),
+                  tooltipSettings: const InteractiveTooltip(enable: true),
+                  builder: (BuildContext context, TrackballDetails details) {
+                    final int pointIndex = details.pointIndex ?? 0;
+                    final dynamic series = details.series;
+                    final List<dynamic> ds =
+                        (series.dataSource ?? <dynamic>[]) as List<dynamic>;
+                    final MetalInOunces dataPoint =
+                        ds[pointIndex] as MetalInOunces;
+
+                    final String date = DateFormat(
+                      'MMM d, yyyy',
+                    ).format(dataPoint.orderDate);
+                    final double value = isTotalHoldingsView
+                        ? dataPoint.totalOunces
+                        : isGoldView
+                        ? dataPoint.totalGoldOunces
+                        : dataPoint.totalSilverOunces;
+                    final String metalType = isTotalHoldingsView
+                        ? "Total Holdings"
+                        : (isGoldView ? "Gold" : "Silver");
+
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 6,
+                        horizontal: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black87,
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 4,
+                            offset: Offset(2, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            date,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '$metalType: \$${value.toStringAsFixed(1)}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
                 primaryXAxis: DateTimeAxis(
                   dateFormat: DateFormat.MMMd(),
                   intervalType: DateTimeIntervalType.days,
@@ -205,9 +282,8 @@ class MetalHoldingsLineChart extends StatelessWidget {
                     );
                   },
                 ),
-                tooltipBehavior: TooltipBehavior(enable: true),
+
                 series: <CartesianSeries<MetalInOunces, DateTime>>[
-                  // Area series for actual data with gray color for gold/silver
                   AreaSeries<MetalInOunces, DateTime>(
                     dataSource: actualData,
                     xValueMapper: (MetalInOunces data, _) => data.orderDate,
@@ -218,15 +294,15 @@ class MetalHoldingsLineChart extends StatelessWidget {
                         : data.totalSilverOunces,
                     color: isTotalHoldingsView
                         ? totalLineColor
-                        : actualLineColor, // Line color
-                    borderWidth: 2, // Border width for the area series
+                        : actualLineColor,
+                    borderWidth: 2,
                     gradient: LinearGradient(
                       colors: [
                         (isTotalHoldingsView ? totalLineColor : actualLineColor)
                             .withOpacity(0.7),
                         (isTotalHoldingsView ? totalLineColor : actualLineColor)
                             .withOpacity(0.3),
-                      ], // Gradient color for actual data
+                      ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -234,7 +310,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                       isVisible: true,
                       color: isTotalHoldingsView
                           ? totalLineColor
-                          : actualLineColor, // Marker color for actual data
+                          : actualLineColor,
                       width: 1,
                       height: 1,
                     ),
@@ -243,11 +319,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                         : isTotalHoldingsView
                         ? 'Total Holdings'
                         : 'Silver Holdings',
-                    enableTooltip: true, // Enable tooltip for actual data
-                    enableTrackball:
-                        true, // Enable trackball behavior for actual data
                   ),
-                  // Area series for prediction data (only when prediction view is enabled)
                   if (isPredictionView)
                     AreaSeries<MetalInOunces, DateTime>(
                       dataSource: predictionData,
@@ -258,20 +330,19 @@ class MetalHoldingsLineChart extends StatelessWidget {
                           : isGoldView
                           ? data.totalGoldOunces
                           : data.totalSilverOunces,
-                      color: predictionLineColor, // Green for prediction
-                      borderWidth: 2, // Border width for the area series
+                      color: predictionLineColor,
+                      borderWidth: 2,
                       gradient: LinearGradient(
                         colors: [
                           predictionLineColor.withOpacity(0.7),
                           predictionLineColor.withOpacity(0.3),
-                        ], // Gradient color for predictions
+                        ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
                       markerSettings: MarkerSettings(
                         isVisible: true,
-                        color:
-                            predictionLineColor, // Marker color for predictions
+                        color: predictionLineColor,
                         width: 1,
                         height: 1,
                       ),
@@ -280,9 +351,6 @@ class MetalHoldingsLineChart extends StatelessWidget {
                           : isTotalHoldingsView
                           ? 'Total Predictions'
                           : 'Silver Predictions',
-                      enableTooltip: true, // Enable tooltip for predictions
-                      enableTrackball:
-                          true, // Enable trackball behavior for predictions
                     ),
                 ],
               ),
