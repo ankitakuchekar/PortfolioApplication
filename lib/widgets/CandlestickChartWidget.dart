@@ -238,6 +238,30 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
 
   @override
   Widget build(BuildContext context) {
+    DateTime? rightMost;
+
+    if (widget.showCombined) {
+      if (_goldData.isNotEmpty && _silverData.isNotEmpty) {
+        rightMost = _goldData.last.x.isAfter(_silverData.last.x)
+            ? _goldData.last.x
+            : _silverData.last.x;
+      } else if (_goldData.isNotEmpty) {
+        rightMost = _goldData.last.x;
+      } else if (_silverData.isNotEmpty) {
+        rightMost = _silverData.last.x;
+      }
+    } else {
+      final data = widget.selectedMetal == 'Gold' ? _goldData : _silverData;
+      if (data.isNotEmpty) rightMost = data.last.x;
+    }
+
+    // ✅ fallback to "now" if still null
+    rightMost ??= DateTime.now();
+
+    // add custom padding
+    final DateTime xAxisMaxDate = rightMost.add(const Duration(hours: 3));
+
+    debugPrint('rightMost: $rightMost  xAxisMaxDate: $xAxisMaxDate');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -306,6 +330,8 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
                 color: const Color(0xFF8c8c8c),
                 fontSize: MediaQuery.of(context).size.width < 768 ? 10 : 12,
               ),
+              rangePadding: ChartRangePadding.none,
+              maximum: xAxisMaxDate, // manual padding
             ),
             primaryYAxis: NumericAxis(
               numberFormat: NumberFormat.currency(
