@@ -364,18 +364,18 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
                   bullColor: const Color(0xFF00cc00),
                   enableSolidCandles: true,
                 ),
-                CandleSeries<CandleData, DateTime>(
-                  name: 'Silver',
-                  dataSource: _silverData,
-                  xValueMapper: (CandleData data, _) => data.x,
-                  openValueMapper: (CandleData data, _) => data.open,
-                  highValueMapper: (CandleData data, _) => data.high,
-                  lowValueMapper: (CandleData data, _) => data.low,
-                  closeValueMapper: (CandleData data, _) => data.close,
-                  bearColor: const Color(0xFFff3333),
-                  bullColor: const Color(0xFF00cc00),
-                  enableSolidCandles: true,
-                ),
+                // CandleSeries<CandleData, DateTime>(
+                //   name: 'Silver',
+                //   dataSource: _silverData,
+                //   xValueMapper: (CandleData data, _) => data.x,
+                //   openValueMapper: (CandleData data, _) => data.open,
+                //   highValueMapper: (CandleData data, _) => data.high,
+                //   lowValueMapper: (CandleData data, _) => data.low,
+                //   closeValueMapper: (CandleData data, _) => data.close,
+                //   bearColor: const Color(0xFFff3333),
+                //   bullColor: const Color(0xFF00cc00),
+                //   enableSolidCandles: true,
+                // ),
               ] else ...[
                 CandleSeries<CandleData, DateTime>(
                   dataSource: widget.selectedMetal == 'Gold'
