@@ -104,7 +104,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
 
     return Card(
       elevation: 4,
-      margin: const EdgeInsets.all(16.0),
+      margin: const EdgeInsets.all(4.0),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
