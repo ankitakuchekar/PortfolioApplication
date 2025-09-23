@@ -285,6 +285,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
 
                 series: <CartesianSeries<MetalInOunces, DateTime>>[
                   AreaSeries<MetalInOunces, DateTime>(
+                    key: ValueKey(selectedTab), // forces rebuild on tab switch
                     dataSource: actualData,
                     xValueMapper: (MetalInOunces data, _) => data.orderDate,
                     yValueMapper: (MetalInOunces data, _) => isTotalHoldingsView
@@ -292,9 +293,10 @@ class MetalHoldingsLineChart extends StatelessWidget {
                         : isGoldView
                         ? data.totalGoldOunces
                         : data.totalSilverOunces,
-                    color: isTotalHoldingsView
+                    color: (isTotalHoldingsView
                         ? totalLineColor
-                        : actualLineColor,
+                        : actualLineColor),
+
                     borderWidth: 2,
                     gradient: LinearGradient(
                       colors: [
@@ -303,9 +305,11 @@ class MetalHoldingsLineChart extends StatelessWidget {
                         (isTotalHoldingsView ? totalLineColor : actualLineColor)
                             .withOpacity(0.3),
                       ],
-                      begin: Alignment.topCenter,
+                      begin: Alignment.topCenter, // Always top → bottom
                       end: Alignment.bottomCenter,
+                      tileMode: TileMode.clamp, // Prevents flipping on redraw
                     ),
+
                     markerSettings: MarkerSettings(
                       isVisible: true,
                       color: isTotalHoldingsView
