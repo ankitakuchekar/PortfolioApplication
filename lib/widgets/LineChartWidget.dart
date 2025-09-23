@@ -130,27 +130,28 @@ class MetalHoldingsLineChart extends StatelessWidget {
                   activeColor: Colors.blue,
                 ),
                 const Spacer(),
-                TextButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (_) => PredictionPopup(), // This shows the popup
-                    );
-                  },
-                  style: TextButton.styleFrom(
-                    side: const BorderSide(color: Colors.black), // Black border
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
+                if (!isTotalHoldingsView)
+                  TextButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) => PredictionPopup(),
+                      );
+                    },
+                    style: TextButton.styleFrom(
+                      side: const BorderSide(color: Colors.black),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    child: const Text(
+                      'Add Prediction',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                  child: const Text(
-                    'Add Prediction',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
               ],
             ),
             Row(
@@ -326,6 +327,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                   ),
                   if (isPredictionView)
                     AreaSeries<MetalInOunces, DateTime>(
+                      key: ValueKey('${selectedTab}_prediction'),
                       dataSource: predictionData,
                       xValueMapper: (MetalInOunces data, _) => data.orderDate,
                       yValueMapper: (MetalInOunces data, _) =>
@@ -343,6 +345,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
+                        tileMode: TileMode.clamp, // Prevents flipping on redraw
                       ),
                       markerSettings: MarkerSettings(
                         isVisible: true,
