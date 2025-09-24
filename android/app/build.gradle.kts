@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.bold.portfolio"
+    namespace = "com.example.mynewapp"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
