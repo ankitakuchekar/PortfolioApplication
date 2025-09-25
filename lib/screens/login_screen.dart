@@ -1,3 +1,4 @@
+import 'package:bold_portfolio/login-api.dart';
 import 'package:bold_portfolio/screens/ForgotPasswordScreen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/utils/mobileFormater.dart';
@@ -539,6 +540,33 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                         ),
+                        TextButton(
+                          onPressed: () async {
+                            try {
+                              final user = await GoogleSignInApi.login();
+                              if (user != null) {
+                                print(
+                                  'Signed in: ${user.displayName} (${user.email})',
+                                );
+                                // Navigate or do something with the signed-in user
+                              } else {
+                                print('Sign-in was aborted.');
+                              }
+                            } catch (e) {
+                              print('Sign-in failed: $e');
+                              // You can check for popup_closed here
+                              if (e.toString().contains('popup_closed')) {
+                                // Optional: Show message to user
+                                print('User closed the Google sign-in popup.');
+                              }
+                            }
+                          },
+                          child: const Text(
+                            'Sign up with Google',
+                            style: TextStyle(color: Color(0xFF00C566)),
+                          ),
+                        ),
+
                         const SizedBox(height: 16),
                         TextButton(
                           onPressed: () {
@@ -1030,4 +1058,8 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+}
+
+Future signIn() async {
+  await GoogleSignInApi.login();
 }
