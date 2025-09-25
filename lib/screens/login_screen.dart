@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../providers/auth_provider.dart';
 import 'main_screen.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -600,14 +601,41 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                         ),
-                        TextButton(
-                          onPressed: _handleGoogleSignIn,
-                          child: const Text(
-                            'Sign up with Google',
-                            style: TextStyle(color: Color(0xFF00C566)),
+                        const SizedBox(height: 24),
+
+                        GestureDetector(
+                          onTap: _handleGoogleSignIn,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 16,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey[300]!),
+                              borderRadius: BorderRadius.circular(8),
+                              color: Colors.white,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SvgPicture.network(
+                                  'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                                  width: 5,
+                                  height: 5,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Sign up with Google',
+                                  style: TextStyle(
+                                    color: Color(0xFF00C566),
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-
                         const SizedBox(height: 16),
                         TextButton(
                           onPressed: () {
