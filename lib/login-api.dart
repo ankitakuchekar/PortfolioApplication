@@ -3,23 +3,22 @@ import 'package:flutter/foundation.dart'; // for kIsWeb
 
 class GoogleSignInApi {
   static final _googleSignIn = GoogleSignIn(
-    clientId: !kIsWeb
-        ? '347771815909-ci32m2rgo3as3e4k6gbktume1g1hlpp0.apps.googleusercontent.com' // <-- Web only
-        : null,
+    clientId: kIsWeb
+        ? '571275715069-fod3sobvcog055e7pqh54253ug11nhji.apps.googleusercontent.com'
+        : '347771815909-ci32m2rgo3as3e4k6gbktume1g1hlpp0.apps.googleusercontent.com',
     scopes: ['email'],
   );
-
   static Future<Map<String, dynamic>?> login() async {
     try {
       final GoogleSignInAccount? user = await _googleSignIn.signIn();
-      print("user ${user}");
+      print("userdetails1 ${user}");
       if (user == null) {
         // If sign-in is cancelled by the user
         return null;
       }
 
       final GoogleSignInAuthentication googleAuth = await user.authentication;
-      print("user ${googleAuth}");
+      print("userdetails2 ${googleAuth.accessToken}");
 
       // Now you can retrieve the Google token
       final String googleToken = googleAuth.accessToken ?? '';

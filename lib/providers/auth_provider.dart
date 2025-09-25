@@ -30,13 +30,29 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> login(String username, String password) async {
+  Future<bool> login(
+    String username,
+    String password,
+    bool isGoogleLogin,
+    String googleToken,
+    String firstName,
+    String lastName,
+    String screenSize,
+  ) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final response = await _authService.login(username, password);
+      final response = await _authService.login(
+        username,
+        password,
+        isGoogleLogin,
+        googleToken,
+        firstName,
+        lastName,
+        screenSize,
+      );
       if (response.success) {
         _user = await _authService.getUser();
         _isLoading = false;

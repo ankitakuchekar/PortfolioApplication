@@ -11,7 +11,15 @@ class AuthService extends ChangeNotifier {
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'user_data';
 
-  Future<AuthResponse> login(String username, String password) async {
+  Future<AuthResponse> login(
+    String username,
+    String password,
+    bool isGoogleLogin,
+    String googleToken,
+    String firstName,
+    String lastName,
+    String screenSize,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/Authentication/authenticate'),
@@ -19,9 +27,13 @@ class AuthService extends ChangeNotifier {
         body: jsonEncode({
           'emailId': username,
           'password': password,
-          'screenSize': '1536, 390',
+          'screenSize': screenSize,
           'sessionId': "",
-          'token': "",
+          'GoogleToken': googleToken,
+          'isGoogleLogin': isGoogleLogin,
+          'firstName': firstName,
+          'lastName': lastName,
+          'token': '',
         }),
       );
 

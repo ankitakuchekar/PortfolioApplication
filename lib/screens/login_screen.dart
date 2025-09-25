@@ -132,6 +132,11 @@ class _LoginScreenState extends State<LoginScreen> {
       final success = await authProvider.login(
         _usernameController.text.trim(),
         _passwordController.text,
+        false,
+        "",
+        "",
+        "",
+        '1536, 390',
       );
 
       if (success && mounted) {
@@ -165,21 +170,36 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _isLoading = false;
     });
+    print("User from google: $user");
+    print("email ${user?['email']}");
 
     if (user != null) {
-      final userDetails = await GoogleSignInApi.getUserDetails();
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-      if (userDetails != null) {
-        print("User details: $userDetails");
-        Navigator.pushReplacement(
-          context, // `context` is available here inside the `State` class
-          MaterialPageRoute(builder: (context) => DashboardScreen()),
+      final success = await authProvider.login(
+        user['email'],
+        "",
+        true,
+        user['googleToken'],
+        user['firstName'],
+        user['lastName'],
+        user['profilePhoto'],
+      );
+
+      if (success && mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const MainScreen()),
         );
-      } else {
+      } else if (mounted) {
+        // Show error toast/snackbar
+        final errorMessage =
+            authProvider.errorMessage ??
+            'Login failed,Username or password is incorrect';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to fetch user details.'),
-            backgroundColor: Colors.red,
+            content: Text(errorMessage),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
