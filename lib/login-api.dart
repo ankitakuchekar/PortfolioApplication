@@ -9,5 +9,49 @@ class GoogleSignInApi {
     scopes: ['email'],
   );
 
-  static Future<GoogleSignInAccount?> login() => _googleSignIn.signIn();
+  static Future<Map<String, dynamic>?> login() async {
+    try {
+      final GoogleSignInAccount? user = await _googleSignIn.signIn();
+
+      if (user == null) {
+        // If sign-in is cancelled by the user
+        return null;
+      }
+
+      final GoogleSignInAuthentication googleAuth = await user.authentication;
+
+      // Now you can retrieve the Google token
+      final String googleToken = googleAuth.accessToken ?? '';
+
+      return {
+        'googleToken': googleToken,
+        'email': user.email,
+        'firstName': user.displayName?.split(' ')[0] ?? '',
+        'lastName': user.displayName?.split(' ')[1] ?? '',
+        'profilePhoto': user.photoUrl,
+        'id': user.id,
+      };
+    } catch (e) {
+      print('Google sign-in failed: $e');
+      return null;
+    }
+  }
+
+  // Retrieve Google user details (useful for backend authentication)
+  static Future<Map<String, dynamic>?> getUserDetails() async {
+    final user = _googleSignIn.currentUser;
+    if (user != null) {
+      return {
+        'email': user.email,
+        'firstName': user.displayName?.split(' ')[0] ?? '',
+        'lastName': user.displayName?.split(' ')[1] ?? '',
+        'profilePhoto': user.photoUrl,
+        'id': user.id,
+      };
+    }
+    return null;
+  }
+
+  // Check if the user is already signed in
+  static bool isSignedIn() => _googleSignIn.currentUser != null;
 }
