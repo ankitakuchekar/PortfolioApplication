@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class FeedbackPopup extends StatefulWidget {
+  const FeedbackPopup({super.key});
+
   @override
   _FeedbackPopupState createState() => _FeedbackPopupState();
 }

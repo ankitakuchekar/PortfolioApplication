@@ -49,7 +49,7 @@ class AuthService extends ChangeNotifier {
         }
         return authResponse;
       } else {
-        print("respnonse, ${responseData}");
+        print("respnonse, $responseData");
         return AuthResponse(
           success: false,
           message:

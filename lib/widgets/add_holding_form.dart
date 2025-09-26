@@ -414,7 +414,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
 
                       // Dealer Dropdown
                       DropdownButtonFormField<String>(
-                        value: selectedDealer,
+                        initialValue: selectedDealer,
                         items: dealers.map((dealer) {
                           return DropdownMenuItem(
                             value: dealer,
@@ -621,8 +621,9 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                         validator: (value) =>
                             value == null || value.isEmpty ? 'Required' : null,
                         onChanged: (_) {
-                          if (purchaseDate != null && selectedProduct != null)
+                          if (purchaseDate != null && selectedProduct != null) {
                             getPremiumPrice();
+                          }
                         },
                       ),
                       const SizedBox(height: 12),
@@ -631,7 +632,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                       if (selectedDealer == 'Not Purchased on Bold') ...[
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
-                          value: selectedProduct?['metal'] ?? 'Silver',
+                          initialValue: selectedProduct?['metal'] ?? 'Silver',
                           items: ['Silver', 'Gold']
                               .map(
                                 (m) =>
@@ -736,8 +737,9 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
 
                                 onChanged: (_) {
                                   if (purchaseDate != null &&
-                                      selectedProduct != null)
+                                      selectedProduct != null) {
                                     getPremiumPrice();
+                                  }
                                 },
                                 validator: (value) =>
                                     value == null || value.isEmpty

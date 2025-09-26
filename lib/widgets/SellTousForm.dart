@@ -166,7 +166,7 @@ class _SellFormState extends State<SellForm> {
                           });
                         },
                       );
-                    }).toList(),
+                    }),
                   ],
                 ),
               ),
@@ -421,14 +421,14 @@ class _SellFormState extends State<SellForm> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: isLoading ? null : _submitSellRequest,
-              child: isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Confirm Sell"),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 backgroundColor: Colors.black,
                 foregroundColor: Colors.white,
               ),
+              child: isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text("Confirm Sell"),
             ),
           ),
         ],

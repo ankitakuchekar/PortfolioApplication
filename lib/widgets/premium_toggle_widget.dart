@@ -67,7 +67,7 @@ class PremiumToggleWidget extends StatelessWidget {
                   Switch(
                     value: value,
                     onChanged: onToggle,
-                    activeColor: Colors.white,
+                    activeThumbColor: Colors.white,
                     activeTrackColor: Colors.grey,
                     inactiveThumbColor: Colors.white,
                     inactiveTrackColor: Colors.grey,

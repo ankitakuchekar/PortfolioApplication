@@ -36,20 +36,10 @@ android {
             storePassword = "Ankita123"
             keyPassword = "Ankita123"
             storeFile = file("login-key.jks")
-        }
-getByName("debug") {
-        keyAlias = "androiddebugkey"
-        storePassword = "android"
-        keyPassword = "android"
-        storeFile = file("${project.rootDir}/android/app/debug.keystore")
-    }
-       
+        }  
     }
 
-    buildTypes {
-        getByName("debug") {
-            signingConfig = signingConfigs.getByName("debug")
-        }
+    buildTypes { 
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false

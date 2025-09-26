@@ -186,7 +186,7 @@ class ActualPriceBannerOption extends StatelessWidget {
                     child: Switch(
                       value: isActualPrice,
                       onChanged: onToggle,
-                      activeColor: Colors.white,
+                      activeThumbColor: Colors.white,
                       activeTrackColor: Colors.greenAccent,
                       inactiveThumbColor: Colors.grey.shade300,
                       inactiveTrackColor: Colors.grey.shade600,

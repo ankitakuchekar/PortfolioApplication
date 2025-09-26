@@ -70,9 +70,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     switch (result) {
       case 0:
-        return '${fieldName} name is required';
+        return '$fieldName name is required';
       case -1:
-        return '${fieldName} name must contain only letters';
+        return '$fieldName name must contain only letters';
       case 1:
         return 'Whitespace is not allowed';
       case 2:
@@ -620,8 +620,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 SvgPicture.network(
                                   'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                                  width: 5,
-                                  height: 5,
+                                  width: 10,
+                                  height: 10,
                                 ),
                                 SizedBox(width: 8),
                                 Text(

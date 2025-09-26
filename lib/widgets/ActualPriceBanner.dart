@@ -139,7 +139,7 @@ class _ActualPriceBannerState extends State<ActualPriceBanner> {
                         child: Switch(
                           value: isActualPrice,
                           onChanged: handleToggle,
-                          activeColor: Colors.white,
+                          activeThumbColor: Colors.white,
                           activeTrackColor: Colors.grey,
                           inactiveThumbColor: Colors.white,
                           inactiveTrackColor: Colors.grey,

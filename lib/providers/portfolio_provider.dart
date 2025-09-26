@@ -5,7 +5,7 @@ import '../services/portfolio_service.dart';
 
 class PortfolioProvider with ChangeNotifier {
   PortfolioData? _portfolioData;
-  List<ProductHolding> _holdings = [];
+  final List<ProductHolding> _holdings = [];
   SpotPriceData? _spotPrices;
   bool _isLoading = false;
   bool _isRefreshing = false;

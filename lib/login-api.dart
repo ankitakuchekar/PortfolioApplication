@@ -11,7 +11,7 @@ class GoogleSignInApi {
   static Future<Map<String, dynamic>?> login() async {
     try {
       final GoogleSignInAccount? user = await _googleSignIn.signIn();
-      print("userdetails1 ${user}");
+      print("userdetails1 $user");
       if (user == null) {
         // If sign-in is cancelled by the user
         return null;

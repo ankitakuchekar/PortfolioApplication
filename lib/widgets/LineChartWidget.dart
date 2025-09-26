@@ -127,7 +127,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                 Switch(
                   value: isPredictionView,
                   onChanged: onToggleView,
-                  activeColor: Colors.blue,
+                  activeThumbColor: Colors.blue,
                 ),
                 const Spacer(),
                 if (!isTotalHoldingsView)

@@ -255,12 +255,12 @@ class FeatureCard extends StatefulWidget {
   final String description;
 
   const FeatureCard({
-    Key? key,
+    super.key,
     required this.icon,
     // required this.iconColor,
     required this.title,
     required this.description,
-  }) : super(key: key);
+  });
 
   @override
   State<FeatureCard> createState() => _FeatureCardState();

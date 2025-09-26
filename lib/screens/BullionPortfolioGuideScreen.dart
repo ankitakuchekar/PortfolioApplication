@@ -1,7 +1,6 @@
 import 'package:bold_portfolio/utils/app_colors.dart';
 import 'package:bold_portfolio/widgets/common_app_bar.dart';
 import 'package:bold_portfolio/widgets/common_drawer.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 

@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/portfolio_provider.dart';
 import '../utils/app_colors.dart';
-import '../widgets/asset_allocation_section.dart';
 import '../widgets/profit_loss_cards.dart';
 import '../widgets/value_cost_cards.dart';
 import '../widgets/metal_portfolio_section.dart';

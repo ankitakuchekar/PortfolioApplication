@@ -55,7 +55,7 @@ class Prediction {
 }
 
 class PredictionPopup extends StatefulWidget {
-  const PredictionPopup({Key? key}) : super(key: key);
+  const PredictionPopup({super.key});
 
   @override
   _PredictionPopupState createState() => _PredictionPopupState();
@@ -678,15 +678,15 @@ class _PredictionPopupState extends State<PredictionPopup> {
     final year = int.parse(parts[1]);
     switch (q) {
       case "Q1":
-        return "${year}-01-01";
+        return "$year-01-01";
       case "Q2":
-        return "${year}-04-01";
+        return "$year-04-01";
       case "Q3":
-        return "${year}-07-01";
+        return "$year-07-01";
       case "Q4":
-        return "${year}-10-01";
+        return "$year-10-01";
       default:
-        return "${year}-01-01";
+        return "$year-01-01";
     }
   }
 
@@ -744,9 +744,9 @@ class _PredictionPopupState extends State<PredictionPopup> {
                   const Center(child: CircularProgressIndicator()),
                   const SizedBox(height: 20),
                 ] else ...[
-                  ...predictionsData
-                      .map((p) => _predictionQuarterCard(prediction: p))
-                      .toList(),
+                  ...predictionsData.map(
+                    (p) => _predictionQuarterCard(prediction: p),
+                  ),
                   const SizedBox(height: 16),
                   _buildAddQuarterButton(),
                   const SizedBox(height: 24),
@@ -836,8 +836,9 @@ class _PredictionPopupState extends State<PredictionPopup> {
   bool canAddPrediction() {
     if (predictionsData.isEmpty) return true;
     if (predictionsData.length >= 4 ||
-        predictionsData.length >= marketData.length)
+        predictionsData.length >= marketData.length) {
       return false;
+    }
 
     final lastPrediction = predictionsData.last;
     final nextQuarter = getNextQuarter(lastPrediction.quarter);

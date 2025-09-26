@@ -16,11 +16,11 @@ class HoldingCard extends StatefulWidget {
   final bool showMetalPrice;
 
   const HoldingCard({
-    Key? key,
+    super.key,
     required this.holding,
     required this.showActualPrice,
     required this.showMetalPrice,
-  }) : super(key: key);
+  });
 
   @override
   _HoldingCardState createState() => _HoldingCardState();
@@ -67,8 +67,8 @@ class _HoldingCardState extends State<HoldingCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Image.network(
-                widget.holding.productImage?.isNotEmpty == true
-                    ? widget.holding.productImage!
+                widget.holding.productImage.isNotEmpty == true
+                    ? widget.holding.productImage
                     : selectedImage,
                 height: 70,
                 width: 70,
@@ -114,7 +114,9 @@ class _HoldingCardState extends State<HoldingCard> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "${widget.holding.orderDate.toIso8601String().split('T')[0]}",
+                          widget.holding.orderDate.toIso8601String().split(
+                            'T',
+                          )[0],
                           style: const TextStyle(
                             fontSize: 14,
                             height: 1.4,
