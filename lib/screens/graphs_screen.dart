@@ -208,16 +208,16 @@ class _GraphsScreenState extends State<GraphsScreen> {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 20),
+            padding: const EdgeInsets.only(bottom: 5),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 10),
+                const SizedBox(height: 5),
                 // Tab buttons for selection
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Wrap(
-                    spacing: 10,
+                    spacing: 3,
                     alignment: WrapAlignment.center,
                     children: tabOptions.map((label) {
                       final isSelected = selectedTab == label;

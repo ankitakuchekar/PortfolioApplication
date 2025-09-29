@@ -361,6 +361,8 @@ class MetalInOunces {
   final double totalSilverOunces;
   final double totalSilverWorstPrediction;
   final String type;
+  final double totalOuncesWorstPrediction;
+  final double totalOuncesOptimalPrediction;
 
   MetalInOunces(
     this.orderDate,
@@ -372,6 +374,8 @@ class MetalInOunces {
     this.totalSilverOunces,
     this.totalSilverWorstPrediction,
     this.type,
+    this.totalOuncesWorstPrediction,
+    this.totalOuncesOptimalPrediction,
   );
 
   factory MetalInOunces.fromJson(Map<String, dynamic> json) {
@@ -389,6 +393,8 @@ class MetalInOunces {
       (json['totalSilverOunces'] ?? 0).toDouble(),
       (json['totalSilverWorstPrediction'] ?? 0).toDouble(),
       (json['type'] ?? '').toString(),
+      (json['totalOuncesWorstPrediction'] ?? 0).toDouble(),
+      (json['totalOuncesOptimalPrediction'] ?? 0).toDouble(),
     );
   }
 }
