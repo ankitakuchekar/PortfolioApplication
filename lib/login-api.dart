@@ -5,7 +5,7 @@ class GoogleSignInApi {
   static final _googleSignIn = GoogleSignIn(
     clientId: kIsWeb
         ? '571275715069-fod3sobvcog055e7pqh54253ug11nhji.apps.googleusercontent.com'
-        : '347771815909-ci32m2rgo3as3e4k6gbktume1g1hlpp0.apps.googleusercontent.com',
+        : null,
     scopes: ['email'],
   );
   static Future<Map<String, dynamic>?> login() async {
