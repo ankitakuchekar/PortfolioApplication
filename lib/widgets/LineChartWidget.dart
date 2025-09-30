@@ -142,6 +142,76 @@ class MetalHoldingsLineChart extends StatelessWidget {
       return value != null && value != 0 && value > 0;
     });
 
+    Widget _buildTooltipContent(
+      MetalInOunces dataPoint,
+      String date,
+      String? seriesName,
+    ) {
+      const TextStyle baseStyle = TextStyle(color: Colors.white, fontSize: 12);
+
+      final List<Widget> content = [
+        Text(date, style: baseStyle.copyWith(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+      ];
+
+      // 🔍 Show actual data (Gold / Silver / Total)
+      if (seriesName == 'Silver Holdings') {
+        content.add(
+          Text(
+            "Silver: \$${dataPoint.totalSilverOunces.toStringAsFixed(2)}",
+            style: baseStyle,
+          ),
+        );
+      } else if (seriesName == 'Gold Holdings') {
+        content.add(
+          Text(
+            "Gold: \$${dataPoint.totalGoldOunces.toStringAsFixed(2)}",
+            style: baseStyle,
+          ),
+        );
+      } else if (seriesName == 'Total Holdings') {
+        content.add(
+          Text(
+            "Total: \$${dataPoint.totalOunces.toStringAsFixed(2)}",
+            style: baseStyle,
+          ),
+        );
+      }
+      // 🔍 Show prediction data (Market, Worst, Optimal)
+      else if (isPredictionView) {
+        content.add(
+          Text(
+            "Market Analyst Predictions: \$${dataPoint.totalSilverOunces.toStringAsFixed(2)}",
+            style: baseStyle.copyWith(color: Colors.lightGreen),
+          ),
+        );
+
+        if (shouldRenderOptimalPrediction) {
+          content.add(
+            Text(
+              "Silver Worst: \$${dataPoint.totalSilverWorstPrediction.toStringAsFixed(2)}",
+              style: baseStyle.copyWith(color: Colors.blue),
+            ),
+          );
+        }
+
+        if (shouldRenderWorstPrediction) {
+          content.add(
+            Text(
+              "Silver Optimal: \$${dataPoint.totalSilverOptimalPrediction.toStringAsFixed(2)}",
+              style: baseStyle.copyWith(color: Colors.red),
+            ),
+          );
+        }
+      }
+
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: content,
+      );
+    }
+
     return Card(
       elevation: 4,
       margin: const EdgeInsets.all(4.0),
@@ -244,17 +314,124 @@ class MetalHoldingsLineChart extends StatelessWidget {
                     markerVisibility: TrackballVisibilityMode.visible,
                   ),
                   tooltipSettings: const InteractiveTooltip(enable: true),
+                  tooltipDisplayMode: TrackballDisplayMode.groupAllPoints,
                   builder: (BuildContext context, TrackballDetails details) {
                     final int pointIndex = details.pointIndex ?? 0;
-                    final dynamic series = details.series;
-                    final List<dynamic> ds =
-                        (series.dataSource ?? <dynamic>[]) as List<dynamic>;
-                    final MetalInOunces dataPoint =
-                        ds[pointIndex] as MetalInOunces;
+                    final TrackballGroupingModeInfo? groupingInfo =
+                        details.groupingModeInfo;
+                    if (groupingInfo == null) {
+                      return const SizedBox();
+                    }
 
+                    final List<dynamic>? visibleSeriesList =
+                        groupingInfo.visibleSeriesList;
+                    final List<CartesianChartPoint<dynamic>> pts =
+                        groupingInfo.points;
+
+                    if (visibleSeriesList == null ||
+                        visibleSeriesList.length != pts.length) {
+                      // mismatch or missing info
+                      return const SizedBox();
+                    }
+
+                    // Map of seriesName -> dataPoint
+                    final Map<String, MetalInOunces> seriesToData = {};
+
+                    for (int i = 0; i < visibleSeriesList.length; i++) {
+                      final dynamic seriesObj = visibleSeriesList[i];
+                      final CartesianChartPoint<dynamic> point = pts[i];
+
+                      final String? seriesName = seriesObj.name as String?;
+                      final List<dynamic>? ds = seriesObj.dataSource;
+
+                      if (seriesName != null &&
+                          ds != null &&
+                          pointIndex < ds.length) {
+                        final MetalInOunces dp =
+                            ds[pointIndex] as MetalInOunces;
+                        seriesToData[seriesName] = dp;
+                      }
+                    }
+
+                    if (seriesToData.isEmpty) {
+                      return const SizedBox();
+                    }
+
+                    final MetalInOunces firstDp = seriesToData.values.first;
                     final String date = DateFormat(
                       'MMM d, yyyy',
-                    ).format(dataPoint.orderDate);
+                    ).format(firstDp.orderDate);
+
+                    final List<Widget> content = [
+                      Text(
+                        date,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                    ];
+                    const TextStyle baseStyle = TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    );
+
+                    seriesToData.forEach((seriesName, dp) {
+                      // adapt depending on seriesName
+                      if (seriesName == 'Silver Holdings') {
+                        content.add(
+                          Text(
+                            "Silver: \$${dp.totalSilverOunces.toStringAsFixed(2)}",
+                            style: baseStyle,
+                          ),
+                        );
+                      } else if (seriesName == 'Gold Holdings') {
+                        content.add(
+                          Text(
+                            "Gold: \$${dp.totalGoldOunces.toStringAsFixed(2)}",
+                            style: baseStyle,
+                          ),
+                        );
+                      } else if (seriesName == 'Total Holdings') {
+                        content.add(
+                          Text(
+                            "Total: \$${dp.totalOunces.toStringAsFixed(2)}",
+                            style: baseStyle,
+                          ),
+                        );
+                      } else if (seriesName == 'Market Prediction') {
+                        content.add(
+                          Text(
+                            "Market Prediction: \$${dp.totalSilverOunces.toStringAsFixed(2)}",
+                            style: const TextStyle(
+                              color: Colors.lightGreen,
+                              fontSize: 12,
+                            ),
+                          ),
+                        );
+                      } else if (seriesName == 'Worst Prediction') {
+                        content.add(
+                          Text(
+                            "Worst Prediction: \$${dp.totalSilverWorstPrediction.toStringAsFixed(2)}",
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 12,
+                            ),
+                          ),
+                        );
+                      } else if (seriesName == 'Optimal Prediction') {
+                        content.add(
+                          Text(
+                            "Optimal Prediction: \$${dp.totalSilverOptimalPrediction.toStringAsFixed(2)}",
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              fontSize: 12,
+                            ),
+                          ),
+                        );
+                      }
+                    });
 
                     return Container(
                       padding: const EdgeInsets.symmetric(
@@ -271,56 +448,11 @@ class MetalHoldingsLineChart extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            date,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          if (!isPredictionView) ...[
-                            Text(
-                              "Silver: \$${dataPoint.totalSilverOunces.toStringAsFixed(2)}",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                          if (isPredictionView) ...[
-                            Text(
-                              "Market Analyst Predictions: \$${dataPoint.totalSilverOunces.toStringAsFixed(2)}",
-                              style: const TextStyle(
-                                color: Colors.lightGreen,
-                                fontSize: 12,
-                              ),
-                            ),
-                            if (shouldRenderOptimalPrediction)
-                              Text(
-                                "Silver Worst: \$${dataPoint.totalSilverWorstPrediction.toStringAsFixed(2)}",
-                                style: const TextStyle(
-                                  color: Colors.blue,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            if (shouldRenderWorstPrediction)
-                              Text(
-                                "Silver Optimal: \$${dataPoint.totalSilverOptimalPrediction.toStringAsFixed(2)}",
-                                style: const TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 12,
-                                ),
-                              ),
-                          ],
-                        ],
+                        children: content,
                       ),
                     );
                   },
                 ),
-
                 // Vertical dotted line. Ensure your syncfusion_flutter_charts package is up-to-date for this to work.
                 annotations: <CartesianChartAnnotation>[
                   // if (isPredictionView && actualData.isNotEmpty)
@@ -433,6 +565,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                       yValueMapper: (d, _) => d.totalSilverOunces,
                       color: predictionLineColor,
                       width: 1.5,
+                      name: 'Market Prediction',
                     ),
                   ],
 
@@ -460,6 +593,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                       yValueMapper: (d, _) => d.totalSilverOptimalPrediction,
                       color: Colors.red,
                       width: 1.5,
+                      name: 'Worst Prediction',
                     ),
                   ],
                   if (shouldRenderOptimalPrediction && isPredictionView) ...[
@@ -485,6 +619,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                       yValueMapper: (d, _) => d.totalSilverWorstPrediction,
                       color: Colors.blue,
                       width: 1.5,
+                      name: 'Optimal Prediction',
                     ),
                   ],
                 ],
