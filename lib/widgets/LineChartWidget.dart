@@ -203,9 +203,15 @@ class MetalHoldingsLineChart extends StatelessWidget {
                 alignment: WrapAlignment.center,
                 children: [
                   _buildLegendItem(const Color(0xFF808080), 'Silver'),
-                  _buildLegendItem(predictionLineColor, 'Market Analyst'),
-                  _buildLegendItem(Colors.blue, 'Silver Worst'),
-                  _buildLegendItem(Colors.red, 'Silver Optimal'),
+                  if (isPredictionView)
+                    _buildLegendItem(
+                      predictionLineColor,
+                      'Market Analyst Prediction',
+                    ),
+                  if (shouldRenderWorstPrediction)
+                    _buildLegendItem(Colors.blue, 'Silver Worst'),
+                  if (shouldRenderOptimalPrediction)
+                    _buildLegendItem(Colors.red, 'Silver Optimal'),
                 ],
               )
             else
@@ -427,7 +433,6 @@ class MetalHoldingsLineChart extends StatelessWidget {
                       yValueMapper: (d, _) => d.totalSilverOunces,
                       color: predictionLineColor,
                       width: 1.5,
-                      name: 'Market Analyst Predictions',
                     ),
                   ],
 
@@ -455,7 +460,6 @@ class MetalHoldingsLineChart extends StatelessWidget {
                       yValueMapper: (d, _) => d.totalSilverOptimalPrediction,
                       color: Colors.red,
                       width: 1.5,
-                      name: 'Silver Optimal',
                     ),
                   ],
                   if (shouldRenderOptimalPrediction && isPredictionView) ...[
@@ -481,7 +485,6 @@ class MetalHoldingsLineChart extends StatelessWidget {
                       yValueMapper: (d, _) => d.totalSilverWorstPrediction,
                       color: Colors.blue,
                       width: 1.5,
-                      name: 'Silver Worst',
                     ),
                   ],
                 ],
