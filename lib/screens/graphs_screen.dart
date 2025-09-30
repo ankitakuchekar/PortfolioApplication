@@ -14,10 +14,6 @@ import '../widgets/AssetAllocationPie.dart';
 import '../widgets/common_app_bar.dart';
 import '../widgets/common_drawer.dart';
 
-// The data models and the widget for the candlestick chart.
-// Assuming these are in a separate file like 'metal_candle_chart.dart'
-// If they are in the same file, you don't need this import.
-
 class GraphsScreen extends StatefulWidget {
   const GraphsScreen({super.key});
 
@@ -121,9 +117,6 @@ class _GraphsScreenState extends State<GraphsScreen> {
       );
 
       if (response.statusCode == 200) {
-        // If the response is successful, handle it here
-        print("API call successful");
-
         // Call the fetchPortfolioData after a successful response
         fetchChartData();
       } else {
@@ -173,6 +166,9 @@ class _GraphsScreenState extends State<GraphsScreen> {
 
           final metalInOuncesData = portfolioData.data[0].metalInOunces ?? [];
           final metalCandleChartData = portfolioData.data[0].metalCandleChart;
+          final portfolioSettings = portfolioData.data[0].portfolioSettings;
+          this._isPredictionView = portfolioSettings.showPrediction;
+
           detectMetalData(metalCandleChartData);
           final hasGoldData = metalCandleChartData.any(
             (d) =>
