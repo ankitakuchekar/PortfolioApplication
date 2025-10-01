@@ -59,7 +59,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> fetchChartData() async {
     try {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
-      await provider.refreshDataFromAPIs();
+      await provider.refreshDataFromAPIs(provider.frequency);
     } catch (error) {
       debugPrint('Error fetching chart data: $error');
       ScaffoldMessenger.of(context).showSnackBar(

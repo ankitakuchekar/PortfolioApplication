@@ -15,10 +15,8 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   void _onTimerComplete(BuildContext context) {
-    Provider.of<PortfolioProvider>(
-      context,
-      listen: false,
-    ).refreshDataFromAPIs();
+    final provider = Provider.of<PortfolioProvider>(context, listen: false);
+    provider.refreshDataFromAPIs(provider.frequency);
   }
 
   @override

@@ -39,11 +39,12 @@ class _GraphsScreenState extends State<GraphsScreen> {
 
   // Method to fetch the portfolio data when the frequency changes
 
-  Future<void> fetchChartData() async {
+  Future<void> fetchChartData(frequency) async {
     try {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
-      await provider
-          .refreshDataFromAPIs(); // Or refreshDataFromAPIs() depending on what you want
+      await provider.refreshDataFromAPIs(
+        frequency,
+      ); // Or refreshDataFromAPIs() depending on what you want
     } catch (error) {
       debugPrint('Error fetching chart data: $error');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -118,7 +119,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
 
       if (response.statusCode == 200) {
         // Call the fetchPortfolioData after a successful response
-        fetchChartData();
+        fetchChartData(frequency);
       } else {
         // If the response is not successful, handle the error
         throw Exception('Failed to update portfolio settings');
@@ -244,9 +245,42 @@ class _GraphsScreenState extends State<GraphsScreen> {
                     }).toList(),
                   ),
                 ),
-
-                const SizedBox(height: 10),
-
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Wrap(
+                    spacing: 4,
+                    alignment: WrapAlignment.center,
+                    children: timePeriods.map((period) {
+                      final isSelected = frequency == period;
+                      return OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            frequency = period;
+                            portfolioProvider.frequency =
+                                period; // Save the selected frequency
+                            fetchChartData(frequency);
+                            // Optionally trigger a fetchChartData() or update chart logic
+                          });
+                        },
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: isSelected
+                              ? Colors.black
+                              : Colors.transparent,
+                          side: BorderSide(color: Colors.black),
+                          minimumSize: const Size(40, 32),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                        child: Text(
+                          period,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isSelected ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
                 Container(
                   height: 400,
                   padding: const EdgeInsets.symmetric(horizontal: 16),

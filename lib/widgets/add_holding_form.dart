@@ -335,7 +335,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
       if (response.statusCode == 200) {
         // await PortfolioService.fetchCustomerPortfolio(0, '3M');
         final provider = Provider.of<PortfolioProvider>(context, listen: false);
-        await provider.refreshDataFromAPIs();
+        await provider.refreshDataFromAPIs(provider.frequency);
         Fluttertoast.showToast(
           msg: "Holding added successfully!",
           backgroundColor: Colors.grey,

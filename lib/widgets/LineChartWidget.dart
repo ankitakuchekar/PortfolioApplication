@@ -223,368 +223,388 @@ class MetalHoldingsLineChart extends StatelessWidget {
 
             const SizedBox(height: 16),
             Expanded(
-              child: SfCartesianChart(
-                backgroundColor: Colors.transparent,
-                plotAreaBorderWidth: 1.0,
-
-                tooltipBehavior: TooltipBehavior(enable: false),
-                trackballBehavior: TrackballBehavior(
-                  enable: true,
-                  activationMode: ActivationMode.singleTap,
-                  lineType: TrackballLineType.vertical,
-                  lineColor: Colors.grey,
-                  lineWidth: 1,
-                  markerSettings: const TrackballMarkerSettings(
-                    markerVisibility: TrackballVisibilityMode.visible,
-                  ),
-                  tooltipSettings: const InteractiveTooltip(enable: true),
-                  tooltipDisplayMode: TrackballDisplayMode.groupAllPoints,
-                  builder: (BuildContext context, TrackballDetails details) {
-                    final int pointIndex = details.pointIndex ?? 0;
-                    final TrackballGroupingModeInfo? groupingInfo =
-                        details.groupingModeInfo;
-                    if (groupingInfo == null) {
-                      return const SizedBox();
-                    }
-
-                    final List<dynamic>? visibleSeriesList =
-                        groupingInfo.visibleSeriesList;
-                    final List<CartesianChartPoint<dynamic>> pts =
-                        groupingInfo.points;
-
-                    if (visibleSeriesList == null ||
-                        visibleSeriesList.length != pts.length) {
-                      // mismatch or missing info
-                      return const SizedBox();
-                    }
-
-                    // Map of seriesName -> dataPoint
-                    final Map<String, MetalInOunces> seriesToData = {};
-
-                    for (int i = 0; i < visibleSeriesList.length; i++) {
-                      final dynamic seriesObj = visibleSeriesList[i];
-                      final CartesianChartPoint<dynamic> point = pts[i];
-
-                      final String? seriesName = seriesObj.name as String?;
-                      final List<dynamic>? ds = seriesObj.dataSource;
-
-                      if (seriesName != null &&
-                          ds != null &&
-                          pointIndex < ds.length) {
-                        final MetalInOunces dp =
-                            ds[pointIndex] as MetalInOunces;
-                        seriesToData[seriesName] = dp;
-                      }
-                    }
-
-                    if (seriesToData.isEmpty) {
-                      return const SizedBox();
-                    }
-
-                    final MetalInOunces firstDp = seriesToData.values.first;
-                    final String date = DateFormat(
-                      'MMM d, yyyy',
-                    ).format(firstDp.orderDate);
-
-                    final List<Widget> content = [
-                      Text(
-                        date,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+              child: combinedData.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No data available',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
                       ),
-                      const SizedBox(height: 4),
-                    ];
-                    const TextStyle baseStyle = TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                    );
+                    )
+                  : SfCartesianChart(
+                      backgroundColor: Colors.transparent,
+                      plotAreaBorderWidth: 1.0,
 
-                    seriesToData.forEach((seriesName, dp) {
-                      // adapt depending on seriesName
-                      print("series $seriesName");
-                      if (seriesName == 'Silver Holdings') {
-                        content.add(
-                          Text(
-                            "Silver: \$${formatValue(dp.totalSilverOunces)}",
-                            style: baseStyle,
-                          ),
-                        );
-                      } else if (seriesName == 'Gold Holdings') {
-                        content.add(
-                          Text(
-                            "Gold: \$${formatValue(dp.totalGoldOunces)}",
-                            style: baseStyle,
-                          ),
-                        );
-                      } else if (seriesName == 'Total Holdings') {
-                        content.add(
-                          Text(
-                            "Total: \$${formatValue(dp.totalOunces)}",
-                            style: baseStyle,
-                          ),
-                        );
-                      } else if (seriesName == 'Market Prediction') {
-                        content.add(
-                          Text(
-                            "Market Prediction: \$${formatValue(isTotalHoldingsView
-                                ? dp.totalOunces
-                                : isGoldView
-                                ? dp.totalGoldOunces
-                                : dp.totalSilverOunces)}",
-                            style: const TextStyle(
-                              color: Colors.lightGreen,
-                              fontSize: 12,
+                      tooltipBehavior: TooltipBehavior(enable: false),
+                      trackballBehavior: TrackballBehavior(
+                        enable: true,
+                        activationMode: ActivationMode.singleTap,
+                        lineType: TrackballLineType.vertical,
+                        lineColor: Colors.grey,
+                        lineWidth: 1,
+                        markerSettings: const TrackballMarkerSettings(
+                          markerVisibility: TrackballVisibilityMode.visible,
+                        ),
+                        tooltipSettings: const InteractiveTooltip(enable: true),
+                        tooltipDisplayMode: TrackballDisplayMode.groupAllPoints,
+                        builder: (BuildContext context, TrackballDetails details) {
+                          final int pointIndex = details.pointIndex ?? 0;
+                          final TrackballGroupingModeInfo? groupingInfo =
+                              details.groupingModeInfo;
+                          if (groupingInfo == null) {
+                            return const SizedBox();
+                          }
+
+                          final List<dynamic>? visibleSeriesList =
+                              groupingInfo.visibleSeriesList;
+                          final List<CartesianChartPoint<dynamic>> pts =
+                              groupingInfo.points;
+
+                          if (visibleSeriesList == null ||
+                              visibleSeriesList.length != pts.length) {
+                            // mismatch or missing info
+                            return const SizedBox();
+                          }
+
+                          // Map of seriesName -> dataPoint
+                          final Map<String, MetalInOunces> seriesToData = {};
+
+                          for (int i = 0; i < visibleSeriesList.length; i++) {
+                            final dynamic seriesObj = visibleSeriesList[i];
+                            final CartesianChartPoint<dynamic> point = pts[i];
+
+                            final String? seriesName =
+                                seriesObj.name as String?;
+                            final List<dynamic>? ds = seriesObj.dataSource;
+
+                            if (seriesName != null &&
+                                ds != null &&
+                                pointIndex < ds.length) {
+                              final MetalInOunces dp =
+                                  ds[pointIndex] as MetalInOunces;
+                              seriesToData[seriesName] = dp;
+                            }
+                          }
+
+                          if (seriesToData.isEmpty) {
+                            return const SizedBox();
+                          }
+
+                          final MetalInOunces firstDp =
+                              seriesToData.values.first;
+                          final String date = DateFormat(
+                            'MMM d, yyyy',
+                          ).format(firstDp.orderDate);
+
+                          final List<Widget> content = [
+                            Text(
+                              date,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                        );
-                      } else if (seriesName == 'Worst Prediction') {
-                        content.add(
-                          Text(
-                            "Worst Prediction: \$${formatValue(isGoldView ? dp.totalGoldWorstPrediction : dp.totalSilverWorstPrediction)}",
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 12,
+                            const SizedBox(height: 4),
+                          ];
+                          const TextStyle baseStyle = TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          );
+
+                          seriesToData.forEach((seriesName, dp) {
+                            // adapt depending on seriesName
+                            print("series $seriesName");
+                            if (seriesName == 'Silver Holdings') {
+                              content.add(
+                                Text(
+                                  "Silver: \$${formatValue(dp.totalSilverOunces)}",
+                                  style: baseStyle,
+                                ),
+                              );
+                            } else if (seriesName == 'Gold Holdings') {
+                              content.add(
+                                Text(
+                                  "Gold: \$${formatValue(dp.totalGoldOunces)}",
+                                  style: baseStyle,
+                                ),
+                              );
+                            } else if (seriesName == 'Total Holdings') {
+                              content.add(
+                                Text(
+                                  "Total: \$${formatValue(dp.totalOunces)}",
+                                  style: baseStyle,
+                                ),
+                              );
+                            } else if (seriesName == 'Market Prediction') {
+                              content.add(
+                                Text(
+                                  "Market Prediction: \$${formatValue(isTotalHoldingsView
+                                      ? dp.totalOunces
+                                      : isGoldView
+                                      ? dp.totalGoldOunces
+                                      : dp.totalSilverOunces)}",
+                                  style: const TextStyle(
+                                    color: Colors.lightGreen,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              );
+                            } else if (seriesName == 'Worst Prediction') {
+                              content.add(
+                                Text(
+                                  "Worst Prediction: \$${formatValue(isGoldView ? dp.totalGoldWorstPrediction : dp.totalSilverWorstPrediction)}",
+                                  style: const TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              );
+                            } else if (seriesName == 'Optimal Prediction') {
+                              content.add(
+                                Text(
+                                  "Optimal Prediction: \$${formatValue(isGoldView ? dp.totalGoldOptimalPrediction : dp.totalSilverOptimalPrediction)}",
+                                  style: const TextStyle(
+                                    color: Colors.blue,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              );
+                            }
+                          });
+
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 6,
+                              horizontal: 12,
                             ),
-                          ),
-                        );
-                      } else if (seriesName == 'Optimal Prediction') {
-                        content.add(
-                          Text(
-                            "Optimal Prediction: \$${formatValue(isGoldView ? dp.totalGoldOptimalPrediction : dp.totalSilverOptimalPrediction)}",
-                            style: const TextStyle(
-                              color: Colors.blue,
-                              fontSize: 12,
+                            decoration: BoxDecoration(
+                              color: Colors.black87,
+                              borderRadius: BorderRadius.circular(6),
+                              boxShadow: const [
+                                BoxShadow(color: Colors.black26, blurRadius: 4),
+                              ],
                             ),
-                          ),
-                        );
-                      }
-                    });
-
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 6,
-                        horizontal: 12,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: content,
+                            ),
+                          );
+                        },
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.black87,
-                        borderRadius: BorderRadius.circular(6),
-                        boxShadow: const [
-                          BoxShadow(color: Colors.black26, blurRadius: 4),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: content,
-                      ),
-                    );
-                  },
-                ),
-                // Vertical dotted line. Ensure your syncfusion_flutter_charts package is up-to-date for this to work.
-                annotations: <CartesianChartAnnotation>[
-                  // if (isPredictionView && actualData.isNotEmpty)
-                  //   VerticalLineAnnotation(
-                  //     x1: actualData.last.orderDate,
-                  //     text: '',
-                  //     lineDashArray: <double>[5, 5], // Dotted line
-                  //     borderColor: Colors.grey.shade700,
-                  //     borderWidth: 1,
-                  //   )
-                ],
-
-                primaryXAxis: DateTimeAxis(
-                  dateFormat: DateFormat.MMMd(),
-                  intervalType: DateTimeIntervalType.auto,
-                  majorGridLines: const MajorGridLines(width: 0),
-                  edgeLabelPlacement: EdgeLabelPlacement.shift,
-                ),
-
-                // primaryYAxis: NumericAxis(
-                //   numberFormat: NumberFormat.simpleCurrency(decimalDigits: 0),
-                //   majorGridLines: const MajorGridLines(width: 0.5),
-                // ),
-                primaryYAxis: NumericAxis(
-                  numberFormat: NumberFormat.simpleCurrency(decimalDigits: 0),
-                  majorGridLines: const MajorGridLines(width: 0.5),
-                  minimum:
-                      [
-                        ...combinedData.map(
-                          (d) => isTotalHoldingsView
-                              ? d.totalOunces
-                              : isGoldView
-                              ? d.totalGoldOunces
-                              : d.totalSilverOunces,
-                        ),
-                        ...predictionData.map(
-                          (d) => (isTotalHoldingsView
-                              ? d.totalOunces
-                              : isGoldView
-                              ? d.totalGoldWorstPrediction
-                              : d.totalSilverWorstPrediction),
-                        ),
-                      ].reduce((a, b) => a < b ? a : b) -
-                      1,
-
-                  maximum:
-                      [
-                        ...combinedData.map(
-                          (d) => isTotalHoldingsView
-                              ? d.totalOunces
-                              : isGoldView
-                              ? d.totalGoldOunces
-                              : d.totalSilverOunces,
-                        ),
-                        ...predictionData.map(
-                          (d) => (isTotalHoldingsView
-                              ? d.totalOunces
-                              : isGoldView
-                              ? d.totalGoldOptimalPrediction
-                              : d.totalSilverOptimalPrediction),
-                        ),
-                      ].reduce((a, b) => a > b ? a : b) +
-                      1,
-                ),
-
-                series: <CartesianSeries<MetalInOunces, DateTime>>[
-                  // Actual Silver
-                  AreaSeries<MetalInOunces, DateTime>(
-                    key: ValueKey(selectedTab),
-                    dataSource: actualData,
-                    xValueMapper: (MetalInOunces data, _) => data.orderDate,
-                    yValueMapper: (MetalInOunces data, _) => isTotalHoldingsView
-                        ? data.totalOunces
-                        : isGoldView
-                        ? data.totalGoldOunces
-                        : data.totalSilverOunces,
-                    color: (isTotalHoldingsView
-                        ? totalLineColor
-                        : actualLineColor),
-                    borderWidth: 2,
-                    gradient: LinearGradient(
-                      colors: [
-                        (isTotalHoldingsView ? totalLineColor : actualLineColor)
-                            .withOpacity(0.7),
-                        (isTotalHoldingsView ? totalLineColor : actualLineColor)
-                            .withOpacity(0.1),
+                      // Vertical dotted line. Ensure your syncfusion_flutter_charts package is up-to-date for this to work.
+                      annotations: <CartesianChartAnnotation>[
+                        // if (isPredictionView && actualData.isNotEmpty)
+                        //   VerticalLineAnnotation(
+                        //     x1: actualData.last.orderDate,
+                        //     text: '',
+                        //     lineDashArray: <double>[5, 5], // Dotted line
+                        //     borderColor: Colors.grey.shade700,
+                        //     borderWidth: 1,
+                        //   )
                       ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      tileMode: TileMode.clamp,
-                    ),
-                    name: isGoldView
-                        ? 'Gold Holdings'
-                        : isTotalHoldingsView
-                        ? 'Total Holdings'
-                        : 'Silver Holdings',
-                  ),
 
-                  if (isPredictionView) ...[
-                    // Green Area Fill (Market to Worst)
-                    AreaSeries<MetalInOunces, DateTime>(
-                      key: ValueKey('${selectedTab}_prediction'),
-                      dataSource: connectedPredictionData,
-                      xValueMapper: (d, _) => d.orderDate,
-                      yValueMapper: (d, _) => isTotalHoldingsView
-                          ? d.totalOunces
-                          : isGoldView
-                          ? d.totalGoldOunces
-                          : d.totalSilverOunces,
-                      // lowValueMapper: (d, _) => d.totalSilverWorstPrediction,
-                      color: predictionLineColor.withOpacity(0.4),
-                      gradient: LinearGradient(
-                        colors: [
-                          predictionLineColor.withOpacity(0.7),
-                          predictionLineColor.withOpacity(0.1),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        tileMode: TileMode.clamp,
+                      primaryXAxis: DateTimeAxis(
+                        dateFormat: DateFormat.MMMd(),
+                        intervalType: DateTimeIntervalType.auto,
+                        majorGridLines: const MajorGridLines(width: 0),
+                        edgeLabelPlacement: EdgeLabelPlacement.shift,
                       ),
-                      borderWidth: 0, // No border on the fill itself
-                    ),
 
-                    LineSeries<MetalInOunces, DateTime>(
-                      key: ValueKey('${selectedTab}_lineprediction'),
-                      dataSource: connectedPredictionData,
-                      xValueMapper: (d, _) => d.orderDate,
-                      yValueMapper: (d, _) => d.totalOunces,
-                      color: predictionLineColor,
-                      width: 1.5,
-                      name: 'Market Prediction',
-                    ),
-                  ],
+                      // primaryYAxis: NumericAxis(
+                      //   numberFormat: NumberFormat.simpleCurrency(decimalDigits: 0),
+                      //   majorGridLines: const MajorGridLines(width: 0.5),
+                      // ),
+                      primaryYAxis: NumericAxis(
+                        numberFormat: NumberFormat.simpleCurrency(
+                          decimalDigits: 0,
+                        ),
+                        majorGridLines: const MajorGridLines(width: 0.5),
+                        minimum:
+                            [
+                              ...combinedData.map(
+                                (d) => isTotalHoldingsView
+                                    ? d.totalOunces
+                                    : isGoldView
+                                    ? d.totalGoldOunces
+                                    : d.totalSilverOunces,
+                              ),
+                              ...predictionData.map(
+                                (d) => (isTotalHoldingsView
+                                    ? d.totalOunces
+                                    : isGoldView
+                                    ? d.totalGoldWorstPrediction
+                                    : d.totalSilverWorstPrediction),
+                              ),
+                            ].reduce((a, b) => a < b ? a : b) -
+                            1,
 
-                  if (shouldRenderWorstPrediction &&
-                      isPredictionView &&
-                      !isTotalHoldingsView) ...[
-                    // Red Area Fill (Optimal to Market)
-                    AreaSeries<MetalInOunces, DateTime>(
-                      key: ValueKey('${selectedTab}_worstPrediction'),
-                      dataSource: connectedPredictionData,
-                      xValueMapper: (d, _) => d.orderDate,
-                      yValueMapper: (d, _) => isGoldView
-                          ? d.totalGoldOptimalPrediction
-                          : d.totalSilverOptimalPrediction,
-                      // lowValueMapper: (d, _) => d.totalSilverOunces,
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.red.withOpacity(0.7),
-                          Colors.red.withOpacity(0.1),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        tileMode: TileMode.clamp,
+                        maximum:
+                            [
+                              ...combinedData.map(
+                                (d) => isTotalHoldingsView
+                                    ? d.totalOunces
+                                    : isGoldView
+                                    ? d.totalGoldOunces
+                                    : d.totalSilverOunces,
+                              ),
+                              ...predictionData.map(
+                                (d) => (isTotalHoldingsView
+                                    ? d.totalOunces
+                                    : isGoldView
+                                    ? d.totalGoldOptimalPrediction
+                                    : d.totalSilverOptimalPrediction),
+                              ),
+                            ].reduce((a, b) => a > b ? a : b) +
+                            1,
                       ),
-                      borderWidth: 0, // No border on the fill itself
-                    ),
-                    LineSeries<MetalInOunces, DateTime>(
-                      key: ValueKey('${selectedTab}_lineworstPrediction'),
-                      dataSource: connectedPredictionData,
-                      xValueMapper: (d, _) => d.orderDate,
-                      yValueMapper: (d, _) => isGoldView
-                          ? d.totalGoldOptimalPrediction
-                          : d.totalSilverOptimalPrediction,
-                      color: Colors.red,
-                      width: 1.5,
-                      name: 'Worst Prediction',
-                    ),
-                  ],
-                  if (shouldRenderOptimalPrediction && isPredictionView) ...[
-                    AreaSeries<MetalInOunces, DateTime>(
-                      key: ValueKey('${selectedTab}_Optimalprediction'),
-                      dataSource: connectedPredictionData,
-                      xValueMapper: (d, _) => d.orderDate,
-                      yValueMapper: (d, _) => isGoldView
-                          ? d.totalGoldWorstPrediction
-                          : d.totalSilverWorstPrediction,
-                      // lowValueMapper: (d, _) => d.totalSilverOunces,
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.blue.withOpacity(0.7),
-                          Colors.blue.withOpacity(0.1),
+
+                      series: <CartesianSeries<MetalInOunces, DateTime>>[
+                        // Actual Silver
+                        AreaSeries<MetalInOunces, DateTime>(
+                          key: ValueKey(selectedTab),
+                          dataSource: actualData,
+                          xValueMapper: (MetalInOunces data, _) =>
+                              data.orderDate,
+                          yValueMapper: (MetalInOunces data, _) =>
+                              isTotalHoldingsView
+                              ? data.totalOunces
+                              : isGoldView
+                              ? data.totalGoldOunces
+                              : data.totalSilverOunces,
+                          color: (isTotalHoldingsView
+                              ? totalLineColor
+                              : actualLineColor),
+                          borderWidth: 2,
+                          gradient: LinearGradient(
+                            colors: [
+                              (isTotalHoldingsView
+                                      ? totalLineColor
+                                      : actualLineColor)
+                                  .withOpacity(0.7),
+                              (isTotalHoldingsView
+                                      ? totalLineColor
+                                      : actualLineColor)
+                                  .withOpacity(0.1),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            tileMode: TileMode.clamp,
+                          ),
+                          name: isGoldView
+                              ? 'Gold Holdings'
+                              : isTotalHoldingsView
+                              ? 'Total Holdings'
+                              : 'Silver Holdings',
+                        ),
+
+                        if (isPredictionView) ...[
+                          // Green Area Fill (Market to Worst)
+                          AreaSeries<MetalInOunces, DateTime>(
+                            key: ValueKey('${selectedTab}_prediction'),
+                            dataSource: connectedPredictionData,
+                            xValueMapper: (d, _) => d.orderDate,
+                            yValueMapper: (d, _) => isTotalHoldingsView
+                                ? d.totalOunces
+                                : isGoldView
+                                ? d.totalGoldOunces
+                                : d.totalSilverOunces,
+                            // lowValueMapper: (d, _) => d.totalSilverWorstPrediction,
+                            color: predictionLineColor.withOpacity(0.4),
+                            gradient: LinearGradient(
+                              colors: [
+                                predictionLineColor.withOpacity(0.7),
+                                predictionLineColor.withOpacity(0.1),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              tileMode: TileMode.clamp,
+                            ),
+                            borderWidth: 0, // No border on the fill itself
+                          ),
+
+                          LineSeries<MetalInOunces, DateTime>(
+                            key: ValueKey('${selectedTab}_lineprediction'),
+                            dataSource: connectedPredictionData,
+                            xValueMapper: (d, _) => d.orderDate,
+                            yValueMapper: (d, _) => d.totalOunces,
+                            color: predictionLineColor,
+                            width: 1.5,
+                            name: 'Market Prediction',
+                          ),
                         ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        tileMode: TileMode.clamp,
-                      ),
-                      borderWidth: 0, // No border on the fill itself
+
+                        if (shouldRenderWorstPrediction &&
+                            isPredictionView &&
+                            !isTotalHoldingsView) ...[
+                          // Red Area Fill (Optimal to Market)
+                          AreaSeries<MetalInOunces, DateTime>(
+                            key: ValueKey('${selectedTab}_worstPrediction'),
+                            dataSource: connectedPredictionData,
+                            xValueMapper: (d, _) => d.orderDate,
+                            yValueMapper: (d, _) => isGoldView
+                                ? d.totalGoldOptimalPrediction
+                                : d.totalSilverOptimalPrediction,
+                            // lowValueMapper: (d, _) => d.totalSilverOunces,
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.red.withOpacity(0.7),
+                                Colors.red.withOpacity(0.1),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              tileMode: TileMode.clamp,
+                            ),
+                            borderWidth: 0, // No border on the fill itself
+                          ),
+                          LineSeries<MetalInOunces, DateTime>(
+                            key: ValueKey('${selectedTab}_lineworstPrediction'),
+                            dataSource: connectedPredictionData,
+                            xValueMapper: (d, _) => d.orderDate,
+                            yValueMapper: (d, _) => isGoldView
+                                ? d.totalGoldOptimalPrediction
+                                : d.totalSilverOptimalPrediction,
+                            color: Colors.red,
+                            width: 1.5,
+                            name: 'Worst Prediction',
+                          ),
+                        ],
+                        if (shouldRenderOptimalPrediction &&
+                            isPredictionView) ...[
+                          AreaSeries<MetalInOunces, DateTime>(
+                            key: ValueKey('${selectedTab}_Optimalprediction'),
+                            dataSource: connectedPredictionData,
+                            xValueMapper: (d, _) => d.orderDate,
+                            yValueMapper: (d, _) => isGoldView
+                                ? d.totalGoldWorstPrediction
+                                : d.totalSilverWorstPrediction,
+                            // lowValueMapper: (d, _) => d.totalSilverOunces,
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.blue.withOpacity(0.7),
+                                Colors.blue.withOpacity(0.1),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              tileMode: TileMode.clamp,
+                            ),
+                            borderWidth: 0, // No border on the fill itself
+                          ),
+                          LineSeries<MetalInOunces, DateTime>(
+                            key: ValueKey(
+                              '${selectedTab}_LineOptimalprediction',
+                            ),
+                            dataSource: connectedPredictionData,
+                            xValueMapper: (d, _) => d.orderDate,
+                            yValueMapper: (d, _) => isGoldView
+                                ? d.totalGoldWorstPrediction
+                                : d.totalSilverWorstPrediction,
+                            color: Colors.blue,
+                            width: 1.5,
+                            name: 'Optimal Prediction',
+                          ),
+                        ],
+                      ],
                     ),
-                    LineSeries<MetalInOunces, DateTime>(
-                      key: ValueKey('${selectedTab}_LineOptimalprediction'),
-                      dataSource: connectedPredictionData,
-                      xValueMapper: (d, _) => d.orderDate,
-                      yValueMapper: (d, _) => isGoldView
-                          ? d.totalGoldWorstPrediction
-                          : d.totalSilverWorstPrediction,
-                      color: Colors.blue,
-                      width: 1.5,
-                      name: 'Optimal Prediction',
-                    ),
-                  ],
-                ],
-              ),
             ),
           ],
         ),

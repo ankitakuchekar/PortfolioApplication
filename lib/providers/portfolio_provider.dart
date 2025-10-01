@@ -10,6 +10,7 @@ class PortfolioProvider with ChangeNotifier {
   bool _isLoading = false;
   bool _isRefreshing = false;
   String? _errorMessage;
+  String? frequency;
 
   PortfolioData? get portfolioData => _portfolioData;
   List<ProductHolding> get holdings => _holdings;
@@ -78,13 +79,16 @@ class PortfolioProvider with ChangeNotifier {
   }
 
   // Refresh Data from APIs
-  Future<void> refreshDataFromAPIs() async {
+  Future<void> refreshDataFromAPIs(frequency) async {
     _isRefreshing = true;
     notifyListeners();
 
     try {
       final spotPricesFuture = PortfolioService.fetchSpotPrices();
-      final portfolioFuture = PortfolioService.fetchCustomerPortfolio(0, '3M');
+      final portfolioFuture = PortfolioService.fetchCustomerPortfolio(
+        0,
+        frequency,
+      );
 
       final results = await Future.wait([spotPricesFuture, portfolioFuture]);
 

@@ -441,7 +441,7 @@ Future<void> _removeProduct(
     if (response.statusCode == 200) {
       Navigator.of(context).pop(); // Close dialog
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
-      await provider.refreshDataFromAPIs();
+      await provider.refreshDataFromAPIs(provider.frequency);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Product removed successfully')),
       );
