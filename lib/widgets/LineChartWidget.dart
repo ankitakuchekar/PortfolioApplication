@@ -115,24 +115,24 @@ class MetalHoldingsLineChart extends StatelessWidget {
 
     final bool shouldRenderWorstPrediction = combinedData.any((item) {
       num? value;
-      if(item.type == 'Prediction'){
-      if (isGoldView) {
-        value = item.totalGoldWorstPrediction;
-      } else {
-        value = item.totalSilverWorstPrediction;
-      }
+      if (item.type == 'Prediction') {
+        if (isGoldView) {
+          value = item.totalGoldWorstPrediction;
+        } else {
+          value = item.totalSilverWorstPrediction;
+        }
       }
       return value != null && value != 0 && value > 0;
     });
 
     final bool shouldRenderOptimalPrediction = combinedData.any((item) {
       num? value;
-      if(item.type == 'Prediction'){
-      if (isGoldView) {
-        value = item.totalGoldOptimalPrediction;
-      } else {
-        value = item.totalSilverOptimalPrediction;
-      }
+      if (item.type == 'Prediction') {
+        if (isGoldView) {
+          value = item.totalGoldOptimalPrediction;
+        } else {
+          value = item.totalSilverOptimalPrediction;
+        }
       }
       return value != null && value != 0 && value > 0;
     });
