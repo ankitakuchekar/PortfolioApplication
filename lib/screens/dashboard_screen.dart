@@ -12,7 +12,7 @@ import '../widgets/value_cost_cards.dart';
 import '../widgets/metal_portfolio_section.dart';
 import '../widgets/common_app_bar.dart';
 import '../widgets/common_drawer.dart';
-import '../services/api_service.dart'; // For updatePortfolioSettings
+import '../services/api_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -262,11 +262,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ActualPriceBannerOption(
-                  isActualPrice: portfolioSettings.showActualPrice,
-                  isLoading: isLoadingToggle,
-                  onToggle: handleToggle,
-                ),
                 const SizedBox(height: 16),
                 ProfitLossCards(portfolioData: portfolioData),
                 const SizedBox(height: 16),

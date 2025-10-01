@@ -1,16 +1,119 @@
+import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/screens/BullionPortfolioGuideScreen.dart';
 import 'package:bold_portfolio/screens/PrivacyPolicyScreen.dart';
+import 'package:bold_portfolio/services/api_service.dart';
 import 'package:bold_portfolio/widgets/FeedbackPopup.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/portfolio_provider.dart';
 import '../utils/app_colors.dart';
 import '../screens/login_screen.dart';
+import '../services/auth_service.dart';
 
-class CommonDrawer extends StatelessWidget {
+class CommonDrawer extends StatefulWidget {
   final Function(int)? onNavigationTap;
 
   const CommonDrawer({super.key, this.onNavigationTap});
+
+  @override
+  State<CommonDrawer> createState() => _CommonDrawerState();
+}
+
+class _CommonDrawerState extends State<CommonDrawer> {
+  bool isPremiumIncluded = false;
+  bool isLoadingToggle = false;
+  String? token;
+  String? userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadToken();
+    _loadUserId();
+
+    // Load portfolio data after build
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   Provider.of<PortfolioProvider>(
+    //     context,
+    //     listen: false,
+    //   ).loadPortfolioData();
+    // });
+  }
+
+  Future<void> _loadToken() async {
+    final authService = AuthService();
+    final fetchedToken = await authService.getToken();
+    setState(() {
+      token = fetchedToken;
+    });
+  }
+
+  Future<void> fetchChartData() async {
+    try {
+      final provider = Provider.of<PortfolioProvider>(context, listen: false);
+      await provider.refreshDataFromAPIs();
+    } catch (error) {
+      debugPrint('Error fetching chart data: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to fetch chart data')),
+      );
+    }
+  }
+
+  Future<void> _loadUserId() async {
+    final authService = AuthService();
+    final fetchedUser = await authService.getUser();
+    setState(() {
+      userId = fetchedUser?.id;
+    });
+  }
+
+  Future<void> handleToggle(bool value) async {
+    setState(() {
+      isLoadingToggle = true;
+    });
+
+    try {
+      final provider = Provider.of<PortfolioProvider>(context, listen: false);
+      print("indied");
+      bool result = await updatePortfolioSettings(
+        customerId: int.tryParse(userId ?? '0') ?? 0,
+        settings: provider.portfolioData!.data[0].portfolioSettings,
+        showActualPrice: value,
+        token: token ?? '',
+      );
+
+      if (result) {
+        setState(() {
+          isPremiumIncluded = value;
+        });
+        await fetchChartData();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text(
+              value ? 'Premium price included' : 'Premium price excluded',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update settings')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+
+    setState(() {
+      isLoadingToggle = false;
+    });
+  }
 
   Future<void> _handleLogout(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -26,93 +129,148 @@ class CommonDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get provider instance
+    final portfolioProvider = Provider.of<PortfolioProvider>(context);
+
+    final portfolioData = portfolioProvider.portfolioData;
+
+    final customerData = (portfolioData?.data.isNotEmpty ?? false)
+        ? portfolioData!.data[0]
+        : CustomerData.empty();
+
+    final portfolioSettings = customerData.portfolioSettings;
+
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
+      child: Column(
         children: [
+          // Header with Logo
           DrawerHeader(
             margin: EdgeInsets.zero,
             padding: EdgeInsets.zero,
             decoration: const BoxDecoration(color: AppColors.black),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment:
-                    MainAxisAlignment.center, // centers vertically
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Image.network(
-                    'https://res.cloudinary.com/bold-pm/image/upload/Graphics/bold-portfolio-app-1.png',
-                    width: 120,
+                    "https://res.cloudinary.com/bold-pm/image/upload/v1629887471/Graphics/email/BPM-White-Logo.png",
+                    width: 150,
                     height: 60,
                     fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Text(
-                        'BOLD',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      );
-                    },
                   ),
-                  const SizedBox(
-                    height: 4,
-                  ), // Adjust spacing between logo and text
-                  const Text(
-                    'BOLD Portfolio',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.shield_outlined),
-            title: const Text('Privacy Policy'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const PrivacyPolicyScreen(),
+
+          // Premium Toggle
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: const [
+                    Text(
+                      "Premium Included",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(width: 4),
+                    // Icon(Icons.info_outline, size: 18, color: Colors.grey),
+                  ],
                 ),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.chat_bubble_outline),
-            title: const Text('Feedback'),
-            onTap: () {
-              Navigator.pop(context);
-              showDialog(
-                context: context,
-                builder: (context) => FeedbackPopup(), // Show your custom popup
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.menu_book_outlined),
-            title: const Text('Guide'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BullionPortfolioGuideScreen(),
-                ),
-              );
-            },
+                isLoadingToggle
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Switch(
+                        value: portfolioSettings.showActualPrice,
+                        onChanged: handleToggle,
+                      ),
+              ],
+            ),
           ),
           const Divider(),
+
+          // Menu items
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                ListTile(
+                  leading: const Icon(
+                    Icons.description_outlined,
+                    color: Colors.blue,
+                  ),
+                  title: const Text("Tax Report"),
+                  onTap: () {},
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.chat_bubble_outline,
+                    color: Colors.green,
+                  ),
+                  title: const Text("Feedback"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    showDialog(
+                      context: context,
+                      builder: (context) => FeedbackPopup(),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.menu_book_outlined,
+                    color: Colors.orange,
+                  ),
+                  title: const Text("Guide"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BullionPortfolioGuideScreen(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.shield_outlined,
+                    color: Colors.purple,
+                  ),
+                  title: const Text("Privacy Policy"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PrivacyPolicyScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          // Logout
+          const Divider(),
           ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text('Logout', style: TextStyle(color: Colors.red)),
             onTap: () => _handleLogout(context),
           ),
         ],
