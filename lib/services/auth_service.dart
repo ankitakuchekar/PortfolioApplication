@@ -34,6 +34,7 @@ class AuthService extends ChangeNotifier {
           'firstName': firstName,
           'lastName': lastName,
           'token': '',
+          'isAppLogin': true,
         }),
       );
 

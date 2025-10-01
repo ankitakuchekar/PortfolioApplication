@@ -245,42 +245,45 @@ class _GraphsScreenState extends State<GraphsScreen> {
                     }).toList(),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Wrap(
-                    spacing: 4,
-                    alignment: WrapAlignment.center,
-                    children: timePeriods.map((period) {
-                      final isSelected = frequency == period;
-                      return OutlinedButton(
-                        onPressed: () {
-                          setState(() {
-                            frequency = period;
-                            portfolioProvider.frequency =
-                                period; // Save the selected frequency
-                            fetchChartData(frequency);
-                            // Optionally trigger a fetchChartData() or update chart logic
-                          });
-                        },
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: isSelected
-                              ? Colors.black
-                              : Colors.transparent,
-                          side: BorderSide(color: Colors.black),
-                          minimumSize: const Size(40, 32),
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                        ),
-                        child: Text(
-                          period,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isSelected ? Colors.white : Colors.black,
+                if (selectedTab == 'Total Holdings' ||
+                    selectedTab == 'Gold Holdings' ||
+                    selectedTab == 'Silver Holdings')
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    child: Wrap(
+                      spacing: 4,
+                      alignment: WrapAlignment.center,
+                      children: timePeriods.map((period) {
+                        final isSelected = frequency == period;
+                        return OutlinedButton(
+                          onPressed: () {
+                            setState(() {
+                              frequency = period;
+                              portfolioProvider.frequency =
+                                  period; // Save the selected frequency
+                              fetchChartData(frequency);
+                              // Optionally trigger a fetchChartData() or update chart logic
+                            });
+                          },
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: isSelected
+                                ? Colors.black
+                                : Colors.transparent,
+                            side: BorderSide(color: Colors.black),
+                            minimumSize: const Size(40, 32),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
                           ),
-                        ),
-                      );
-                    }).toList(),
+                          child: Text(
+                            period,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isSelected ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
-                ),
                 Container(
                   height: 400,
                   padding: const EdgeInsets.symmetric(horizontal: 16),

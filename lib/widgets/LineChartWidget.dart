@@ -98,13 +98,13 @@ class MetalHoldingsLineChart extends StatelessWidget {
       final absValue = value.abs();
 
       if (absValue >= 1e9) {
-        return '\${(value / 1e9).toStringAsFixed(1)}B';
+        return '${(value / 1e9).toStringAsFixed(1)}B';
       } else if (absValue >= 1e6) {
-        return '\${(value / 1e6).toStringAsFixed(1)}M';
+        return '${(value / 1e6).toStringAsFixed(1)}M';
       } else if (absValue >= 1e3) {
-        return '\${(value / 1e3).toStringAsFixed(1)}K';
+        return '${(value / 1e3).toStringAsFixed(1)}K';
       } else {
-        return '\${value.toStringAsFixed(0)}';
+        return '${value.toStringAsFixed(0)}';
       }
     }
 
@@ -115,24 +115,25 @@ class MetalHoldingsLineChart extends StatelessWidget {
 
     final bool shouldRenderWorstPrediction = combinedData.any((item) {
       num? value;
-
+      if(item.type == 'Prediction'){
       if (isGoldView) {
         value = item.totalGoldWorstPrediction;
       } else {
         value = item.totalSilverWorstPrediction;
+      }
       }
       return value != null && value != 0 && value > 0;
     });
 
     final bool shouldRenderOptimalPrediction = combinedData.any((item) {
       num? value;
-
+      if(item.type == 'Prediction'){
       if (isGoldView) {
         value = item.totalGoldOptimalPrediction;
       } else {
         value = item.totalSilverOptimalPrediction;
       }
-
+      }
       return value != null && value != 0 && value > 0;
     });
 
@@ -316,28 +317,28 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             if (seriesName == 'Silver Holdings') {
                               content.add(
                                 Text(
-                                  "Silver: \$${formatValue(dp.totalSilverOunces)}",
+                                  "Silver: ${formatValue(dp.totalSilverOunces)}",
                                   style: baseStyle,
                                 ),
                               );
                             } else if (seriesName == 'Gold Holdings') {
                               content.add(
                                 Text(
-                                  "Gold: \$${formatValue(dp.totalGoldOunces)}",
+                                  "Gold: ${formatValue(dp.totalGoldOunces)}",
                                   style: baseStyle,
                                 ),
                               );
                             } else if (seriesName == 'Total Holdings') {
                               content.add(
                                 Text(
-                                  "Total: \$${formatValue(dp.totalOunces)}",
+                                  "Total: ${formatValue(dp.totalOunces)}",
                                   style: baseStyle,
                                 ),
                               );
                             } else if (seriesName == 'Market Prediction') {
                               content.add(
                                 Text(
-                                  "Market Prediction: \$${formatValue(isTotalHoldingsView
+                                  "Market Prediction: ${formatValue(isTotalHoldingsView
                                       ? dp.totalOunces
                                       : isGoldView
                                       ? dp.totalGoldOunces
@@ -351,7 +352,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             } else if (seriesName == 'Worst Prediction') {
                               content.add(
                                 Text(
-                                  "Worst Prediction: \$${formatValue(isGoldView ? dp.totalGoldWorstPrediction : dp.totalSilverWorstPrediction)}",
+                                  "Worst Prediction: ${formatValue(isGoldView ? dp.totalGoldWorstPrediction : dp.totalSilverWorstPrediction)}",
                                   style: const TextStyle(
                                     color: Colors.red,
                                     fontSize: 12,
@@ -361,7 +362,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             } else if (seriesName == 'Optimal Prediction') {
                               content.add(
                                 Text(
-                                  "Optimal Prediction: \$${formatValue(isGoldView ? dp.totalGoldOptimalPrediction : dp.totalSilverOptimalPrediction)}",
+                                  "Optimal Prediction: ${formatValue(isGoldView ? dp.totalGoldOptimalPrediction : dp.totalSilverOptimalPrediction)}",
                                   style: const TextStyle(
                                     color: Colors.blue,
                                     fontSize: 12,
