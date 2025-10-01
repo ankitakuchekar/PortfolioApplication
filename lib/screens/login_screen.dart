@@ -620,8 +620,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 SvgPicture.network(
                                   'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                                  width: 10,
-                                  height: 10,
+                                  width: 20,
+                                  height: 20,
                                 ),
                                 SizedBox(width: 8),
                                 Text(

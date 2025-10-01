@@ -317,28 +317,28 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             if (seriesName == 'Silver Holdings') {
                               content.add(
                                 Text(
-                                  "Silver: ${formatValue(dp.totalSilverOunces)}",
+                                  "Silver: \$${formatValue(dp.totalSilverOunces)}",
                                   style: baseStyle,
                                 ),
                               );
                             } else if (seriesName == 'Gold Holdings') {
                               content.add(
                                 Text(
-                                  "Gold: ${formatValue(dp.totalGoldOunces)}",
+                                  "Gold: \$${formatValue(dp.totalGoldOunces)}",
                                   style: baseStyle,
                                 ),
                               );
                             } else if (seriesName == 'Total Holdings') {
                               content.add(
                                 Text(
-                                  "Total: ${formatValue(dp.totalOunces)}",
+                                  "Total: \$${formatValue(dp.totalOunces)}",
                                   style: baseStyle,
                                 ),
                               );
                             } else if (seriesName == 'Market Prediction') {
                               content.add(
                                 Text(
-                                  "Market Prediction: ${formatValue(isTotalHoldingsView
+                                  "Market Prediction: \$${formatValue(isTotalHoldingsView
                                       ? dp.totalOunces
                                       : isGoldView
                                       ? dp.totalGoldOunces
@@ -352,7 +352,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             } else if (seriesName == 'Worst Prediction') {
                               content.add(
                                 Text(
-                                  "Worst Prediction: ${formatValue(isGoldView ? dp.totalGoldWorstPrediction : dp.totalSilverWorstPrediction)}",
+                                  "Worst Prediction: \$${formatValue(isGoldView ? dp.totalGoldWorstPrediction : dp.totalSilverWorstPrediction)}",
                                   style: const TextStyle(
                                     color: Colors.red,
                                     fontSize: 12,
@@ -362,7 +362,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             } else if (seriesName == 'Optimal Prediction') {
                               content.add(
                                 Text(
-                                  "Optimal Prediction: ${formatValue(isGoldView ? dp.totalGoldOptimalPrediction : dp.totalSilverOptimalPrediction)}",
+                                  "Optimal Prediction: \$${formatValue(isGoldView ? dp.totalGoldOptimalPrediction : dp.totalSilverOptimalPrediction)}",
                                   style: const TextStyle(
                                     color: Colors.blue,
                                     fontSize: 12,
@@ -416,9 +416,14 @@ class MetalHoldingsLineChart extends StatelessWidget {
                       //   majorGridLines: const MajorGridLines(width: 0.5),
                       // ),
                       primaryYAxis: NumericAxis(
-                        numberFormat: NumberFormat.simpleCurrency(
-                          decimalDigits: 0,
-                        ),
+                        axisLabelFormatter: (AxisLabelRenderDetails details) {
+                          return ChartAxisLabel(
+                            '\$${formatValue(details.value)}',
+                            const TextStyle(
+                              color: Colors.black,
+                            ), // customize style as needed
+                          );
+                        },
                         majorGridLines: const MajorGridLines(width: 0.5),
                         minimum:
                             [
@@ -438,7 +443,6 @@ class MetalHoldingsLineChart extends StatelessWidget {
                               ),
                             ].reduce((a, b) => a < b ? a : b) -
                             1,
-
                         maximum:
                             [
                               ...combinedData.map(
