@@ -51,6 +51,7 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                   .portfolioSettings
                   .showMetalPrice ??
               false;
+
           final filteredHoldings = holdingData?.where((holding) {
             final query = _searchController.text.toLowerCase();
             final matchesSearch = holding.assetList.toLowerCase().contains(
@@ -62,116 +63,117 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
             return matchesSearch && matchesFilter;
           }).toList();
 
-          return Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                color: Colors.white,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // New Heading Text
-                    const Text(
-                      'Asset Holdings By Product',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Ordered products are automatically added to holdings once shipped.',
-                      style: TextStyle(fontSize: 15, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AddHoldingForm(
-                              onClose: () => Navigator.of(context).pop(),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.add),
-                        label: const Text(
-                          'Add New Holdings',
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    color: Colors.white,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Asset Holdings By Product',
                           style: TextStyle(
-                            fontSize: 18, // Increased font size
-                            fontWeight: FontWeight
-                                .w500, // Optional: makes it a bit bolder
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Ordered products are automatically added to holdings once shipped.',
+                          style: TextStyle(fontSize: 15, color: Colors.grey),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Search & Filter
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _searchController,
-                            decoration: InputDecoration(
-                              hintText: 'Search product by name',
-                              prefixIcon: const Icon(Icons.search),
-                              border: OutlineInputBorder(
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AddHoldingForm(
+                                  onClose: () => Navigator.of(context).pop(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.add),
+                            label: const Text(
+                              'Add New Holdings',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.accent,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _searchController,
+                                decoration: InputDecoration(
+                                  hintText: 'Search product by name',
+                                  prefixIcon: const Icon(Icons.search),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                onChanged: (value) {
+                                  setState(() {});
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: AppColors.border),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
+                              child: DropdownButton<String>(
+                                value: selectedFilter,
+                                underline: const SizedBox(),
+                                items: ['All', 'Gold', 'Silver'].map((
+                                  String value,
+                                ) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    selectedFilter = newValue!;
+                                  });
+                                },
                               ),
                             ),
-                            onChanged: (value) {
-                              setState(() {});
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.border),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: DropdownButton<String>(
-                            value: selectedFilter,
-                            underline: const SizedBox(),
-                            items: ['All', 'Gold', 'Silver'].map((
-                              String value,
-                            ) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                selectedFilter = newValue!;
-                              });
-                            },
-                          ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: filteredHoldings?.isEmpty ?? true
-                    ? const Center(
+                  ),
+                  const SizedBox(height: 16),
+                  if (filteredHoldings?.isEmpty ?? true)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 40),
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               Icons.inventory_2_outlined,
@@ -188,24 +190,29 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                             ),
                           ],
                         ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: filteredHoldings?.length ?? 0,
-                        itemBuilder: (context, index) {
-                          final holding = filteredHoldings![index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: HoldingCard(
-                              holding: holding,
-                              showActualPrice: showActualPrice,
-                              showMetalPrice: showMetalPrice,
-                            ),
-                          );
-                        },
                       ),
+                    )
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: filteredHoldings?.length ?? 0,
+                      itemBuilder: (context, index) {
+                        final holding = filteredHoldings![index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: HoldingCard(
+                            holding: holding,
+                            showActualPrice: showActualPrice,
+                            showMetalPrice: showMetalPrice,
+                          ),
+                        );
+                      },
+                    ),
+                ],
               ),
-            ],
+            ),
           );
         },
       ),

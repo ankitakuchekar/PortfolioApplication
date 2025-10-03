@@ -10,7 +10,7 @@ class PortfolioProvider with ChangeNotifier {
   bool _isLoading = false;
   bool _isRefreshing = false;
   String? _errorMessage;
-  String? frequency;
+  String? frequency = '3M';
 
   PortfolioData? get portfolioData => _portfolioData;
   List<ProductHolding> get holdings => _holdings;

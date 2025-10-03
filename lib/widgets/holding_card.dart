@@ -82,12 +82,37 @@ class _HoldingCardState extends State<HoldingCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      widget.holding.assetList,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        decoration: TextDecoration.underline,
+                    InkWell(
+                      onTap: widget.holding.isBold
+                          ? () async {
+                              final encodedName = Uri.encodeComponent(
+                                widget.holding.name,
+                              );
+                              final url = Uri.parse(
+                                'https://www.bullionupdates.com/product/${widget.holding.productId}/$encodedName',
+                              );
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(
+                                  url,
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Could not launch URL'),
+                                  ),
+                                );
+                              }
+                            }
+                          : null,
+                      child: Text(
+                        widget.holding.assetList,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          decoration: TextDecoration.underline,
+                          color: Colors.black, // looks like a hyperlink
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),
