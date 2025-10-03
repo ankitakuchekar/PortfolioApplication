@@ -176,15 +176,17 @@ class _CommonDrawerState extends State<CommonDrawer> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
-                  children: const [
+                  children: [
                     Text(
-                      "Premium Included",
-                      style: TextStyle(
+                      portfolioSettings.showActualPrice
+                          ? "Premium Included"
+                          : "Premium Excluded",
+                      style: const TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 16,
                       ),
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     // Icon(Icons.info_outline, size: 18, color: Colors.grey),
                   ],
                 ),

@@ -28,6 +28,7 @@ class HoldingCard extends StatefulWidget {
 
 class _HoldingCardState extends State<HoldingCard> {
   bool showPercentage = false;
+  bool _isLoading = false;
 
   void toggleDisplay() {
     setState(() {
@@ -168,16 +169,12 @@ class _HoldingCardState extends State<HoldingCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (widget.showActualPrice)
-                const Text(
-                  "Actual Purchase Price",
-                  style: TextStyle(color: Colors.black),
-                ),
-              if (widget.showMetalPrice)
-                const Text(
-                  "Purchase Metal Value",
-                  style: TextStyle(color: Colors.black),
-                ),
+              Text(
+                widget.showActualPrice
+                    ? "Actual Purchase Price"
+                    : "Purchase Metal Value",
+                style: TextStyle(color: Colors.black),
+              ),
               Text("\$${widget.holding.pastMetalValue.toStringAsFixed(2)}"),
             ],
           ),
@@ -203,7 +200,11 @@ class _HoldingCardState extends State<HoldingCard> {
                   children: const [
                     Text(
                       "Profit/Loss ",
-                      style: TextStyle(fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        decoration: TextDecoration.underline,
+                        color: Colors.black,
+                      ),
                     ),
                     Icon(Icons.swap_vert, size: 18),
                   ],
@@ -249,7 +250,9 @@ class _HoldingCardState extends State<HoldingCard> {
                           );
                           if (await canLaunchUrl(url)) {
                             await launchUrl(url);
+                            _isLoading = true;
                           } else {
+                            _isLoading = false;
                             throw 'Could not launch $url';
                           }
                         }

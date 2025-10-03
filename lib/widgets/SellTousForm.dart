@@ -84,7 +84,7 @@ class _SellFormState extends State<SellForm> {
         if (response.statusCode == 200) {
           Fluttertoast.showToast(
             msg: "Image uploaded Successfully.",
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.green,
             textColor: Colors.white,
             toastLength: Toast.LENGTH_LONG,
           );
@@ -342,22 +342,30 @@ class _SellFormState extends State<SellForm> {
           TextFormField(
             controller: _quantityController,
             keyboardType: TextInputType.number,
+
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
               hintText: "Enter Quantity",
             ),
           ),
+
           const SizedBox(height: 16),
 
           // Product Condition
           RichText(
-            text: const TextSpan(
+            text: TextSpan(
               text: 'Product Condition',
-              style: TextStyle(color: Colors.black),
+              style: TextStyle(
+                color: Colors.black, // Text color
+                fontSize: 16, // Text size
+              ),
               children: [
                 TextSpan(
                   text: ' *',
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 16, // Match font size
+                  ),
                 ),
               ],
             ),
@@ -375,14 +383,19 @@ class _SellFormState extends State<SellForm> {
                 spacing: 6,
                 runSpacing: 6,
                 children: selectedConditions.isEmpty
-                    ? [
-                        const Text(
-                          "Select Product Condition",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ]
+                    ? [const Text("Select Product Condition")]
                     : selectedConditions
-                          .map((e) => Chip(label: Text(e)))
+                          .map(
+                            (e) => Chip(
+                              label: Text(
+                                e,
+                                style: TextStyle(
+                                  fontSize: 16, // Ensure font size consistency
+                                  color: Colors.black, // Text color consistency
+                                ),
+                              ),
+                            ),
+                          )
                           .toList(),
               ),
             ),
@@ -404,16 +417,16 @@ class _SellFormState extends State<SellForm> {
           const SizedBox(height: 16),
 
           // Show selected image preview
-          if (selectedImage.isNotEmpty)
-            SizedBox(
-              height: 150,
-              child: Image.network(
-                selectedImage,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Text("Could not load image.");
-                },
-              ),
-            ),
+          // if (selectedImage.isNotEmpty)
+          //   SizedBox(
+          //     height: 150,
+          //     child: Image.network(
+          //       selectedImage,
+          //       errorBuilder: (context, error, stackTrace) {
+          //         return const Text("Could not load image.");
+          //       },
+          //     ),
+          //   ),
           const SizedBox(height: 30),
 
           // Submit Button

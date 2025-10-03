@@ -55,7 +55,7 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
     );
     _tooltipBehavior = TooltipBehavior(
       enable: true,
-      shouldAlwaysShow: true,
+      shouldAlwaysShow: false,
       tooltipPosition: TooltipPosition.pointer,
       builder:
           (
