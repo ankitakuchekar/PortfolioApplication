@@ -96,6 +96,20 @@ class SpotPriceDisplay extends StatelessWidget {
             change: spotPrices!.data.goldChange,
             changePercent: spotPrices!.data.goldChangePercent,
           ),
+          const SizedBox(height: 4),
+          _buildPriceItem(
+            label: 'Platinum',
+            price: spotPrices!.data.platinumAsk,
+            change: spotPrices!.data.platinumChange,
+            changePercent: spotPrices!.data.platinumChangePercent,
+          ),
+          const SizedBox(height: 4),
+          _buildPriceItem(
+            label: 'Palladium',
+            price: spotPrices!.data.palladiumAsk,
+            change: spotPrices!.data.palladiumChange,
+            changePercent: spotPrices!.data.palladiumChangePercent,
+          ),
         ],
       ),
     );

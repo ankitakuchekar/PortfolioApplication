@@ -68,42 +68,64 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: (spotPrices == null)
                   ? const Center(
-                      // child: Text(
-                      //   "Loading prices...",
-                      //   style: TextStyle(
-                      //     fontSize: 13,
-                      //     fontWeight: FontWeight.w500,
-                      //     color: Colors.black54,
-                      //   ),
-                      // ),
+                      // child: Text(...) if needed
                     )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Expanded(
-                          child: _buildPriceBox(
-                            label: 'Silver',
-                            price: spotPrices.silverAsk,
-                            change: spotPrices.silverChange,
-                            color: const Color(0xFFE8F5F3),
-                            highlight: Colors.grey,
+                  : SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildFixedBox(
+                            child: _buildPriceBox(
+                              label: 'Silver',
+                              price: spotPrices.silverAsk,
+                              change: spotPrices.silverChange,
+                              color: const Color(0xFFE8F5F3),
+                              highlight: Colors.grey,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _buildPriceBox(
-                            label: 'Gold',
-                            price: spotPrices.goldAsk,
-                            change: spotPrices.goldChange,
-                            color: Colors.amber.shade50,
-                            highlight: Colors.amber.shade700,
+                          _buildFixedBox(
+                            child: _buildPriceBox(
+                              label: 'Gold',
+                              price: spotPrices.goldAsk,
+                              change: spotPrices.goldChange,
+                              color: Colors.amber.shade50,
+                              highlight: Colors.amber.shade700,
+                            ),
                           ),
-                        ),
-                      ],
+                          _buildFixedBox(
+                            child: _buildPriceBox(
+                              label: 'Platinum',
+                              price: spotPrices.platinumAsk,
+                              change: spotPrices.platinumChange,
+                              color: const Color(0xFFE8F5F3),
+                              highlight: Colors.grey,
+                            ),
+                          ),
+                          _buildFixedBox(
+                            child: _buildPriceBox(
+                              label: 'Palladium',
+                              price: spotPrices.palladiumAsk,
+                              change: spotPrices.palladiumChange,
+                              color: Colors.amber.shade50,
+                              highlight: Colors.amber.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
             );
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildFixedBox({required Widget child}) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8), // spacing between boxes
+      child: SizedBox(
+        width: 180, // or any fixed width you prefer
+        child: child,
       ),
     );
   }

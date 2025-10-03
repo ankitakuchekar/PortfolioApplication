@@ -1,11 +1,13 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/providers/portfolio_provider.dart';
+import 'package:bold_portfolio/screens/HoldingScreen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/utils/app_colors.dart';
 import 'package:bold_portfolio/widgets/InvestmentFeature.dart';
 import 'package:bold_portfolio/widgets/add_holding_form.dart';
 import 'package:bold_portfolio/widgets/common_app_bar.dart';
 import 'package:bold_portfolio/widgets/common_drawer.dart';
+import 'package:bold_portfolio/widgets/portfolioValuation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -134,8 +136,18 @@ class _DashboardScreenState extends State<BullionDashboard> {
               ? percentDayProfitLossPage.abs()
               : 0;
 
+          final double daySilverPercent =
+              investment.totalSilverInvested > 0 && !percentDayProfitLoss.isNaN
+              ? percentDayProfitLoss.abs()
+              : 0;
+
+          final double dayGoldPercent =
+              investment.totalGoldInvested > 0 && !percentDayProfitLoss.isNaN
+              ? percentDayProfitLoss.abs()
+              : 0;
+
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(2),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -177,9 +189,9 @@ class _DashboardScreenState extends State<BullionDashboard> {
                   _buildHoldingRow(
                     metal: "Silver",
                     quantity:
-                        "${investment.totalSilverInvested.toStringAsFixed(2)} ounces",
+                        "${investment.totalSilverOunces.toStringAsFixed(2)} ounces",
                     currentValue:
-                        "\$${investment.totalSilverCurrent.toStringAsFixed(2)}",
+                        "\$${investment.totalSilverCurrent.toStringAsFixed(2) ?? 0}",
                     purchaseValue:
                         "\$${investment.totalSilverInvested.toStringAsFixed(2)}",
                     positive:
@@ -196,6 +208,13 @@ class _DashboardScreenState extends State<BullionDashboard> {
                                   investment.totalSilverInvested) *
                               100
                         : 0,
+                    holdingData: silverHoldings,
+                    isProfit:
+                        (investment.totalSilverCurrent -
+                            investment.totalSilverInvestment) >
+                        0,
+                    dayProfit: investment.daySilver,
+                    dayPercentProfit: daySilverPercent,
                   ),
                 const Divider(height: 24),
 
@@ -204,7 +223,7 @@ class _DashboardScreenState extends State<BullionDashboard> {
                   _buildHoldingRow(
                     metal: "Gold",
                     quantity:
-                        "${investment.totalGoldInvested.toStringAsFixed(2)} ounces",
+                        "${investment.totalGoldOunces.toStringAsFixed(2)} ounces",
                     currentValue:
                         "\$${investment.totalGoldCurrent.toStringAsFixed(2)}",
                     purchaseValue:
@@ -223,6 +242,13 @@ class _DashboardScreenState extends State<BullionDashboard> {
                                   investment.totalGoldInvested) *
                               100
                         : 0,
+                    holdingData: goldHoldings,
+                    isProfit:
+                        (investment.totalGoldCurrent -
+                            investment.totalGoldInvested) >
+                        0,
+                    dayProfit: investment.dayGold,
+                    dayPercentProfit: dayGoldPercent,
                   ),
                 const Divider(height: 24),
 
@@ -326,7 +352,7 @@ class _DashboardScreenState extends State<BullionDashboard> {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: const Color.fromARGB(255, 162, 161, 161)),
+        side: BorderSide(color: Colors.grey.shade300),
       ),
       elevation: 8,
       shadowColor: Colors.black.withOpacity(0.4),
@@ -340,31 +366,58 @@ class _DashboardScreenState extends State<BullionDashboard> {
               style: TextStyle(fontSize: 14, color: Colors.black54),
             ),
             const SizedBox(height: 4),
-            Text(
-              '\$${NumberFormat("#,##0.00").format(totalCurrentValue)}',
+            AnimatedCounter(
+              value: totalCurrentValue,
+              prefix: '\$',
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const Divider(height: 24, thickness: 1),
-            _buildValueRow(
-              "Total P/L",
-              "\$${NumberFormat("#,##0.00").format(difference)}"
-                  " (${percentDifference > 0 ? '+' : ''}"
-                  "${NumberFormat("#,##0.00").format(percentDifference)}%)",
-              difference > 0 ? Colors.green : Colors.red,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Total P/L", style: TextStyle(fontSize: 16)),
+                AnimatedCounter(
+                  value: difference,
+                  prefix: '+\$',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w200,
+                    color: difference > 0 ? Colors.green : Colors.red,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
-            _buildValueRow(
-              "Day P/L",
-              "${dayProfitLoss >= 0 ? '+' : '-'}\$${NumberFormat("#,##0.00").format(dayProfitLoss)} "
-                  "(${percentDayProfitLoss >= 0 ? '+' : '-'}"
-                  "${NumberFormat("#,##0.00").format(percentDayProfitLoss)}%)",
-              dayProfitLoss >= 0 ? Colors.green : Colors.red,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Day P/L", style: TextStyle(fontSize: 16)),
+                AnimatedCounter(
+                  value: dayProfitLoss,
+                  prefix: dayProfitLoss >= 0 ? '+\$' : '-\$',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w200,
+                    color: dayProfitLoss >= 0 ? Colors.green : Colors.red,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
-            _buildValueRow(
-              "Purchase Cost",
-              "\$${NumberFormat("#,##0.00").format(totalAcquisitionCost)}",
-              Colors.black,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Purchase Cost", style: TextStyle(fontSize: 16)),
+                AnimatedCounter(
+                  value: totalAcquisitionCost,
+                  prefix: '\$',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w200,
+                    color: Colors.black,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -398,29 +451,66 @@ class _DashboardScreenState extends State<BullionDashboard> {
     required bool showReturns,
     required double profit,
     required double profitPct,
+    required List<ProductHolding> holdingData,
+    required bool isProfit,
+    required double dayProfit,
+    required double dayPercentProfit,
   }) {
+    double parseCurrency(String value) {
+      return double.tryParse(value.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
+    }
+
+    final double currentValueDouble = parseCurrency(currentValue);
+    final double purchaseValueDouble = parseCurrency(purchaseValue);
+
     return InkWell(
       onTap: () {
-        // handle tap (e.g. open detail)
+        // Navigate to detail screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => HoldingDetailScreen(
+              metal: metal,
+              currentValue: currentValueDouble,
+              totalPL: profit,
+              percentPL: profitPct,
+              dayPL: dayProfit, // Replace with actual value if available
+              percentDayPL:
+                  dayPercentProfit, // Replace with actual value if available
+              purchaseCost: purchaseValueDouble,
+              holdings: holdingData
+                  .map(
+                    (holding) => PortfolioItem(
+                      name: holding.name,
+                      imageUrl: holding.productImage,
+                      quantity: holding.totalQtyOrdered,
+                      purchasePrice: holding.avgPrice,
+                      currentPrice: holding.currentMetalValue,
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        );
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Left: metal + quantity
+            // Metal + Quantity
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   metal,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   quantity,
                   style: TextStyle(fontSize: 14, color: Colors.grey[700]),
@@ -428,35 +518,47 @@ class _DashboardScreenState extends State<BullionDashboard> {
               ],
             ),
 
-            // Right: either returns or current + purchase
+            // Right side: Returns or Current + Purchase
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: showReturns
                   ? [
+                      AnimatedCounter(
+                        value: profit,
+                        prefix: '\$',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: positive ? Colors.green : Colors.red,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
                       Text(
-                        "\$${profit.toStringAsFixed(2)}"
-                        " (${profit >= 0 ? '+' : '-'}"
-                        "${profitPct.toStringAsFixed(2)}%)",
+                        "${profit >= 0 ? '+' : '-'}${profitPct.toStringAsFixed(2)}%",
                         style: TextStyle(
                           fontSize: 16,
                           color: positive ? Colors.green : Colors.red,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ]
                   : [
-                      Text(
-                        currentValue,
+                      AnimatedCounter(
+                        value: currentValueDouble,
+                        prefix: '\$',
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                          color: isProfit
+                              ? AppColors.profitGreen
+                              : AppColors.lossRed,
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        purchaseValue,
-                        style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+                      const SizedBox(height: 4),
+                      AnimatedCounter(
+                        value: purchaseValueDouble,
+                        prefix: '\$',
+                        style: TextStyle(fontSize: 16, color: Colors.grey[800]),
                       ),
                     ],
             ),
@@ -467,15 +569,57 @@ class _DashboardScreenState extends State<BullionDashboard> {
   }
 
   Widget _buildComingSoonRow(String metal) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(metal),
-        const Text(
-          "Coming Soon",
-          style: TextStyle(fontSize: 12, color: Colors.grey),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            metal,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          const Text(
+            "Coming Soon",
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AnimatedCounter extends StatelessWidget {
+  final double value;
+  final Duration duration;
+  final TextStyle? style;
+  final String prefix;
+  final String suffix;
+
+  const AnimatedCounter({
+    super.key,
+    required this.value,
+    this.duration = const Duration(seconds: 2),
+    this.style,
+    this.prefix = '',
+    this.suffix = '',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: value),
+      duration: duration,
+      builder: (context, val, child) {
+        final formatted = NumberFormat("#,##0.00").format(val);
+        return Text(
+          "$prefix$formatted$suffix",
+          style: style ?? Theme.of(context).textTheme.titleLarge,
+        );
+      },
     );
   }
 }

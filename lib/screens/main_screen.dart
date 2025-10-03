@@ -1,4 +1,5 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
+import 'package:bold_portfolio/screens/NewDashBoardUI.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/portfolio_provider.dart';
@@ -19,7 +20,8 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const DashboardScreen(),
+    // const DashboardScreen(),
+    const BullionDashboard(),
     const GraphsScreen(),
     const HoldingsScreen(),
   ];
