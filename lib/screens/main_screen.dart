@@ -13,14 +13,15 @@ class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<MainScreen> createState() => MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
+  late Widget _currentScreen;
+
   final List<Widget> _screens = [
-    // const DashboardScreen(),
     const BullionDashboard(),
     const GraphsScreen(),
     const HoldingsScreen(),
@@ -29,43 +30,40 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   Provider.of<PortfolioProvider>(
-    //     context,
-    //     listen: false,
-    //   ).loadPortfolioData();
-    // });
+    _currentScreen = _screens[_currentIndex];
   }
 
-  void _onNavigationTap(int index) {
+  void onNavigationTap(int index) {
     setState(() {
       _currentIndex = index;
+      _currentScreen = _screens[index];
+    });
+  }
+
+  // ✅ Used to show screens like HoldingDetailScreen
+  void navigateToScreen(Widget screen) {
+    setState(() {
+      _currentScreen = screen;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // Accessing the provider correctly
     final portfolioProvider = Provider.of<PortfolioProvider>(context);
     final portfolioData = portfolioProvider.portfolioData;
 
-    // Check if portfolioData is null or data is empty
     final customerData = (portfolioData?.data.isNotEmpty ?? false)
         ? portfolioData!.data[0]
         : CustomerData.empty();
 
-    // Check if portfolioSettings is null and fall back to default
     final portfolioSettings = customerData.portfolioSettings;
-
-    // Check if investmentData is null and fall back to default
     final investmentData = customerData.investment;
 
-    // Condition to disable Graphs and Holdings tabs
     bool shouldDisableTabs =
         investmentData.customerId == 0 && portfolioSettings.customerId == 0;
 
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _screens),
+      body: _currentScreen, // ✅ Show current screen
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.primary,
@@ -80,19 +78,14 @@ class _MainScreenState extends State<MainScreen> {
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
-            if (shouldDisableTabs && (index == 1 || index == 2)) {
-              // Do nothing if the tabs are disabled (Graphs or Holdings)
-              return;
-            }
-            setState(() {
-              _currentIndex = index;
-            });
+            if (shouldDisableTabs && (index == 1 || index == 2)) return;
+            onNavigationTap(index);
           },
           type: BottomNavigationBarType.fixed,
           backgroundColor: AppColors.black,
           selectedItemColor: Colors.orangeAccent,
           unselectedItemColor: Colors.white.withOpacity(0.6),
-          items: [
+          items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.dashboard),
               label: 'Dashboard',
@@ -100,23 +93,15 @@ class _MainScreenState extends State<MainScreen> {
             BottomNavigationBarItem(
               icon: Icon(Icons.show_chart),
               label: 'Graphs',
-              // Set color to gray when disabled
-              backgroundColor: shouldDisableTabs
-                  ? Colors.transparent
-                  : Colors.grey,
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.inventory_2),
               label: 'Holdings',
-              // Set color to gray when disabled
-              backgroundColor: shouldDisableTabs
-                  ? Colors.transparent
-                  : Colors.grey,
             ),
           ],
         ),
       ),
-      drawer: CommonDrawer(onNavigationTap: _onNavigationTap),
+      drawer: CommonDrawer(onNavigationTap: onNavigationTap),
     );
   }
 }

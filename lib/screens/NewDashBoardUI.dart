@@ -1,6 +1,7 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/providers/portfolio_provider.dart';
 import 'package:bold_portfolio/screens/HoldingScreen.dart';
+import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/utils/app_colors.dart';
 import 'package:bold_portfolio/widgets/InvestmentFeature.dart';
@@ -465,31 +466,27 @@ class _DashboardScreenState extends State<BullionDashboard> {
 
     return InkWell(
       onTap: () {
-        // Navigate to detail screen
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => HoldingDetailScreen(
-              metal: metal,
-              currentValue: currentValueDouble,
-              totalPL: profit,
-              percentPL: profitPct,
-              dayPL: dayProfit, // Replace with actual value if available
-              percentDayPL:
-                  dayPercentProfit, // Replace with actual value if available
-              purchaseCost: purchaseValueDouble,
-              holdings: holdingData
-                  .map(
-                    (holding) => PortfolioItem(
-                      name: holding.name,
-                      imageUrl: holding.productImage,
-                      quantity: holding.totalQtyOrdered,
-                      purchasePrice: holding.avgPrice,
-                      currentPrice: holding.currentMetalValue,
-                    ),
-                  )
-                  .toList(),
-            ),
+        final mainState = context.findAncestorStateOfType<MainScreenState>();
+        mainState?.navigateToScreen(
+          HoldingDetailScreen(
+            metal: metal,
+            currentValue: currentValueDouble,
+            totalPL: profit,
+            percentPL: profitPct,
+            dayPL: dayProfit,
+            percentDayPL: dayPercentProfit,
+            purchaseCost: purchaseValueDouble,
+            holdings: holdingData
+                .map(
+                  (holding) => PortfolioItem(
+                    name: holding.name,
+                    imageUrl: holding.productImage,
+                    quantity: holding.totalQtyOrdered,
+                    purchasePrice: holding.avgPrice,
+                    currentPrice: holding.currentMetalValue,
+                  ),
+                )
+                .toList(),
           ),
         );
       },

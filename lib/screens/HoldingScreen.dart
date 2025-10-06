@@ -1,3 +1,4 @@
+import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/widgets/portfolioValuation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -55,7 +56,9 @@ class HoldingDetailScreen extends StatelessWidget {
                 style: TextStyle(color: Colors.black, fontSize: 16),
               ),
               onPressed: () {
-                Navigator.pop(context);
+                final mainState = context
+                    .findAncestorStateOfType<MainScreenState>();
+                mainState?.onNavigationTap(0);
               },
             ),
             _buildSummaryCard(currencyFormatter),
