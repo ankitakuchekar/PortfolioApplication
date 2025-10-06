@@ -39,13 +39,19 @@ class _TaxReportPageState extends State<TaxReportScreen> {
   List<dynamic> transactions = [];
   List<dynamic> capitalGL = [];
 
+  late String selectedYear;
+  late List<String> yearOptions;
+
   @override
   void initState() {
     super.initState();
-    _fetchTaxReport();
+    final currentYear = DateTime.now().year;
+    selectedYear = currentYear.toString();
+    yearOptions = [currentYear.toString(), (currentYear - 1).toString()];
+    _fetchTaxReport(selectedYear);
   }
 
-  Future<void> _fetchTaxReport() async {
+  Future<void> _fetchTaxReport(selectedYear) async {
     setState(() {
       isLoading = true;
       error = null;
@@ -54,7 +60,7 @@ class _TaxReportPageState extends State<TaxReportScreen> {
     final data = await generateCustomerTaxReport(
       widget.token,
       int.parse(widget.customerId),
-      '2025',
+      selectedYear,
     );
 
     if (data != null && data['error'] == null) {
@@ -537,156 +543,257 @@ class _TaxReportPageState extends State<TaxReportScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
-                  color: Colors.grey.shade200,
+                  padding: const EdgeInsets.all(12),
+                  color: Colors.grey.shade100,
                   child: const Text(
                     'Investment Summary',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(height: 8),
+
+                // Scrollable Table with Borders
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columnSpacing: 16,
-                    headingRowColor: MaterialStateColor.resolveWith(
-                      (states) => Colors.grey.shade100,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.grey.shade50,
+                      ), // Outer border
                     ),
-                    columns: const [
-                      DataColumn(label: Text('Product Name')),
-                      DataColumn(label: Text('Qty')),
-                      DataColumn(label: Text('Purchase Date')),
-                      DataColumn(label: Text('Purchase Price')),
-                      DataColumn(label: Text('Current Value')),
-                      DataColumn(label: Text('Gain/Loss')),
-                    ],
-                    rows:
-                        productsForPortfolio.isEmpty ||
-                            productsForPortfolio.every(
-                              (item) =>
-                                  item['assetList'] == null &&
-                                  item['totalQtyOrdered'] == null &&
-                                  item['orderDate'] == null &&
-                                  item['pastMetalValue'] == null &&
-                                  item['currentMetalValue'] == null,
-                            )
-                        ? [
-                            const DataRow(
-                              cells: [
-                                DataCell(
-                                  Text(
-                                    'No Investments to display.',
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                DataCell.empty,
-                                DataCell.empty,
-                                DataCell.empty,
-                                DataCell.empty,
-                                DataCell.empty,
-                              ],
-                            ),
-                          ]
-                        : productsForPortfolio.map<DataRow>((item) {
-                            final pastValue = item['pastMetalValue'] ?? 0.0;
-                            final currentValue =
-                                item['currentMetalValue'] ?? 0.0;
-                            final gainLoss = currentValue - pastValue;
-                            final gainLossColor = gainLoss >= 0
-                                ? Colors.green
-                                : Colors.red;
+                    child: DataTable(
+                      headingRowColor: MaterialStateProperty.resolveWith(
+                        (states) => Colors.grey.shade50,
+                      ),
+                      dataRowColor: MaterialStateProperty.resolveWith(
+                        (states) => Colors.white,
+                      ),
+                      dividerThickness: 1,
+                      headingTextStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                      columnSpacing: 0,
+                      border: TableBorder.all(
+                        color: Colors.grey.shade200, // ✅ Full grid border
+                        width: 1,
+                      ),
+                      columns: const [
+                        DataColumn(
+                          label: Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: Text('Product Name'),
+                          ),
+                        ),
+                        DataColumn(
+                          label: Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: Text('Qty'),
+                          ),
+                        ),
+                        DataColumn(
+                          label: Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: Text('Purchase Date'),
+                          ),
+                        ),
+                        DataColumn(
+                          label: Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: Text('Purchase Price'),
+                          ),
+                        ),
+                        DataColumn(
+                          label: Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: Text('Current Value'),
+                          ),
+                        ),
+                        DataColumn(
+                          label: Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: Text('Gain/Loss'),
+                          ),
+                        ),
+                      ],
+                      rows: productsForPortfolio.isEmpty
+                          ? [
+                              const DataRow(
+                                cells: [
+                                  DataCell(Text('No Investments to display.')),
+                                  DataCell(Text('')),
+                                  DataCell(Text('')),
+                                  DataCell(Text('')),
+                                  DataCell(Text('')),
+                                  DataCell(Text('')),
+                                ],
+                              ),
+                            ]
+                          : productsForPortfolio.map<DataRow>((item) {
+                              final pastValue = item['pastMetalValue'] ?? 0.0;
+                              final currentValue =
+                                  item['currentMetalValue'] ?? 0.0;
+                              final gainLoss = currentValue - pastValue;
+                              final gainLossColor = gainLoss >= 0
+                                  ? Colors.green
+                                  : Colors.red;
 
-                            return DataRow(
-                              cells: [
-                                DataCell(Text(item['assetList'] ?? '-')),
-                                DataCell(
-                                  Text(
-                                    '${item['totalQtyOrdered'] ?? '-'}',
-                                    textAlign: TextAlign.right,
+                              return DataRow(
+                                cells: [
+                                  DataCell(
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(item['assetList'] ?? '-'),
+                                    ),
                                   ),
-                                ),
-                                DataCell(Text(_formatDate(item['orderDate']))),
-                                DataCell(
-                                  Text(
-                                    '\$${formatValue(pastValue)}',
-                                    textAlign: TextAlign.right,
+                                  DataCell(
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        '${item['totalQtyOrdered'] ?? '-'}',
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                DataCell(
-                                  Text(
-                                    '\$${formatValue(currentValue)}',
-                                    textAlign: TextAlign.right,
+                                  DataCell(
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        _formatDate(item['orderDate']),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                DataCell(
-                                  Text(
-                                    '${gainLoss >= 0 ? '+' : '-'}\$${formatValue(gainLoss.abs())}',
-                                    style: TextStyle(color: gainLossColor),
-                                    textAlign: TextAlign.right,
+                                  DataCell(
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        '\$${formatValue(pastValue)}',
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            );
-                          }).toList(),
+                                  DataCell(
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        '\$${formatValue(currentValue)}',
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        '${gainLoss >= 0 ? '+' : '-'}\$${formatValue(gainLoss.abs())}',
+                                        style: TextStyle(color: gainLossColor),
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                    ),
                   ),
                 ),
 
-                // Total Row
+                // Total section
                 if (productsForPortfolio.isNotEmpty) ...[
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Expanded(
-                        flex: 2,
-                        child: Text(
-                          'Total Portfolio Value:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
+                  Divider(),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(color: Colors.grey.shade300),
                       ),
-                      Expanded(
-                        child: Text(
-                          '\$${formatValue(productsForPortfolio.fold(0.0, (sum, item) => sum + (item['pastMetalValue'] ?? 0.0)))}',
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          '\$${formatValue(productsForPortfolio.fold(0.0, (sum, item) => sum + (item['currentMetalValue'] ?? 0.0)))}',
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                      Expanded(
-                        child: Builder(
-                          builder: (context) {
-                            final totalGainLoss = productsForPortfolio
-                                .fold<double>(
-                                  0.0,
-                                  (sum, item) =>
-                                      sum +
-                                      ((item['currentMetalValue'] ?? 0.0) -
-                                          (item['pastMetalValue'] ?? 0.0)),
-                                );
-
-                            final isPositive = totalGainLoss >= 0;
-                            return Text(
-                              '${isPositive ? '+' : '-'}\$${formatValue(totalGainLoss.abs())}',
-                              textAlign: TextAlign.right,
-                              style: TextStyle(
-                                color: isPositive ? Colors.green : Colors.red,
-                                fontWeight: FontWeight.bold,
+                    ),
+                    child: Row(
+                      children: [
+                        // 1. Label Cell (Product Name equivalent)
+                        Expanded(
+                          flex: 2,
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                right: BorderSide(color: Colors.grey.shade300),
                               ),
-                            );
-                          },
+                            ),
+                            child: const Text(
+                              'Total Portfolio Value',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+
+                        // 2. Purchase Price Total
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                right: BorderSide(color: Colors.grey.shade300),
+                              ),
+                            ),
+                            child: Text(
+                              '\$${formatValue(productsForPortfolio.fold(0.0, (sum, item) => sum + (item['pastMetalValue'] ?? 0.0)))}',
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
+                        ),
+
+                        // 3. Current Value Total
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                right: BorderSide(color: Colors.grey.shade300),
+                              ),
+                            ),
+                            child: Text(
+                              '\$${formatValue(productsForPortfolio.fold(0.0, (sum, item) => sum + (item['currentMetalValue'] ?? 0.0)))}',
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
+                        ),
+
+                        // 4. Gain/Loss Total (last column - no right border)
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            child: Builder(
+                              builder: (context) {
+                                final totalGainLoss = productsForPortfolio
+                                    .fold<double>(
+                                      0.0,
+                                      (sum, item) =>
+                                          sum +
+                                          ((item['currentMetalValue'] ?? 0.0) -
+                                              (item['pastMetalValue'] ?? 0.0)),
+                                    );
+
+                                final isPositive = totalGainLoss >= 0;
+                                return Text(
+                                  '${isPositive ? '+' : '-'}\$${formatValue(totalGainLoss.abs())}',
+                                  textAlign: TextAlign.right,
+                                  style: TextStyle(
+                                    color: isPositive
+                                        ? Colors.green
+                                        : Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ],
             ),
           ),
-
           // Summary Stats
           // Transaction History
           buildTransactionHistory(transactions),
@@ -873,6 +980,24 @@ class _TaxReportPageState extends State<TaxReportScreen> {
               //   label: const Text('Download PDF'),
               // ),
             ],
+          ),
+
+          DropdownButton<String>(
+            value: selectedYear,
+            onChanged: (String? newValue) {
+              if (newValue != null) {
+                setState(() {
+                  selectedYear = newValue;
+                  _fetchTaxReport(selectedYear);
+                });
+              }
+            },
+            items: yearOptions.map<DropdownMenuItem<String>>((String year) {
+              return DropdownMenuItem<String>(value: year, child: Text(year));
+            }).toList(),
+            hint: const Text("Select year"),
+            underline: Container(height: 1, color: Colors.grey),
+            style: const TextStyle(color: Colors.black, fontSize: 16),
           ),
         ],
       ),
