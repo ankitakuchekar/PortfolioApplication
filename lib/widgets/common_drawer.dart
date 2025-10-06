@@ -1,6 +1,7 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/screens/BullionPortfolioGuideScreen.dart';
 import 'package:bold_portfolio/screens/PrivacyPolicyScreen.dart';
+import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/services/api_service.dart';
 import 'package:bold_portfolio/widgets/FeedbackPopup.dart';
 import 'package:flutter/material.dart';
@@ -239,13 +240,9 @@ class _CommonDrawerState extends State<CommonDrawer> {
                   ),
                   title: const Text("Guide"),
                   onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BullionPortfolioGuideScreen(),
-                      ),
-                    );
+                    final mainState = context
+                        .findAncestorStateOfType<MainScreenState>();
+                    mainState?.navigateToScreen(BullionPortfolioGuideScreen());
                   },
                 ),
                 ListTile(
@@ -255,13 +252,9 @@ class _CommonDrawerState extends State<CommonDrawer> {
                   ),
                   title: const Text("Privacy Policy"),
                   onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PrivacyPolicyScreen(),
-                      ),
-                    );
+                    final mainState = context
+                        .findAncestorStateOfType<MainScreenState>();
+                    mainState?.navigateToScreen(PrivacyPolicyScreen());
                   },
                 ),
               ],

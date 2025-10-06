@@ -1,3 +1,4 @@
+import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/utils/app_colors.dart';
 import 'package:bold_portfolio/widgets/common_app_bar.dart';
 import 'package:bold_portfolio/widgets/common_drawer.dart';
@@ -182,7 +183,9 @@ class BullionPortfolioGuideScreen extends StatelessWidget {
           children: [
             TextButton.icon(
               onPressed: () {
-                Navigator.pop(context); // Navigate back
+                final mainState = context
+                    .findAncestorStateOfType<MainScreenState>();
+                mainState?.onNavigationTap(0);
               },
               icon: const Icon(Icons.arrow_back, color: Colors.black87),
               label: const Text(
@@ -760,7 +763,9 @@ class BullionPortfolioGuideScreen extends StatelessWidget {
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               onPressed: () {
-                Navigator.pop(context); // Navigates to previous screen
+                final mainState = context
+                    .findAncestorStateOfType<MainScreenState>();
+                mainState?.onNavigationTap(0);
               },
             ),
           ],
