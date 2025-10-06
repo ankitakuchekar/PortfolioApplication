@@ -7,6 +7,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+// import 'dart:io'; // For Platform, File
+// import 'package:path_provider/path_provider.dart'; // For getExternalStorageDirectory
+// import 'package:permission_handler/permission_handler.dart'; // For Permission
 
 class TaxReportScreen extends StatefulWidget {
   final String token;
@@ -72,19 +78,340 @@ class _TaxReportPageState extends State<TaxReportScreen> {
     }
   }
 
+  Future<void> _printPdfReport() async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.MultiPage(
+        build: (pw.Context context) => [
+          pw.Text(
+            'BOLD Precious Metals Tax Report',
+            style: pw.TextStyle(
+              fontSize: 24,
+              fontWeight: pw.FontWeight.bold,
+              font: pw.Font.times(), // serif-style font
+            ),
+            textAlign: pw.TextAlign.center,
+          ),
+          pw.SizedBox(height: 8),
+          // Date Range
+          if (customerInfo?['startDate'] != null &&
+              customerInfo?['endDate'] != null)
+            pw.Text(
+              _formatDateRange(
+                customerInfo!['startDate'],
+                customerInfo!['endDate'],
+              ),
+              style: pw.TextStyle(fontSize: 14, color: PdfColors.grey600),
+              textAlign: pw.TextAlign.center,
+            ),
+          pw.SizedBox(height: 4),
+          pw.Text(
+            'This report includes all investment transactions and holdings for the specified period.',
+            style: pw.TextStyle(fontSize: 14, color: PdfColors.grey600),
+            textAlign: pw.TextAlign.center,
+          ),
+          // Customer Info
+          if (customerInfo != null)
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  'Customer: ${customerInfo!['firstName']} ${customerInfo!['lastName']}',
+                ),
+                pw.Text(
+                  'Address: ${customerInfo!['streetAddress1']}, ${customerInfo!['city']} ${customerInfo!['zip']}',
+                ),
+                pw.Text(
+                  'Report Date: ${_formatDate(customerInfo!['reportGenerationDate'])}',
+                ),
+              ],
+            ),
+
+          pw.SizedBox(height: 16),
+
+          // Investment Summary
+          pw.Text(
+            'Investment Summary',
+            style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.Table(
+            border: pw.TableBorder.all(width: 0.5),
+            children: [
+              // Header Row
+              pw.TableRow(
+                decoration: pw.BoxDecoration(color: PdfColors.grey300),
+                children: [
+                  pw.Padding(
+                    child: pw.Text('Product Name'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Qty'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Purchase Date'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Purchase Price'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Current Value'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Gain/Loss'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                ],
+              ),
+
+              // Data Rows
+              ...productsForPortfolio.map((item) {
+                final past = item['pastMetalValue'] ?? 0.0;
+                final current = item['currentMetalValue'] ?? 0.0;
+                final gainLoss = current - past;
+                final gainLossColor = gainLoss >= 0
+                    ? PdfColors.green
+                    : PdfColors.red;
+
+                return pw.TableRow(
+                  children: [
+                    pw.Padding(
+                      child: pw.Text(item['assetList'] ?? '-'),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                    pw.Padding(
+                      child: pw.Text('${item['totalQtyOrdered'] ?? '-'}'),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                    pw.Padding(
+                      child: pw.Text(_formatDate(item['orderDate'])),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                    pw.Padding(
+                      child: pw.Text('\$${formatValue(past)}'),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                    pw.Padding(
+                      child: pw.Text('\$${formatValue(current)}'),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(4),
+                      child: pw.Text(
+                        '${gainLoss >= 0 ? '+' : '-'}\$${formatValue(gainLoss.abs())}',
+                        style: pw.TextStyle(color: gainLossColor),
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ],
+          ),
+
+          pw.SizedBox(height: 16),
+
+          // Capital Gains/Losses
+          pw.Text(
+            'Capital Gains/Losses',
+            style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.Table(
+            border: pw.TableBorder.all(width: 0.5),
+            children: [
+              // Header Row
+              pw.TableRow(
+                decoration: pw.BoxDecoration(color: PdfColors.grey300),
+                children: [
+                  pw.Padding(
+                    child: pw.Text('Description'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Date Acquired'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Date Sold'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Cost Basis'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Proceeds'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Gain/Loss'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Category'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                ],
+              ),
+
+              // Data Rows
+              ...capitalGL.map((gain) {
+                final cost = gain['costBasis'] ?? 0.0;
+                final proceeds = gain['proceeds'] ?? 0.0;
+                final gainLoss = proceeds - cost;
+                final gainLossColor = gainLoss >= 0
+                    ? PdfColors.green
+                    : PdfColors.red;
+
+                return pw.TableRow(
+                  children: [
+                    pw.Padding(
+                      child: pw.Text(gain['productName'] ?? '-'),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                    pw.Padding(
+                      child: pw.Text(_formatDate(gain['dateAcquired'])),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                    pw.Padding(
+                      child: pw.Text(_formatDate(gain['dateSold'])),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                    pw.Padding(
+                      child: pw.Text('\$${_formatNumber(cost)}'),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                    pw.Padding(
+                      child: pw.Text('\$${_formatNumber(proceeds)}'),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(4),
+                      child: pw.Text(
+                        '${gainLoss >= 0 ? '+' : '-'}\$${_formatNumber(gainLoss.abs())}',
+                        style: pw.TextStyle(color: gainLossColor),
+                      ),
+                    ),
+                    pw.Padding(
+                      child: pw.Text(gain['type'] ?? '-'),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                  ],
+                );
+              }),
+            ],
+          ),
+          pw.SizedBox(height: 16),
+
+          // ✅ Transaction History
+          pw.Text(
+            'Transaction History',
+            style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.Table.fromTextArray(
+            headers: [
+              'Date',
+              'Transaction Type',
+              'Product Name',
+              'Qty',
+              'Price per Unit',
+            ],
+            data: transactions.map((txn) {
+              return [
+                _formatDate(txn['transactionDate']),
+                txn['transactionType'] ?? '-',
+                txn['productName'] ?? '-',
+                '${txn['transactionQuantity'] ?? '-'}',
+                '\$${_formatNumber(txn['transactionPrice'] ?? 0.0)}',
+              ];
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+    );
+  }
+
+  // Future<void> _downloadPdfReport() async {
+  //   final pdf = pw.Document();
+
+  //   // Build the same content as your _printPdfReport()
+  //   pdf.addPage(
+  //     pw.MultiPage(
+  //       build: (pw.Context context) => [
+  //         pw.Center(
+  //           child: pw.Column(
+  //             crossAxisAlignment: pw.CrossAxisAlignment.center,
+  //             children: [
+  //               pw.Text(
+  //                 'BOLD Precious Metals Tax Report',
+  //                 style: pw.TextStyle(
+  //                   fontSize: 24,
+  //                   fontWeight: pw.FontWeight.bold,
+  //                   font: pw.Font.times(),
+  //                 ),
+  //                 textAlign: pw.TextAlign.center,
+  //               ),
+  //               pw.SizedBox(height: 8),
+  //               if (customerInfo?['startDate'] != null &&
+  //                   customerInfo?['endDate'] != null)
+  //                 pw.Text(
+  //                   _formatDateRange(
+  //                     customerInfo!['startDate'],
+  //                     customerInfo!['endDate'],
+  //                   ),
+  //                   style: pw.TextStyle(fontSize: 14, color: PdfColors.grey600),
+  //                 ),
+  //               pw.SizedBox(height: 4),
+  //               pw.Text(
+  //                 'This report includes all investment transactions and holdings for the specified period.',
+  //                 style: pw.TextStyle(fontSize: 14, color: PdfColors.grey600),
+  //                 textAlign: pw.TextAlign.center,
+  //               ),
+  //               pw.SizedBox(height: 24),
+  //             ],
+  //           ),
+  //         ),
+  //         // Add your Investment Summary, Capital Gains, Transaction History here
+  //       ],
+  //     ),
+  //   );
+
+  //   try {
+  //     // Request permissions if on Android
+  //     if (Platform.isAndroid) {
+  //       final status = await Permission.storage.request();
+  //       if (!status.isGranted) {
+  //         Fluttertoast.showToast(msg: "Storage permission denied.");
+  //         return;
+  //       }
+  //     }
+
+  //     final bytes = await pdf.save();
+
+  //     final directory = await getExternalStorageDirectory();
+  //     final path = directory?.path ?? '/storage/emulated/0/Download';
+  //     final file = File(
+  //       '$path/tax_report_${DateTime.now().millisecondsSinceEpoch}.pdf',
+  //     );
+
+  //     await file.writeAsBytes(bytes);
+
+  //     Fluttertoast.showToast(msg: "PDF downloaded to: ${file.path}");
+  //   } catch (e) {
+  //     Fluttertoast.showToast(msg: "Download failed: $e");
+  //   }
+  // }
+
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    if (error != null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Tax Report')),
-        body: Center(child: Text(error!)),
-      );
-    }
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CommonAppBar(title: 'Tax Report'),
@@ -92,45 +419,50 @@ class _TaxReportPageState extends State<TaxReportScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          // Report Header
-          Container(
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.grey)),
-            ),
-            padding: const EdgeInsets.only(bottom: 24),
-            margin: const EdgeInsets.only(bottom: 24),
-            child: Center(
-              child: Column(
-                children: [
-                  const Text(
-                    'BOLD Precious Metals Tax Report',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'serif',
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  if (customerInfo?['startDate'] != null &&
-                      customerInfo?['endDate'] != null)
-                    Text(
-                      _formatDateRange(
-                        customerInfo!['startDate'],
-                        customerInfo!['endDate'],
+          if (isLoading)
+            const Scaffold(body: Center(child: CircularProgressIndicator()))
+          else
+            // Report Header
+            Container(
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.grey)),
+              ),
+              padding: const EdgeInsets.only(bottom: 24),
+              margin: const EdgeInsets.only(bottom: 24),
+              child: Center(
+                child: Column(
+                  children: [
+                    const Text(
+                      'BOLD Precious Metals Tax Report',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      textAlign: TextAlign.center,
                     ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'This report includes all investment transactions and holdings for the specified period.',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    if (customerInfo?['startDate'] != null &&
+                        customerInfo?['endDate'] != null)
+                      Text(
+                        _formatDateRange(
+                          customerInfo!['startDate'],
+                          customerInfo!['endDate'],
+                        ),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'This report includes all investment transactions and holdings for the specified period.',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
 
           // Customer Information
           if (customerInfo != null) ...[
@@ -140,11 +472,7 @@ class _TaxReportPageState extends State<TaxReportScreen> {
               margin: const EdgeInsets.only(bottom: 16),
               child: const Text(
                 'Customer Information',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'serif',
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
             Row(
@@ -213,11 +541,7 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                   color: Colors.grey.shade200,
                   child: const Text(
                     'Investment Summary',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'serif',
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -379,11 +703,7 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                   color: Colors.grey.shade100,
                   child: const Text(
                     'Capital Gains/Losses Calculation',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'serif',
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -539,6 +859,21 @@ class _TaxReportPageState extends State<TaxReportScreen> {
           ),
 
           const SizedBox(height: 10),
+          Row(
+            children: [
+              TextButton.icon(
+                onPressed: _printPdfReport,
+                icon: const Icon(Icons.print),
+                label: const Text('Print Report'),
+              ),
+              const SizedBox(width: 12),
+              // TextButton.icon(
+              //   onPressed: _downloadPdfReport,
+              //   icon: const Icon(Icons.download),
+              //   label: const Text('Download PDF'),
+              // ),
+            ],
+          ),
         ],
       ),
     );
@@ -604,7 +939,20 @@ Future<Map<String, dynamic>?> generateCustomerTaxReport(
 }
 
 String _formatDateRange(String start, String end) {
-  return '${_formatDate(start)} - ${_formatDate(end)}';
+  return '${_formatDates(start)} - ${_formatDates(end)}';
+}
+
+String _formatDates(String? dateStr) {
+  if (dateStr == null) return '-';
+
+  try {
+    final inputFormat = DateFormat('MM/dd/yyyy HH:mm:ss');
+    final date = inputFormat.parse(dateStr);
+    final outputFormat = DateFormat('MMMM d, y'); // e.g. October 6, 2025
+    return outputFormat.format(date);
+  } catch (e) {
+    return '-';
+  }
 }
 
 String _formatCityZip(String? city, String? zip) {
@@ -645,11 +993,7 @@ Widget buildTransactionHistory(List<dynamic> transactions) {
           color: Colors.grey.shade100,
           child: const Text(
             'Transaction History',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'serif',
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
         const SizedBox(height: 8),
