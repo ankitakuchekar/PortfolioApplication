@@ -248,21 +248,16 @@ class MetalHoldingsLineChart extends StatelessWidget {
                         tooltipSettings: const InteractiveTooltip(enable: true),
                         tooltipDisplayMode: TrackballDisplayMode.groupAllPoints,
                         builder: (BuildContext context, TrackballDetails details) {
-                          final int pointIndex = details.pointIndex ?? 0;
-                          final TrackballGroupingModeInfo? groupingInfo =
-                              details.groupingModeInfo;
-                          if (groupingInfo == null) {
-                            return const SizedBox();
-                          }
+                          final groupingInfo = details.groupingModeInfo;
+                          if (groupingInfo == null) return const SizedBox();
 
                           final List<dynamic>? visibleSeriesList =
                               groupingInfo.visibleSeriesList;
-                          final List<CartesianChartPoint<dynamic>> pts =
+                          final List<CartesianChartPoint<dynamic>> points =
                               groupingInfo.points;
 
                           if (visibleSeriesList == null ||
-                              visibleSeriesList.length != pts.length) {
-                            // mismatch or missing info
+                              visibleSeriesList.length != points.length) {
                             return const SizedBox();
                           }
 
@@ -270,25 +265,33 @@ class MetalHoldingsLineChart extends StatelessWidget {
                           final Map<String, MetalInOunces> seriesToData = {};
 
                           for (int i = 0; i < visibleSeriesList.length; i++) {
-                            final dynamic seriesObj = visibleSeriesList[i];
-                            final CartesianChartPoint<dynamic> point = pts[i];
-
+                            final seriesObj = visibleSeriesList[i];
+                            final point = points[i];
                             final String? seriesName =
                                 seriesObj.name as String?;
                             final List<dynamic>? ds = seriesObj.dataSource;
 
                             if (seriesName != null &&
                                 ds != null &&
-                                pointIndex < ds.length) {
-                              final MetalInOunces dp =
-                                  ds[pointIndex] as MetalInOunces;
-                              seriesToData[seriesName] = dp;
+                                point.x != null) {
+                              MetalInOunces? dp;
+                              try {
+                                dp =
+                                    ds.firstWhere((e) => e.orderDate == point.x)
+                                        as MetalInOunces;
+                              } catch (_) {
+                                dp = ds.isNotEmpty
+                                    ? ds.first as MetalInOunces
+                                    : null;
+                              }
+
+                              if (dp != null) {
+                                seriesToData[seriesName] = dp;
+                              }
                             }
                           }
 
-                          if (seriesToData.isEmpty) {
-                            return const SizedBox();
-                          }
+                          if (seriesToData.isEmpty) return const SizedBox();
 
                           final MetalInOunces firstDp =
                               seriesToData.values.first;
@@ -306,14 +309,14 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                           ];
+
                           const TextStyle baseStyle = TextStyle(
                             color: Colors.white,
                             fontSize: 12,
                           );
 
+                          // Loop through all series and display values properly
                           seriesToData.forEach((seriesName, dp) {
-                            // adapt depending on seriesName
-                            print("series $seriesName");
                             if (seriesName == 'Silver Holdings') {
                               content.add(
                                 Text(
@@ -372,6 +375,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             }
                           });
 
+                          // Final tooltip container
                           return Container(
                             padding: const EdgeInsets.symmetric(
                               vertical: 6,
