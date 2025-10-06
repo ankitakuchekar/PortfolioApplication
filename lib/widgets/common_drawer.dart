@@ -1,6 +1,7 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/screens/BullionPortfolioGuideScreen.dart';
 import 'package:bold_portfolio/screens/PrivacyPolicyScreen.dart';
+import 'package:bold_portfolio/screens/TaxReportScreen.dart';
 import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/services/api_service.dart';
 import 'package:bold_portfolio/widgets/FeedbackPopup.dart';
@@ -217,7 +218,17 @@ class _CommonDrawerState extends State<CommonDrawer> {
                     color: Colors.blue,
                   ),
                   title: const Text("Tax Report"),
-                  onTap: () {},
+                  onTap: () {
+                    final mainState = context
+                        .findAncestorStateOfType<MainScreenState>();
+                    mainState?.navigateToScreen(
+                      TaxReportScreen(
+                        token: token ?? '',
+                        customerId: userId ?? '',
+                        selectedYear: '',
+                      ),
+                    );
+                  },
                 ),
                 ListTile(
                   leading: const Icon(
