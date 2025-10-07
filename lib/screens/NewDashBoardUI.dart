@@ -409,7 +409,7 @@ class _DashboardScreenState extends State<BullionDashboard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Purchase Cost", style: TextStyle(fontSize: 16)),
+                const Text("Total Cost Basis", style: TextStyle(fontSize: 16)),
                 AnimatedCounter(
                   value: totalAcquisitionCost,
                   prefix: '\$',

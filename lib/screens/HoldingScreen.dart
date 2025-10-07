@@ -108,7 +108,7 @@ class HoldingDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _buildValueRow(
-            label: '$metal Purchase Cost',
+            label: '$metal Cost Basis',
             value: currencyFormatter.format(purchaseCost),
             valueColor: Colors.black87,
           ),
