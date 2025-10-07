@@ -192,7 +192,7 @@ class _DashboardScreenState extends State<BullionDashboard> {
                     quantity:
                         "${investment.totalSilverOunces.toStringAsFixed(2)} ounces",
                     currentValue:
-                        "\$${investment.totalSilverCurrent.toStringAsFixed(2) ?? 0}",
+                        "\$${investment.totalSilverCurrent.toStringAsFixed(2)}",
                     purchaseValue:
                         "\$${investment.totalSilverInvested.toStringAsFixed(2)}",
                     positive:
@@ -353,8 +353,9 @@ class _DashboardScreenState extends State<BullionDashboard> {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade300),
+        side: BorderSide(color: Colors.grey.shade500),
       ),
+      color: Colors.grey.shade100, // 👈 Set background color here
       elevation: 8,
       shadowColor: Colors.black.withOpacity(0.4),
       child: Padding(
@@ -423,23 +424,6 @@ class _DashboardScreenState extends State<BullionDashboard> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildValueRow(String label, String value, Color color) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 16)),
-        Text(
-          value,
-          style: TextStyle(
-            fontWeight: FontWeight.w200,
-            color: color,
-            fontSize: 15,
-          ),
-        ),
-      ],
     );
   }
 
