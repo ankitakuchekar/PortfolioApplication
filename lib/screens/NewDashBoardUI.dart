@@ -175,7 +175,7 @@ class _DashboardScreenState extends State<BullionDashboard> {
                       });
                     },
                     child: Text(
-                      showReturns ? "Current‑(Invested)" : "Returns (%)",
+                      showReturns ? "Current‑(Investment)" : "Total Return",
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.black,

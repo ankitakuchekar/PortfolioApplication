@@ -82,6 +82,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                               color: const Color(0xFFE8F5F3),
                               highlight: Colors.grey,
                             ),
+                            boxWidth: 180,
                           ),
                           _buildFixedBox(
                             child: _buildPriceBox(
@@ -91,6 +92,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                               color: Colors.amber.shade50,
                               highlight: Colors.amber.shade700,
                             ),
+                            boxWidth: 180,
                           ),
                           _buildFixedBox(
                             child: _buildPriceBox(
@@ -100,6 +102,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                               color: const Color(0xFFE8F5F3),
                               highlight: Colors.grey,
                             ),
+                            boxWidth: 200,
                           ),
                           _buildFixedBox(
                             child: _buildPriceBox(
@@ -109,6 +112,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                               color: Colors.amber.shade50,
                               highlight: Colors.amber.shade700,
                             ),
+                            boxWidth: 205,
                           ),
                         ],
                       ),
@@ -120,11 +124,11 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  Widget _buildFixedBox({required Widget child}) {
+  Widget _buildFixedBox({required Widget child, required double boxWidth}) {
     return Padding(
       padding: const EdgeInsets.only(right: 8), // spacing between boxes
       child: SizedBox(
-        width: 180, // or any fixed width you prefer
+        width: boxWidth, // or any fixed width you prefer
         child: child,
       ),
     );
