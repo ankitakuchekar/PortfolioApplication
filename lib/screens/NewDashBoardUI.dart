@@ -202,7 +202,8 @@ class _DashboardScreenState extends State<BullionDashboard> {
                     showReturns: showReturns,
                     profit:
                         investment.totalSilverCurrent -
-                        investment.totalSilverInvested,
+                            investment.totalSilverInvested ??
+                        0.00,
                     profitPct: investment.totalSilverInvested > 0
                         ? ((investment.totalSilverCurrent -
                                       investment.totalSilverInvested) /
@@ -250,6 +251,71 @@ class _DashboardScreenState extends State<BullionDashboard> {
                         0,
                     dayProfit: investment.dayGold,
                     dayPercentProfit: dayGoldPercent,
+                  ),
+                const Divider(height: 24),
+                if (silverHoldings.isEmpty)
+                  _buildHoldingRow(
+                    metal: "Silver",
+                    quantity:
+                        "${investment.totalSilverOunces.toStringAsFixed(2) ?? 0.00} ounces",
+                    currentValue:
+                        "\$${investment.totalSilverCurrent.toStringAsFixed(2) ?? 0.00}",
+                    purchaseValue:
+                        "\$${investment.totalSilverInvested.toStringAsFixed(2) ?? 0.00}",
+                    positive:
+                        (investment.totalSilverCurrent -
+                            investment.totalSilverInvested) >=
+                        0,
+                    showReturns: showReturns,
+                    profit:
+                        investment.totalSilverCurrent -
+                            investment.totalSilverInvested ??
+                        0.00,
+                    profitPct: investment.totalSilverInvested > 0
+                        ? ((investment.totalSilverCurrent -
+                                      investment.totalSilverInvested) /
+                                  investment.totalSilverInvested) *
+                              100
+                        : 0,
+                    holdingData: silverHoldings,
+                    isProfit:
+                        (investment.totalSilverCurrent -
+                            investment.totalSilverInvestment) >
+                        0,
+                    dayProfit: investment.daySilver ?? 0.00,
+                    dayPercentProfit: daySilverPercent ?? 0.00,
+                  ),
+                const Divider(height: 24),
+                if (goldHoldings.isEmpty)
+                  _buildHoldingRow(
+                    metal: "Gold",
+                    quantity:
+                        "${investment.totalGoldOunces.toStringAsFixed(2) ?? 0.00} ounces",
+                    currentValue:
+                        "\$${investment.totalGoldCurrent.toStringAsFixed(2) ?? 0.00}",
+                    purchaseValue:
+                        "\$${investment.totalGoldInvested.toStringAsFixed(2) ?? 0.00}",
+                    positive:
+                        (investment.totalGoldCurrent -
+                            investment.totalGoldInvested) >=
+                        0,
+                    showReturns: showReturns,
+                    profit:
+                        investment.totalGoldCurrent -
+                        investment.totalGoldInvested,
+                    profitPct: investment.totalGoldInvested > 0
+                        ? ((investment.totalGoldCurrent -
+                                      investment.totalGoldInvested) /
+                                  investment.totalGoldInvested) *
+                              100
+                        : 0,
+                    holdingData: goldHoldings,
+                    isProfit:
+                        (investment.totalGoldCurrent -
+                            investment.totalGoldInvested) >
+                        0,
+                    dayProfit: investment.dayGold ?? 0.00,
+                    dayPercentProfit: dayGoldPercent ?? 0.00,
                   ),
                 const Divider(height: 24),
 
@@ -378,14 +444,30 @@ class _DashboardScreenState extends State<BullionDashboard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text("Total P/L", style: TextStyle(fontSize: 16)),
-                AnimatedCounter(
-                  value: difference,
-                  prefix: '+\$',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w200,
-                    color: difference > 0 ? Colors.green : Colors.red,
-                    fontSize: 15,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedCounter(
+                      value: difference,
+                      prefix: difference >= 0 ? '+\$' : '-\$',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w200,
+                        color: difference >= 0 ? Colors.green : Colors.red,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 2), // very tight spacing
+                    Text(
+                      percentDifference >= 0
+                          ? '(+${percentDifference.toStringAsFixed(2)})%'
+                          : '(-${percentDifference.abs().toStringAsFixed(2)}%)',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: difference >= 0 ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -394,14 +476,30 @@ class _DashboardScreenState extends State<BullionDashboard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text("Day P/L", style: TextStyle(fontSize: 16)),
-                AnimatedCounter(
-                  value: dayProfitLoss,
-                  prefix: dayProfitLoss >= 0 ? '+\$' : '-\$',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w200,
-                    color: dayProfitLoss >= 0 ? Colors.green : Colors.red,
-                    fontSize: 15,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedCounter(
+                      value: dayProfitLoss,
+                      prefix: dayProfitLoss >= 0 ? '+\$' : '\$',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w200,
+                        color: dayProfitLoss >= 0 ? Colors.green : Colors.red,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(width: 3), // very tight spacing
+                    Text(
+                      percentDayProfitLoss >= 0
+                          ? '(+${percentDayProfitLoss.toStringAsFixed(2)})%'
+                          : '(-${percentDayProfitLoss.abs().toStringAsFixed(2)}%)',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: dayProfitLoss >= 0 ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
