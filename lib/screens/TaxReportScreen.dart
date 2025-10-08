@@ -1055,10 +1055,135 @@ class _TaxReportPageState extends State<TaxReportScreen> {
               ],
             ),
           ),
+
+          const SizedBox(height: 10),
+          Container(
+            margin: const EdgeInsets.only(bottom: 24),
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ---- Calculation Notes ----
+                Text(
+                  "Calculation Notes:",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                _buildBulletText(
+                  "Cost basis includes original purchase price plus applicable fees",
+                ),
+                _buildBulletText(
+                  "Short-term gains apply to assets held for one year or less",
+                ),
+                _buildBulletText(
+                  "Long-term gains apply to assets held for more than one year",
+                ),
+                const SizedBox(height: 20),
+                const Divider(thickness: 1),
+                const SizedBox(height: 20),
+
+                // ---- Disclaimers ----
+                Text(
+                  "Disclaimers",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+
+                _buildNumberedText(
+                  1,
+                  "This report is provided for informational purposes only. "
+                  "BOLD Precious Metals does not provide tax advice. Consult with "
+                  "a qualified tax professional for personalized advice regarding "
+                  "your specific tax situation and bullion investments.",
+                ),
+
+                const SizedBox(height: 10),
+
+                _buildNumberedText(
+                  2,
+                  "All calculations in this report are based on transaction data from "
+                  "BOLD Precious Metals and any information manually entered by the "
+                  "client. BOLD Precious Metals is not responsible for the accuracy or completeness of client-entered data. It is the client's responsibility to verify the accuracy of all manually entered information.",
+                ),
+                const SizedBox(height: 10),
+
+                _buildNumberedText(
+                  3,
+                  "Precious metals, including gold, silver, platinum, and palladium, are classified as 'collectibles' by the IRS. This classification may result in different capital gains tax rates than those applied to other capital assets. Tax laws regarding collectibles can be complex, and it is crucial to consult with a tax professional for accurate reporting.",
+                ),
+                const SizedBox(height: 10),
+
+                _buildNumberedText(
+                  4,
+                  "BOLD Precious Metals is not responsible for any errors or omissions in this report or any actions taken in reliance on this information.",
+                ),
+                const SizedBox(height: 10),
+
+                _buildNumberedText(
+                  5,
+                  "It is essential to retain this report, along with all original purchase receipts, sale confirmations, and any other relevant documentation, for your tax records. These records may be required by the IRS or state tax authorities.",
+                ),
+                const SizedBox(height: 10),
+
+                _buildNumberedText(
+                  6,
+                  "Tax laws and regulations are subject to change. The information in this report is based on current laws as of the report's generation date. It is the client's responsibility to stay informed about any changes that may affect their tax obligations.",
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
+}
+
+Widget _buildBulletText(String text) {
+  return Padding(
+    padding: const EdgeInsets.only(left: 10, bottom: 8),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("• ", style: TextStyle(fontSize: 16, height: 1.4)),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 15,
+              height: 1.4,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildNumberedText(int number, String text) {
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        "$number. ",
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+          height: 1.4,
+        ),
+      ),
+      Expanded(
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 15,
+            height: 1.4,
+            color: Colors.grey.shade600,
+          ),
+        ),
+      ),
+    ],
+  );
 }
 
 String _formatDate(dynamic dateInput) {
