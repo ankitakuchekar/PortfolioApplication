@@ -10,6 +10,10 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 // import 'dart:io'; // For Platform, File
 // import 'package:path_provider/path_provider.dart'; // For getExternalStorageDirectory
 // import 'package:permission_handler/permission_handler.dart'; // For Permission
@@ -84,7 +88,7 @@ class _TaxReportPageState extends State<TaxReportScreen> {
     }
   }
 
-  Future<void> _printPdfReport() async {
+  Future<void> _downloadPdfReport() async {
     final pdf = pw.Document();
 
     pdf.addPage(
@@ -340,81 +344,33 @@ class _TaxReportPageState extends State<TaxReportScreen> {
       ),
     );
 
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
-    );
+    try {
+      await Permission.storage.request();
+
+      final directory = Directory('/storage/emulated/0/Download');
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+
+      final filePath =
+          '${directory.path}/BOLD_Tax_Reports_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final file = File(filePath);
+      await file.writeAsBytes(await pdf.save());
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ PDF saved to Downloads folder'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+
+      debugPrint('✅ PDF saved at: $filePath');
+    } catch (e) {
+      debugPrint('❌ Error saving PDF: $e');
+    }
   }
-
-  // Future<void> _downloadPdfReport() async {
-  //   final pdf = pw.Document();
-
-  //   // Build the same content as your _printPdfReport()
-  //   pdf.addPage(
-  //     pw.MultiPage(
-  //       build: (pw.Context context) => [
-  //         pw.Center(
-  //           child: pw.Column(
-  //             crossAxisAlignment: pw.CrossAxisAlignment.center,
-  //             children: [
-  //               pw.Text(
-  //                 'BOLD Precious Metals Tax Report',
-  //                 style: pw.TextStyle(
-  //                   fontSize: 24,
-  //                   fontWeight: pw.FontWeight.bold,
-  //                   font: pw.Font.times(),
-  //                 ),
-  //                 textAlign: pw.TextAlign.center,
-  //               ),
-  //               pw.SizedBox(height: 8),
-  //               if (customerInfo?['startDate'] != null &&
-  //                   customerInfo?['endDate'] != null)
-  //                 pw.Text(
-  //                   _formatDateRange(
-  //                     customerInfo!['startDate'],
-  //                     customerInfo!['endDate'],
-  //                   ),
-  //                   style: pw.TextStyle(fontSize: 14, color: PdfColors.grey600),
-  //                 ),
-  //               pw.SizedBox(height: 4),
-  //               pw.Text(
-  //                 'This report includes all investment transactions and holdings for the specified period.',
-  //                 style: pw.TextStyle(fontSize: 14, color: PdfColors.grey600),
-  //                 textAlign: pw.TextAlign.center,
-  //               ),
-  //               pw.SizedBox(height: 24),
-  //             ],
-  //           ),
-  //         ),
-  //         // Add your Investment Summary, Capital Gains, Transaction History here
-  //       ],
-  //     ),
-  //   );
-
-  //   try {
-  //     // Request permissions if on Android
-  //     if (Platform.isAndroid) {
-  //       final status = await Permission.storage.request();
-  //       if (!status.isGranted) {
-  //         Fluttertoast.showToast(msg: "Storage permission denied.");
-  //         return;
-  //       }
-  //     }
-
-  //     final bytes = await pdf.save();
-
-  //     final directory = await getExternalStorageDirectory();
-  //     final path = directory?.path ?? '/storage/emulated/0/Download';
-  //     final file = File(
-  //       '$path/tax_report_${DateTime.now().millisecondsSinceEpoch}.pdf',
-  //     );
-
-  //     await file.writeAsBytes(bytes);
-
-  //     Fluttertoast.showToast(msg: "PDF downloaded to: ${file.path}");
-  //   } catch (e) {
-  //     Fluttertoast.showToast(msg: "Download failed: $e");
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -425,72 +381,77 @@ class _TaxReportPageState extends State<TaxReportScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          // Move Download PDF and Year Dropdown to the top
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Back Button
-              TextButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.arrow_back),
-                label: Text(
-                  'Back',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+          if (productsForPortfolio.isEmpty) ...[
+            const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
               ),
-              Wrap(
-                spacing: 12, // space between download and dropdown
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  // Download PDF Button
-                  ElevatedButton.icon(
-                    onPressed: _printPdfReport,
-                    icon: const Icon(Icons.download),
-                    label: const Text('Download PDF'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
+            ),
+          ] else ...[
+            // Move Download PDF and Year Dropdown to the top
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Back Button
+                TextButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: const Icon(Icons.arrow_back),
+                  label: Text(
+                    'Back',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
+                ),
+                Wrap(
+                  spacing: 12, // space between download and dropdown
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    // Download PDF Button
+                    ElevatedButton.icon(
+                      onPressed: _downloadPdfReport,
+                      icon: const Icon(Icons.download),
+                      label: const Text('Download PDF'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
 
-                  // Year Dropdown
-                  DropdownButton<String>(
-                    value: selectedYear,
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        setState(() {
-                          selectedYear = newValue;
-                          _fetchTaxReport(selectedYear);
-                        });
-                      }
-                    },
-                    items: yearOptions.map<DropdownMenuItem<String>>((
-                      String year,
-                    ) {
-                      return DropdownMenuItem<String>(
-                        value: year,
-                        child: Text(year),
-                      );
-                    }).toList(),
-                    hint: const Text("Select year"),
-                    underline: Container(height: 1, color: Colors.grey),
-                    style: const TextStyle(color: Colors.black, fontSize: 16),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 24), // spacing before the rest of the content
-
-          if (isLoading)
-            const Scaffold(body: Center(child: CircularProgressIndicator()))
-          else
+                    // Year Dropdown
+                    DropdownButton<String>(
+                      value: selectedYear,
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            selectedYear = newValue;
+                            _fetchTaxReport(selectedYear);
+                          });
+                        }
+                      },
+                      items: yearOptions.map<DropdownMenuItem<String>>((
+                        String year,
+                      ) {
+                        return DropdownMenuItem<String>(
+                          value: year,
+                          child: Text(year),
+                        );
+                      }).toList(),
+                      hint: const Text("Select year"),
+                      underline: Container(height: 1, color: Colors.grey),
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(
+              height: 24,
+            ), // spacing before the rest of the content
             // Report Header
             Container(
               decoration: const BoxDecoration(
@@ -533,147 +494,395 @@ class _TaxReportPageState extends State<TaxReportScreen> {
               ),
             ),
 
-          // Customer Information
-          if (customerInfo != null) ...[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title with gray background and bottom border
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    border: Border.all(color: Colors.grey.shade400),
-                  ),
-                  child: const Text(
-                    'Customer Information',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-
-                // Customer Info Content
-                Container(
-                  decoration: BoxDecoration(
-                    border: const Border(
-                      left: BorderSide(color: Colors.grey, width: 1),
-                      right: BorderSide(color: Colors.grey, width: 1),
-                      bottom: BorderSide(color: Colors.grey, width: 1),
-                      // no top border
-                    ),
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(4),
-                      bottomRight: Radius.circular(4),
-                    ),
-                  ),
-
-                  padding: const EdgeInsets.all(12), // Space inside the border
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${customerInfo!['firstName'] ?? ''} ${customerInfo!['lastName'] ?? ''}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            Text(
-                              customerInfo!['streetAddress1'] ?? '',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            Text(
-                              _formatCityZip(
-                                customerInfo!['city'],
-                                customerInfo!['zip'],
-                              ),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Report Generated Date',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              _formatDate(
-                                customerInfo!['reportGenerationDate'],
-                              ),
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-              ],
-            ),
-          ],
-
-          // Investment Summary
-          Container(
-            margin: const EdgeInsets.only(bottom: 24),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade400),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    border: const Border(
-                      bottom: BorderSide(color: Colors.grey, width: 1),
-                      // no top border
-                    ),
-                  ),
-                  child: const Text(
-                    'Investment Summary',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-
-                // Scrollable Table with Borders
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Container(
+            // Customer Information
+            if (customerInfo != null) ...[
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title with gray background and bottom border
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      // Outer border
+                      color: Colors.grey.shade200,
+                      border: Border.all(color: Colors.grey.shade400),
                     ),
-                    child: DataTable(
-                      headingRowColor: MaterialStateProperty.resolveWith(
-                        (states) => Colors.grey.shade100,
-                      ),
-                      dataRowColor: MaterialStateProperty.resolveWith(
-                        (states) => Colors.white,
-                      ),
-                      dividerThickness: 1,
-                      headingTextStyle: const TextStyle(
+                    child: const Text(
+                      'Customer Information',
+                      style: TextStyle(
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
-                      columnSpacing: 0,
+                    ),
+                  ),
 
+                  // Customer Info Content
+                  Container(
+                    decoration: BoxDecoration(
+                      border: const Border(
+                        left: BorderSide(color: Colors.grey, width: 1),
+                        right: BorderSide(color: Colors.grey, width: 1),
+                        bottom: BorderSide(color: Colors.grey, width: 1),
+                        // no top border
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(4),
+                        bottomRight: Radius.circular(4),
+                      ),
+                    ),
+
+                    padding: const EdgeInsets.all(
+                      12,
+                    ), // Space inside the border
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${customerInfo!['firstName'] ?? ''} ${customerInfo!['lastName'] ?? ''}',
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              Text(
+                                customerInfo!['streetAddress1'] ?? '',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              Text(
+                                _formatCityZip(
+                                  customerInfo!['city'],
+                                  customerInfo!['zip'],
+                                ),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Report Generated Date',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                _formatDate(
+                                  customerInfo!['reportGenerationDate'],
+                                ),
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ],
+
+            // Investment Summary
+            Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade400),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      border: const Border(
+                        bottom: BorderSide(color: Colors.grey, width: 1),
+                        // no top border
+                      ),
+                    ),
+                    child: const Text(
+                      'Investment Summary',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
+                  // Scrollable Table with Borders
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        // Outer border
+                      ),
+                      child: DataTable(
+                        headingRowColor: MaterialStateProperty.resolveWith(
+                          (states) => Colors.grey.shade100,
+                        ),
+                        dataRowColor: MaterialStateProperty.resolveWith(
+                          (states) => Colors.white,
+                        ),
+                        dividerThickness: 1,
+                        headingTextStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        columnSpacing: 0,
+
+                        border: TableBorder(
+                          horizontalInside: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 1,
+                          ),
+                          verticalInside: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 1,
+                          ),
+                        ),
+
+                        columns: const [
+                          DataColumn(
+                            label: Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: Text('Product Name'),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: Text('Qty'),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: Text('Purchase Date'),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: Text('Purchase Price'),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: Text('Current Value'),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: Text('Gain/Loss'),
+                            ),
+                          ),
+                        ],
+                        rows: [
+                          if (productsForPortfolio.isNotEmpty)
+                            ...productsForPortfolio.map<DataRow>((item) {
+                              final pastValue = item['pastMetalValue'] ?? 0.0;
+                              final currentValue =
+                                  item['currentMetalValue'] ?? 0.0;
+                              final gainLoss = currentValue - pastValue;
+                              final gainLossColor = gainLoss >= 0
+                                  ? Colors.green
+                                  : Colors.red;
+
+                              return DataRow(
+                                cells: [
+                                  DataCell(
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(item['assetList'] ?? '-'),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        '${item['totalQtyOrdered'] ?? '-'}',
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        _formatDate(item['orderDate']),
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        '\$${formatValue(pastValue)}',
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        '\$${formatValue(currentValue)}',
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        '${gainLoss >= 0 ? '+' : '-'}\$${formatValue(gainLoss.abs())}',
+                                        style: TextStyle(color: gainLossColor),
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+
+                          if (productsForPortfolio.isNotEmpty)
+                            DataRow(
+                              cells: [
+                                const DataCell(
+                                  Padding(
+                                    padding: EdgeInsets.all(12),
+                                    child: Text(
+                                      'Total Portfolio Value',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const DataCell(Text('')), // Qty
+                                const DataCell(Text('')), // Purchase Date
+                                DataCell(
+                                  Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Text(
+                                      '\$${formatValue(productsForPortfolio.fold(0.0, (sum, item) => sum + (item['pastMetalValue'] ?? 0.0)))}',
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Text(
+                                      '\$${formatValue(productsForPortfolio.fold(0.0, (sum, item) => sum + (item['currentMetalValue'] ?? 0.0)))}',
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Builder(
+                                      builder: (context) {
+                                        final totalGainLoss =
+                                            productsForPortfolio.fold<double>(
+                                              0.0,
+                                              (sum, item) =>
+                                                  sum +
+                                                  ((item['currentMetalValue'] ??
+                                                          0.0) -
+                                                      (item['pastMetalValue'] ??
+                                                          0.0)),
+                                            );
+                                        final isPositive = totalGainLoss >= 0;
+                                        return Text(
+                                          '${isPositive ? '+' : '-'}\$${formatValue(totalGainLoss.abs())}',
+                                          textAlign: TextAlign.right,
+                                          style: TextStyle(
+                                            color: isPositive
+                                                ? Colors.green
+                                                : Colors.red,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          if (productsForPortfolio.isEmpty)
+                            const DataRow(
+                              cells: [
+                                DataCell(Text('No Investments to display.')),
+                                DataCell(Text('')),
+                                DataCell(Text('')),
+                                DataCell(Text('')),
+                                DataCell(Text('')),
+                                DataCell(Text('')),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Summary Stats
+            // Transaction History
+            buildTransactionHistory(transactions),
+
+            const SizedBox(height: 10),
+            Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade400),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      border: const Border(
+                        bottom: BorderSide(color: Colors.grey, width: 1),
+                      ),
+                    ),
+                    child: const Text(
+                      'Capital Gains/Losses Calculation',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
+                  // Table
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      columnSpacing: 16,
+                      headingRowColor: MaterialStateColor.resolveWith(
+                        (states) => Colors.grey.shade100,
+                      ),
                       border: TableBorder(
                         horizontalInside: BorderSide(
                           color: Colors.grey.shade300,
@@ -684,454 +893,222 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                           width: 1,
                         ),
                       ),
-
                       columns: const [
                         DataColumn(
-                          label: Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: Text('Product Name'),
+                          label: SizedBox(
+                            width: 200,
+                            child: Text('Description of property'),
                           ),
                         ),
                         DataColumn(
-                          label: Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: Text('Qty'),
+                          label: SizedBox(
+                            width: 120,
+                            child: Text('Date Acquired'),
                           ),
                         ),
                         DataColumn(
-                          label: Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: Text('Purchase Date'),
+                          label: SizedBox(width: 120, child: Text('Date Sold')),
+                        ),
+                        DataColumn(
+                          label: SizedBox(
+                            width: 150,
+                            child: Text('Cost or other basis'),
                           ),
                         ),
                         DataColumn(
-                          label: Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: Text('Purchase Price'),
+                          label: SizedBox(
+                            width: 150,
+                            child: Text('Proceeds (sales price)'),
                           ),
                         ),
                         DataColumn(
-                          label: Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: Text('Current Value'),
-                          ),
+                          label: SizedBox(width: 120, child: Text('Gain/Loss')),
                         ),
                         DataColumn(
-                          label: Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: Text('Gain/Loss'),
-                          ),
+                          label: SizedBox(width: 100, child: Text('Category')),
                         ),
                       ],
                       rows: [
-                        if (productsForPortfolio.isNotEmpty)
-                          ...productsForPortfolio.map<DataRow>((item) {
-                            final pastValue = item['pastMetalValue'] ?? 0.0;
-                            final currentValue =
-                                item['currentMetalValue'] ?? 0.0;
-                            final gainLoss = currentValue - pastValue;
-                            final gainLossColor = gainLoss >= 0
+                        if (capitalGL.isNotEmpty)
+                          ...capitalGL.map<DataRow>((gain) {
+                            final cost = gain['costBasis'] ?? 0.0;
+                            final proceeds = gain['proceeds'] ?? 0.0;
+                            final gainLoss = proceeds - cost;
+                            final isPositive = gainLoss >= 0;
+                            final gainLossColor = isPositive
                                 ? Colors.green
                                 : Colors.red;
 
                             return DataRow(
                               cells: [
+                                DataCell(Text(gain['productName'] ?? '-')),
                                 DataCell(
-                                  Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(item['assetList'] ?? '-'),
+                                  Text(_formatDate(gain['dateAcquired'])),
+                                ),
+                                DataCell(Text(_formatDate(gain['dateSold']))),
+                                DataCell(
+                                  Text(
+                                    '\$${_formatNumber(cost)}',
+                                    textAlign: TextAlign.right,
                                   ),
                                 ),
                                 DataCell(
-                                  Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(
-                                      '${item['totalQtyOrdered'] ?? '-'}',
-                                    ),
+                                  Text(
+                                    '\$${_formatNumber(proceeds)}',
+                                    textAlign: TextAlign.right,
                                   ),
                                 ),
                                 DataCell(
-                                  Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(_formatDate(item['orderDate'])),
+                                  Text(
+                                    '${isPositive ? '+' : '-'}\$${_formatNumber(gainLoss.abs())}',
+                                    style: TextStyle(color: gainLossColor),
+                                    textAlign: TextAlign.right,
                                   ),
                                 ),
-                                DataCell(
-                                  Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(
-                                      '\$${formatValue(pastValue)}',
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(
-                                      '\$${formatValue(currentValue)}',
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(
-                                      '${gainLoss >= 0 ? '+' : '-'}\$${formatValue(gainLoss.abs())}',
-                                      style: TextStyle(color: gainLossColor),
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ),
-                                ),
+                                DataCell(Text(gain['type'] ?? '-')),
                               ],
                             );
-                          }).toList(),
+                          }),
 
-                        if (productsForPortfolio.isNotEmpty)
+                        if (capitalGL.isNotEmpty)
                           DataRow(
                             cells: [
                               const DataCell(
-                                Padding(
-                                  padding: EdgeInsets.all(12),
-                                  child: Text(
-                                    'Total Portfolio Value',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                Text(
+                                  'Total Realized Gains/Losses',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              const DataCell(Text('')), // Qty
-                              const DataCell(Text('')), // Purchase Date
+                              const DataCell(Text('')),
+                              const DataCell(Text('')),
+                              const DataCell(Text('')),
+                              const DataCell(Text('')),
                               DataCell(
-                                Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Text(
-                                    '\$${formatValue(productsForPortfolio.fold(0.0, (sum, item) => sum + (item['pastMetalValue'] ?? 0.0)))}',
-                                    textAlign: TextAlign.right,
-                                  ),
+                                Builder(
+                                  builder: (context) {
+                                    final totalGainLoss = capitalGL.fold<num>(
+                                      0,
+                                      (sum, gain) =>
+                                          sum +
+                                          ((gain['proceeds'] ?? 0) -
+                                              (gain['costBasis'] ?? 0)),
+                                    );
+                                    final isPositive = totalGainLoss >= 0;
+                                    return Text(
+                                      '${isPositive ? '+' : '-'}\$${_formatNumber(totalGainLoss.abs())}',
+                                      style: TextStyle(
+                                        color: isPositive
+                                            ? Colors.green
+                                            : Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.right,
+                                    );
+                                  },
                                 ),
                               ),
-                              DataCell(
-                                Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Text(
-                                    '\$${formatValue(productsForPortfolio.fold(0.0, (sum, item) => sum + (item['currentMetalValue'] ?? 0.0)))}',
-                                    textAlign: TextAlign.right,
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Builder(
-                                    builder: (context) {
-                                      final totalGainLoss = productsForPortfolio
-                                          .fold<double>(
-                                            0.0,
-                                            (sum, item) =>
-                                                sum +
-                                                ((item['currentMetalValue'] ??
-                                                        0.0) -
-                                                    (item['pastMetalValue'] ??
-                                                        0.0)),
-                                          );
-                                      final isPositive = totalGainLoss >= 0;
-                                      return Text(
-                                        '${isPositive ? '+' : '-'}\$${formatValue(totalGainLoss.abs())}',
-                                        textAlign: TextAlign.right,
-                                        style: TextStyle(
-                                          color: isPositive
-                                              ? Colors.green
-                                              : Colors.red,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
+                              const DataCell(Text('')),
                             ],
                           ),
-                        if (productsForPortfolio.isEmpty)
+
+                        if (capitalGL.isEmpty)
                           const DataRow(
                             cells: [
-                              DataCell(Text('No Investments to display.')),
-                              DataCell(Text('')),
-                              DataCell(Text('')),
-                              DataCell(Text('')),
-                              DataCell(Text('')),
-                              DataCell(Text('')),
+                              DataCell(
+                                Text('No Capital Gains/Losses to display.'),
+                              ),
+                              DataCell.empty,
+                              DataCell.empty,
+                              DataCell.empty,
+                              DataCell.empty,
+                              DataCell.empty,
+                              DataCell.empty,
                             ],
                           ),
                       ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          // Summary Stats
-          // Transaction History
-          buildTransactionHistory(transactions),
 
-          const SizedBox(height: 10),
-          Container(
-            margin: const EdgeInsets.only(bottom: 24),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade400),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    border: const Border(
-                      bottom: BorderSide(color: Colors.grey, width: 1),
-                    ),
-                  ),
-                  child: const Text(
-                    'Capital Gains/Losses Calculation',
+            const SizedBox(height: 10),
+            Container(
+              margin: const EdgeInsets.only(bottom: 24),
+
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ---- Calculation Notes ----
+                  Text(
+                    "Calculation Notes:",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                ),
-
-                // Table
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columnSpacing: 16,
-                    headingRowColor: MaterialStateColor.resolveWith(
-                      (states) => Colors.grey.shade100,
-                    ),
-                    border: TableBorder(
-                      horizontalInside: BorderSide(
-                        color: Colors.grey.shade300,
-                        width: 1,
-                      ),
-                      verticalInside: BorderSide(
-                        color: Colors.grey.shade300,
-                        width: 1,
-                      ),
-                    ),
-                    columns: const [
-                      DataColumn(
-                        label: SizedBox(
-                          width: 200,
-                          child: Text('Description of property'),
-                        ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: 120,
-                          child: Text('Date Acquired'),
-                        ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(width: 120, child: Text('Date Sold')),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: 150,
-                          child: Text('Cost or other basis'),
-                        ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(
-                          width: 150,
-                          child: Text('Proceeds (sales price)'),
-                        ),
-                      ),
-                      DataColumn(
-                        label: SizedBox(width: 120, child: Text('Gain/Loss')),
-                      ),
-                      DataColumn(
-                        label: SizedBox(width: 100, child: Text('Category')),
-                      ),
-                    ],
-                    rows: [
-                      if (capitalGL.isNotEmpty)
-                        ...capitalGL.map<DataRow>((gain) {
-                          final cost = gain['costBasis'] ?? 0.0;
-                          final proceeds = gain['proceeds'] ?? 0.0;
-                          final gainLoss = proceeds - cost;
-                          final isPositive = gainLoss >= 0;
-                          final gainLossColor = isPositive
-                              ? Colors.green
-                              : Colors.red;
-
-                          return DataRow(
-                            cells: [
-                              DataCell(Text(gain['productName'] ?? '-')),
-                              DataCell(Text(_formatDate(gain['dateAcquired']))),
-                              DataCell(Text(_formatDate(gain['dateSold']))),
-                              DataCell(
-                                Text(
-                                  '\$${_formatNumber(cost)}',
-                                  textAlign: TextAlign.right,
-                                ),
-                              ),
-                              DataCell(
-                                Text(
-                                  '\$${_formatNumber(proceeds)}',
-                                  textAlign: TextAlign.right,
-                                ),
-                              ),
-                              DataCell(
-                                Text(
-                                  '${isPositive ? '+' : '-'}\$${_formatNumber(gainLoss.abs())}',
-                                  style: TextStyle(color: gainLossColor),
-                                  textAlign: TextAlign.right,
-                                ),
-                              ),
-                              DataCell(Text(gain['type'] ?? '-')),
-                            ],
-                          );
-                        }),
-
-                      if (capitalGL.isNotEmpty)
-                        DataRow(
-                          cells: [
-                            const DataCell(
-                              Text(
-                                'Total Realized Gains/Losses',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            const DataCell(Text('')),
-                            const DataCell(Text('')),
-                            const DataCell(Text('')),
-                            const DataCell(Text('')),
-                            DataCell(
-                              Builder(
-                                builder: (context) {
-                                  final totalGainLoss = capitalGL.fold<num>(
-                                    0,
-                                    (sum, gain) =>
-                                        sum +
-                                        ((gain['proceeds'] ?? 0) -
-                                            (gain['costBasis'] ?? 0)),
-                                  );
-                                  final isPositive = totalGainLoss >= 0;
-                                  return Text(
-                                    '${isPositive ? '+' : '-'}\$${_formatNumber(totalGainLoss.abs())}',
-                                    style: TextStyle(
-                                      color: isPositive
-                                          ? Colors.green
-                                          : Colors.red,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textAlign: TextAlign.right,
-                                  );
-                                },
-                              ),
-                            ),
-                            const DataCell(Text('')),
-                          ],
-                        ),
-
-                      if (capitalGL.isEmpty)
-                        const DataRow(
-                          cells: [
-                            DataCell(
-                              Text('No Capital Gains/Losses to display.'),
-                            ),
-                            DataCell.empty,
-                            DataCell.empty,
-                            DataCell.empty,
-                            DataCell.empty,
-                            DataCell.empty,
-                            DataCell.empty,
-                          ],
-                        ),
-                    ],
+                  const SizedBox(height: 10),
+                  _buildBulletText(
+                    "Cost basis includes original purchase price plus applicable fees",
                   ),
-                ),
-              ],
+                  _buildBulletText(
+                    "Short-term gains apply to assets held for one year or less",
+                  ),
+                  _buildBulletText(
+                    "Long-term gains apply to assets held for more than one year",
+                  ),
+                  const SizedBox(height: 20),
+                  const Divider(thickness: 1),
+                  const SizedBox(height: 20),
+
+                  // ---- Disclaimers ----
+                  Text(
+                    "Disclaimers",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+
+                  _buildNumberedText(
+                    1,
+                    "This report is provided for informational purposes only. "
+                    "BOLD Precious Metals does not provide tax advice. Consult with "
+                    "a qualified tax professional for personalized advice regarding "
+                    "your specific tax situation and bullion investments.",
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  _buildNumberedText(
+                    2,
+                    "All calculations in this report are based on transaction data from "
+                    "BOLD Precious Metals and any information manually entered by the "
+                    "client. BOLD Precious Metals is not responsible for the accuracy or completeness of client-entered data. It is the client's responsibility to verify the accuracy of all manually entered information.",
+                  ),
+                  const SizedBox(height: 10),
+
+                  _buildNumberedText(
+                    3,
+                    "Precious metals, including gold, silver, platinum, and palladium, are classified as 'collectibles' by the IRS. This classification may result in different capital gains tax rates than those applied to other capital assets. Tax laws regarding collectibles can be complex, and it is crucial to consult with a tax professional for accurate reporting.",
+                  ),
+                  const SizedBox(height: 10),
+
+                  _buildNumberedText(
+                    4,
+                    "BOLD Precious Metals is not responsible for any errors or omissions in this report or any actions taken in reliance on this information.",
+                  ),
+                  const SizedBox(height: 10),
+
+                  _buildNumberedText(
+                    5,
+                    "It is essential to retain this report, along with all original purchase receipts, sale confirmations, and any other relevant documentation, for your tax records. These records may be required by the IRS or state tax authorities.",
+                  ),
+                  const SizedBox(height: 10),
+
+                  _buildNumberedText(
+                    6,
+                    "Tax laws and regulations are subject to change. The information in this report is based on current laws as of the report's generation date. It is the client's responsibility to stay informed about any changes that may affect their tax obligations.",
+                  ),
+                ],
+              ),
             ),
-          ),
-
-          const SizedBox(height: 10),
-          Container(
-            margin: const EdgeInsets.only(bottom: 24),
-
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ---- Calculation Notes ----
-                Text(
-                  "Calculation Notes:",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                _buildBulletText(
-                  "Cost basis includes original purchase price plus applicable fees",
-                ),
-                _buildBulletText(
-                  "Short-term gains apply to assets held for one year or less",
-                ),
-                _buildBulletText(
-                  "Long-term gains apply to assets held for more than one year",
-                ),
-                const SizedBox(height: 20),
-                const Divider(thickness: 1),
-                const SizedBox(height: 20),
-
-                // ---- Disclaimers ----
-                Text(
-                  "Disclaimers",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-
-                _buildNumberedText(
-                  1,
-                  "This report is provided for informational purposes only. "
-                  "BOLD Precious Metals does not provide tax advice. Consult with "
-                  "a qualified tax professional for personalized advice regarding "
-                  "your specific tax situation and bullion investments.",
-                ),
-
-                const SizedBox(height: 10),
-
-                _buildNumberedText(
-                  2,
-                  "All calculations in this report are based on transaction data from "
-                  "BOLD Precious Metals and any information manually entered by the "
-                  "client. BOLD Precious Metals is not responsible for the accuracy or completeness of client-entered data. It is the client's responsibility to verify the accuracy of all manually entered information.",
-                ),
-                const SizedBox(height: 10),
-
-                _buildNumberedText(
-                  3,
-                  "Precious metals, including gold, silver, platinum, and palladium, are classified as 'collectibles' by the IRS. This classification may result in different capital gains tax rates than those applied to other capital assets. Tax laws regarding collectibles can be complex, and it is crucial to consult with a tax professional for accurate reporting.",
-                ),
-                const SizedBox(height: 10),
-
-                _buildNumberedText(
-                  4,
-                  "BOLD Precious Metals is not responsible for any errors or omissions in this report or any actions taken in reliance on this information.",
-                ),
-                const SizedBox(height: 10),
-
-                _buildNumberedText(
-                  5,
-                  "It is essential to retain this report, along with all original purchase receipts, sale confirmations, and any other relevant documentation, for your tax records. These records may be required by the IRS or state tax authorities.",
-                ),
-                const SizedBox(height: 10),
-
-                _buildNumberedText(
-                  6,
-                  "Tax laws and regulations are subject to change. The information in this report is based on current laws as of the report's generation date. It is the client's responsibility to stay informed about any changes that may affect their tax obligations.",
-                ),
-              ],
-            ),
-          ),
+          ],
         ],
       ),
     );
