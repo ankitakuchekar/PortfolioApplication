@@ -186,7 +186,7 @@ class _DashboardScreenState extends State<BullionDashboard> {
                 ),
                 const SizedBox(height: 2),
                 // Silver Holding
-                if (silverHoldings.isNotEmpty)
+                if (silverHoldings.isNotEmpty) ...[
                   _buildHoldingRow(
                     metal: "Silver",
                     quantity:
@@ -195,10 +195,6 @@ class _DashboardScreenState extends State<BullionDashboard> {
                         "\$${investment.totalSilverCurrent.toStringAsFixed(2)}",
                     purchaseValue:
                         "\$${investment.totalSilverInvested.toStringAsFixed(2)}",
-                    positive:
-                        (investment.totalSilverCurrent -
-                            investment.totalSilverInvested) >=
-                        0,
                     showReturns: showReturns,
                     profit:
                         investment.totalSilverCurrent -
@@ -217,11 +213,12 @@ class _DashboardScreenState extends State<BullionDashboard> {
                         0,
                     dayProfit: investment.daySilver,
                     dayPercentProfit: daySilverPercent,
+                    isHoldingDataEmpty: false,
                   ),
-                const Divider(height: 24),
-
+                  const Divider(height: 24),
+                ],
                 // Gold Holding
-                if (goldHoldings.isNotEmpty)
+                if (goldHoldings.isNotEmpty) ...[
                   _buildHoldingRow(
                     metal: "Gold",
                     quantity:
@@ -230,10 +227,6 @@ class _DashboardScreenState extends State<BullionDashboard> {
                         "\$${investment.totalGoldCurrent.toStringAsFixed(2)}",
                     purchaseValue:
                         "\$${investment.totalGoldInvested.toStringAsFixed(2)}",
-                    positive:
-                        (investment.totalGoldCurrent -
-                            investment.totalGoldInvested) >=
-                        0,
                     showReturns: showReturns,
                     profit:
                         investment.totalGoldCurrent -
@@ -251,9 +244,11 @@ class _DashboardScreenState extends State<BullionDashboard> {
                         0,
                     dayProfit: investment.dayGold,
                     dayPercentProfit: dayGoldPercent,
+                    isHoldingDataEmpty: false,
                   ),
-                const Divider(height: 24),
-                if (silverHoldings.isEmpty)
+                  const Divider(height: 24),
+                ],
+                if (silverHoldings.isEmpty) ...[
                   _buildHoldingRow(
                     metal: "Silver",
                     quantity:
@@ -262,10 +257,6 @@ class _DashboardScreenState extends State<BullionDashboard> {
                         "\$${investment.totalSilverCurrent.toStringAsFixed(2) ?? 0.00}",
                     purchaseValue:
                         "\$${investment.totalSilverInvested.toStringAsFixed(2) ?? 0.00}",
-                    positive:
-                        (investment.totalSilverCurrent -
-                            investment.totalSilverInvested) >=
-                        0,
                     showReturns: showReturns,
                     profit:
                         investment.totalSilverCurrent -
@@ -277,16 +268,18 @@ class _DashboardScreenState extends State<BullionDashboard> {
                                   investment.totalSilverInvested) *
                               100
                         : 0,
-                    holdingData: silverHoldings,
+                    holdingData: [],
                     isProfit:
                         (investment.totalSilverCurrent -
                             investment.totalSilverInvestment) >
                         0,
                     dayProfit: investment.daySilver ?? 0.00,
                     dayPercentProfit: daySilverPercent ?? 0.00,
+                    isHoldingDataEmpty: true,
                   ),
-                const Divider(height: 24),
-                if (goldHoldings.isEmpty)
+                  const Divider(height: 24),
+                ],
+                if (goldHoldings.isEmpty) ...[
                   _buildHoldingRow(
                     metal: "Gold",
                     quantity:
@@ -295,10 +288,6 @@ class _DashboardScreenState extends State<BullionDashboard> {
                         "\$${investment.totalGoldCurrent.toStringAsFixed(2) ?? 0.00}",
                     purchaseValue:
                         "\$${investment.totalGoldInvested.toStringAsFixed(2) ?? 0.00}",
-                    positive:
-                        (investment.totalGoldCurrent -
-                            investment.totalGoldInvested) >=
-                        0,
                     showReturns: showReturns,
                     profit:
                         investment.totalGoldCurrent -
@@ -309,16 +298,17 @@ class _DashboardScreenState extends State<BullionDashboard> {
                                   investment.totalGoldInvested) *
                               100
                         : 0,
-                    holdingData: goldHoldings,
+                    holdingData: [],
                     isProfit:
                         (investment.totalGoldCurrent -
                             investment.totalGoldInvested) >
                         0,
                     dayProfit: investment.dayGold ?? 0.00,
                     dayPercentProfit: dayGoldPercent ?? 0.00,
+                    isHoldingDataEmpty: true,
                   ),
-                const Divider(height: 24),
-
+                  const Divider(height: 24),
+                ],
                 _buildComingSoonRow("Platinum"),
                 const Divider(height: 24),
                 _buildComingSoonRow("Palladium"),
@@ -448,23 +438,23 @@ class _DashboardScreenState extends State<BullionDashboard> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     AnimatedCounter(
-                      value: difference,
+                      value: difference.abs(),
                       prefix: difference >= 0 ? '+\$' : '-\$',
                       style: TextStyle(
                         fontWeight: FontWeight.w200,
                         color: difference >= 0 ? Colors.green : Colors.red,
-                        fontSize: 18,
+                        fontSize: 15,
                       ),
                     ),
                     const SizedBox(width: 2), // very tight spacing
                     Text(
-                      percentDifference >= 0
+                      difference > 0
                           ? '(+${percentDifference.toStringAsFixed(2)})%'
                           : '(-${percentDifference.abs().toStringAsFixed(2)}%)',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: difference >= 0 ? Colors.green : Colors.red,
+                        color: difference > 0 ? Colors.green : Colors.red,
                       ),
                     ),
                   ],
@@ -530,7 +520,6 @@ class _DashboardScreenState extends State<BullionDashboard> {
     required String quantity,
     required String currentValue,
     required String purchaseValue,
-    required bool positive,
     required bool showReturns,
     required double profit,
     required double profitPct,
@@ -538,6 +527,7 @@ class _DashboardScreenState extends State<BullionDashboard> {
     required bool isProfit,
     required double dayProfit,
     required double dayPercentProfit,
+    required bool isHoldingDataEmpty,
   }) {
     double parseCurrency(String value) {
       return double.tryParse(value.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
@@ -545,33 +535,38 @@ class _DashboardScreenState extends State<BullionDashboard> {
 
     final double currentValueDouble = parseCurrency(currentValue);
     final double purchaseValueDouble = parseCurrency(purchaseValue);
-
+    double positionDifference = currentValueDouble;
+    bool isPositive = positionDifference > currentValueDouble;
+    bool isZero = positionDifference == currentValueDouble;
     return InkWell(
-      onTap: () {
-        final mainState = context.findAncestorStateOfType<MainScreenState>();
-        mainState?.navigateToScreen(
-          HoldingDetailScreen(
-            metal: metal,
-            currentValue: currentValueDouble,
-            totalPL: profit,
-            percentPL: profitPct,
-            dayPL: dayProfit,
-            percentDayPL: dayPercentProfit,
-            purchaseCost: purchaseValueDouble,
-            holdings: holdingData
-                .map(
-                  (holding) => PortfolioItem(
-                    name: holding.name,
-                    imageUrl: holding.productImage,
-                    quantity: holding.totalQtyOrdered,
-                    purchasePrice: holding.avgPrice,
-                    currentPrice: holding.currentMetalValue,
-                  ),
-                )
-                .toList(),
-          ),
-        );
-      },
+      onTap: isHoldingDataEmpty
+          ? null
+          : () {
+              final mainState = context
+                  .findAncestorStateOfType<MainScreenState>();
+              mainState?.navigateToScreen(
+                HoldingDetailScreen(
+                  metal: metal,
+                  currentValue: currentValueDouble,
+                  totalPL: profit,
+                  percentPL: profitPct,
+                  dayPL: dayProfit,
+                  percentDayPL: dayPercentProfit,
+                  purchaseCost: purchaseValueDouble,
+                  holdings: holdingData
+                      .map(
+                        (holding) => PortfolioItem(
+                          name: holding.name,
+                          imageUrl: holding.productImage,
+                          quantity: holding.totalQtyOrdered,
+                          purchasePrice: holding.avgPrice,
+                          currentPrice: holding.currentMetalValue,
+                        ),
+                      )
+                      .toList(),
+                ),
+              );
+            },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
         child: Row(
@@ -603,20 +598,22 @@ class _DashboardScreenState extends State<BullionDashboard> {
               children: showReturns
                   ? [
                       AnimatedCounter(
-                        value: profit,
+                        value: profit.abs(),
                         prefix: '\$',
                         style: TextStyle(
                           fontSize: 18,
-                          color: positive ? Colors.green : Colors.red,
+                          color: (isPositive ? Colors.green : Colors.red),
                           fontWeight: FontWeight.w400,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "${profit >= 0 ? '+' : '-'}${profitPct.toStringAsFixed(2)}%",
+                        " ${profitPct.toStringAsFixed(2)}%",
                         style: TextStyle(
                           fontSize: 16,
-                          color: positive ? Colors.green : Colors.red,
+                          color: isZero
+                              ? Colors.black
+                              : (isPositive ? Colors.green : Colors.red),
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -628,9 +625,9 @@ class _DashboardScreenState extends State<BullionDashboard> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w400,
-                          color: isProfit
-                              ? AppColors.profitGreen
-                              : AppColors.lossRed,
+                          color: isZero
+                              ? Colors.black
+                              : (isPositive ? Colors.green : Colors.red),
                         ),
                       ),
                       const SizedBox(height: 4),

@@ -145,32 +145,34 @@ class _CommonDrawerState extends State<CommonDrawer> {
     return Drawer(
       child: Column(
         children: [
-          // Header with Logo
-          DrawerHeader(
-            margin: EdgeInsets.zero,
-            padding: EdgeInsets.zero,
-            decoration: const BoxDecoration(color: AppColors.black),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Image.network(
-                    "https://res.cloudinary.com/bold-pm/image/upload/v1629887471/Graphics/email/BPM-White-Logo.png",
-                    width: 150,
-                    height: 60,
-                    fit: BoxFit.contain,
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
+          Container(
+            height:
+                100, // Set a specific height for the header (adjust as needed)
+            child: DrawerHeader(
+              margin: EdgeInsets.zero,
+              padding: EdgeInsets.zero,
+              decoration: const BoxDecoration(color: AppColors.black),
+              child: Padding(
+                padding: const EdgeInsets.all(0.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Image.network(
+                      "https://res.cloudinary.com/bold-pm/image/upload/v1629887471/Graphics/email/BPM-White-Logo.png",
+                      width: 150,
+                      height: 60,
+                      fit: BoxFit.contain,
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-
           // Premium Toggle
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
