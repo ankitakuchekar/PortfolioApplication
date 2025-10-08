@@ -425,6 +425,69 @@ class _TaxReportPageState extends State<TaxReportScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
+          // Move Download PDF and Year Dropdown to the top
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Back Button
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: const Icon(Icons.arrow_back),
+                label: Text(
+                  'Back',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Wrap(
+                spacing: 12, // space between download and dropdown
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  // Download PDF Button
+                  ElevatedButton.icon(
+                    onPressed: _printPdfReport,
+                    icon: const Icon(Icons.download),
+                    label: const Text('Download PDF'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+
+                  // Year Dropdown
+                  DropdownButton<String>(
+                    value: selectedYear,
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          selectedYear = newValue;
+                          _fetchTaxReport(selectedYear);
+                        });
+                      }
+                    },
+                    items: yearOptions.map<DropdownMenuItem<String>>((
+                      String year,
+                    ) {
+                      return DropdownMenuItem<String>(
+                        value: year,
+                        child: Text(year),
+                      );
+                    }).toList(),
+                    hint: const Text("Select year"),
+                    underline: Container(height: 1, color: Colors.grey),
+                    style: const TextStyle(color: Colors.black, fontSize: 16),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 24), // spacing before the rest of the content
+
           if (isLoading)
             const Scaffold(body: Center(child: CircularProgressIndicator()))
           else
@@ -472,94 +535,131 @@ class _TaxReportPageState extends State<TaxReportScreen> {
 
           // Customer Information
           if (customerInfo != null) ...[
-            Container(
-              color: Colors.grey.shade200,
-              padding: const EdgeInsets.all(8),
-              margin: const EdgeInsets.only(bottom: 16),
-              child: const Text(
-                'Customer Information',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Row(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
+                // Title with gray background and bottom border
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    border: Border.all(color: Colors.grey.shade400),
+                  ),
+                  child: const Text(
+                    'Customer Information',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+
+                // Customer Info Content
+                Container(
+                  decoration: BoxDecoration(
+                    border: const Border(
+                      left: BorderSide(color: Colors.grey, width: 1),
+                      right: BorderSide(color: Colors.grey, width: 1),
+                      bottom: BorderSide(color: Colors.grey, width: 1),
+                      // no top border
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(4),
+                      bottomRight: Radius.circular(4),
+                    ),
+                  ),
+
+                  padding: const EdgeInsets.all(12), // Space inside the border
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '${customerInfo!['firstName'] ?? ''} ${customerInfo!['lastName'] ?? ''}',
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      Text(
-                        customerInfo!['streetAddress1'] ?? '',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${customerInfo!['firstName'] ?? ''} ${customerInfo!['lastName'] ?? ''}',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            Text(
+                              customerInfo!['streetAddress1'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            Text(
+                              _formatCityZip(
+                                customerInfo!['city'],
+                                customerInfo!['zip'],
+                              ),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      Text(
-                        _formatCityZip(
-                          customerInfo!['city'],
-                          customerInfo!['zip'],
-                        ),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Report Generated Date',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              _formatDate(
+                                customerInfo!['reportGenerationDate'],
+                              ),
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Report Generated Date',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        _formatDate(customerInfo!['reportGenerationDate']),
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ),
+
+                const SizedBox(height: 16),
               ],
             ),
-            const SizedBox(height: 16),
           ],
 
           // Investment Summary
           Container(
             margin: const EdgeInsets.only(bottom: 24),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade400),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
-                  color: Colors.grey.shade100,
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    border: const Border(
+                      bottom: BorderSide(color: Colors.grey, width: 1),
+                      // no top border
+                    ),
+                  ),
                   child: const Text(
                     'Investment Summary',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
-                const SizedBox(height: 8),
 
                 // Scrollable Table with Borders
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Container(
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.grey.shade50,
-                      ), // Outer border
+                      // Outer border
                     ),
                     child: DataTable(
                       headingRowColor: MaterialStateProperty.resolveWith(
@@ -573,10 +673,18 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                       columnSpacing: 0,
-                      border: TableBorder.all(
-                        color: Colors.grey.shade200, // ✅ Full grid border
-                        width: 1,
+
+                      border: TableBorder(
+                        horizontalInside: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 1,
+                        ),
+                        verticalInside: BorderSide(
+                          color: Colors.grey.shade300,
+                          width: 1,
+                        ),
                       ),
+
                       columns: const [
                         DataColumn(
                           label: Padding(
@@ -698,8 +806,6 @@ class _TaxReportPageState extends State<TaxReportScreen> {
 
                 // Total section
                 if (productsForPortfolio.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Divider(),
                   Container(
                     decoration: BoxDecoration(
                       border: Border(
@@ -980,24 +1086,6 @@ class _TaxReportPageState extends State<TaxReportScreen> {
               //   label: const Text('Download PDF'),
               // ),
             ],
-          ),
-
-          DropdownButton<String>(
-            value: selectedYear,
-            onChanged: (String? newValue) {
-              if (newValue != null) {
-                setState(() {
-                  selectedYear = newValue;
-                  _fetchTaxReport(selectedYear);
-                });
-              }
-            },
-            items: yearOptions.map<DropdownMenuItem<String>>((String year) {
-              return DropdownMenuItem<String>(value: year, child: Text(year));
-            }).toList(),
-            hint: const Text("Select year"),
-            underline: Container(height: 1, color: Colors.grey),
-            style: const TextStyle(color: Colors.black, fontSize: 16),
           ),
         ],
       ),
