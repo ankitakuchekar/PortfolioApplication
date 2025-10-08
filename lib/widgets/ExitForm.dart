@@ -251,7 +251,7 @@ class _ExitFormState extends State<ExitForm> {
               ),
               child: isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Confirm Exit"),
+                  : const Text("Submit Exit Request"),
             ),
           ),
         ],

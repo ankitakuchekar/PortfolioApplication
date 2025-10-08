@@ -39,6 +39,8 @@ class _SellFormState extends State<SellForm> {
 
   final TextEditingController _quantityController = TextEditingController();
   List<String> selectedConditions = [];
+  String? selectedFileName; // Store selected file name
+
   bool isSelectAll = false;
   String selectedImage =
       "https://res.cloudinary.com/bold-pm/image/upload/q_auto:good/Graphics/no_img_preview_product.png";
@@ -83,7 +85,7 @@ class _SellFormState extends State<SellForm> {
 
         if (response.statusCode == 200) {
           Fluttertoast.showToast(
-            msg: "Image uploaded Successfully.",
+            msg: "Image Uploaded Successfully.",
             backgroundColor: Colors.green,
             textColor: Colors.white,
             toastLength: Toast.LENGTH_LONG,
@@ -91,6 +93,10 @@ class _SellFormState extends State<SellForm> {
           setState(() {
             selectedImage =
                 image.path; // Update selectedImage with the image path
+          });
+          // Save the file name to display it
+          setState(() {
+            selectedFileName = image.name; // Save the file name
           });
         } else {
           Fluttertoast.showToast(
@@ -405,16 +411,31 @@ class _SellFormState extends State<SellForm> {
           // Upload Image
           const Text("Upload Image (Optional)"),
           const SizedBox(height: 6),
-          ElevatedButton.icon(
-            onPressed: () => pickAndUploadImage(),
-            icon: const Icon(Icons.attach_file),
-            label: const Text("Choose File"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey[800],
-              foregroundColor: Colors.white,
-            ),
+          Row(
+            children: [
+              ElevatedButton.icon(
+                onPressed: () => pickAndUploadImage(),
+                icon: const Icon(Icons.attach_file),
+                label: const Text("Choose File"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[800],
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(
+                width: 10,
+              ), // Adds some space between the button and the file name
+              selectedFileName != null
+                  ? Text(
+                      selectedFileName!,
+                      style: const TextStyle(fontSize: 14, color: Colors.black),
+                    )
+                  : const Text(
+                      "No file chosen",
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+            ],
           ),
-          const SizedBox(height: 16),
 
           // Show selected image preview
           // if (selectedImage.isNotEmpty)
@@ -441,7 +462,7 @@ class _SellFormState extends State<SellForm> {
               ),
               child: isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Confirm Sell"),
+                  : const Text("Submit Sell Request"),
             ),
           ),
         ],

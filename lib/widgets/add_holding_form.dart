@@ -46,6 +46,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
   Timer? _debounce;
   Map<String, dynamic>? selectedProduct;
   bool _isSelectingProduct = false;
+  bool isLoading = false; // To track the loading state
 
   final List<Map<String, String>> steps = [
     {"title": "Type the product name.", "image": "https://.../product-5.webp"},
@@ -320,6 +321,9 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
     };
 
     try {
+      setState(() {
+        isLoading = true; // Set isLoading to true when the operation starts
+      });
       final authService = AuthService();
       final token = await authService.getToken();
 
@@ -343,6 +347,10 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
         );
 
         if (closeOnSuccess) {
+          setState(() {
+            isLoading =
+                false; // Set isLoading to false after the operation finishes
+          });
           widget.onClose(); // Only close if requested
         }
 
@@ -355,6 +363,10 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
           // Reset dropdowns, selections, etc., as needed
         }
       } else {
+        setState(() {
+          isLoading =
+              false; // Set isLoading to false after the operation finishes
+        });
         Fluttertoast.showToast(
           msg: "Failed to add holding ",
           backgroundColor: Colors.grey,
@@ -362,6 +374,10 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
         );
       }
     } catch (e) {
+      setState(() {
+        isLoading =
+            false; // Set isLoading to false after the operation finishes
+      });
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('An error occurred: $e')));
@@ -901,22 +917,44 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                _addHolding(closeOnSuccess: false); // Add more
-                              }
-                            },
-                            child: const Text('Save & Add More'),
+                            onPressed: isLoading
+                                ? null // Disable the button while loading
+                                : () {
+                                    if (_formKey.currentState!.validate()) {
+                                      _addHolding(
+                                        closeOnSuccess: false,
+                                      ); // Add more
+                                    }
+                                  },
+                            child: isLoading
+                                ? CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ) // Show loading indicator when isLoading is true
+                                : const Text(
+                                    'Save & Add More',
+                                  ), // Show text when not loading
                           ),
                           ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                _addHolding(
-                                  closeOnSuccess: true,
-                                ); // Save & Close
-                              }
-                            },
-                            child: const Text('Save & Close'),
+                            onPressed: isLoading
+                                ? null // Disable the button while loading
+                                : () {
+                                    if (_formKey.currentState!.validate()) {
+                                      _addHolding(
+                                        closeOnSuccess: true,
+                                      ); // Save & Close
+                                    }
+                                  },
+                            child: isLoading
+                                ? CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ) // Show loading indicator when isLoading is true
+                                : const Text(
+                                    'Save & Close',
+                                  ), // Show text when not loading
                           ),
                         ],
                       ),
