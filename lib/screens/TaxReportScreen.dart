@@ -893,7 +893,6 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                     color: Colors.grey.shade200,
                     border: const Border(
                       bottom: BorderSide(color: Colors.grey, width: 1),
-                      // no top border
                     ),
                   ),
                   child: const Text(
@@ -901,13 +900,24 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
+
                 // Table
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: DataTable(
                     columnSpacing: 16,
                     headingRowColor: MaterialStateColor.resolveWith(
-                      (states) => Colors.grey.shade50,
+                      (states) => Colors.grey.shade100,
+                    ),
+                    border: TableBorder(
+                      horizontalInside: BorderSide(
+                        color: Colors.grey.shade300,
+                        width: 1,
+                      ),
+                      verticalInside: BorderSide(
+                        color: Colors.grey.shade300,
+                        width: 1,
+                      ),
                     ),
                     columns: const [
                       DataColumn(
@@ -934,7 +944,7 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                       DataColumn(
                         label: SizedBox(
                           width: 150,
-                          child: Text('Proceeds (sales price'),
+                          child: Text('Proceeds (sales price)'),
                         ),
                       ),
                       DataColumn(
@@ -944,128 +954,106 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                         label: SizedBox(width: 100, child: Text('Category')),
                       ),
                     ],
-                    rows: capitalGL.isEmpty
-                        ? [
-                            const DataRow(
-                              cells: [
-                                DataCell(
-                                  Text('No Capital Gains/Losses to display.'),
-                                ),
-                                DataCell.empty,
-                                DataCell.empty,
-                                DataCell.empty,
-                                DataCell.empty,
-                                DataCell.empty,
-                                DataCell.empty,
-                              ],
-                            ),
-                          ]
-                        : capitalGL.map<DataRow>((gain) {
-                            final cost = gain['costBasis'] ?? 0.0;
-                            final proceeds = gain['proceeds'] ?? 0.0;
-                            final gainLoss = proceeds - cost;
-                            final isPositive = gainLoss >= 0;
-                            final gainLossColor = isPositive
-                                ? Colors.green
-                                : Colors.red;
+                    rows: [
+                      if (capitalGL.isNotEmpty)
+                        ...capitalGL.map<DataRow>((gain) {
+                          final cost = gain['costBasis'] ?? 0.0;
+                          final proceeds = gain['proceeds'] ?? 0.0;
+                          final gainLoss = proceeds - cost;
+                          final isPositive = gainLoss >= 0;
+                          final gainLossColor = isPositive
+                              ? Colors.green
+                              : Colors.red;
 
-                            return DataRow(
-                              cells: [
-                                DataCell(Text(gain['productName'] ?? '-')),
-                                DataCell(
-                                  Text(_formatDate(gain['dateAcquired'])),
+                          return DataRow(
+                            cells: [
+                              DataCell(Text(gain['productName'] ?? '-')),
+                              DataCell(Text(_formatDate(gain['dateAcquired']))),
+                              DataCell(Text(_formatDate(gain['dateSold']))),
+                              DataCell(
+                                Text(
+                                  '\$${_formatNumber(cost)}',
+                                  textAlign: TextAlign.right,
                                 ),
-                                DataCell(Text(_formatDate(gain['dateSold']))),
-                                DataCell(
-                                  Text(
-                                    '\$${_formatNumber(cost)}',
+                              ),
+                              DataCell(
+                                Text(
+                                  '\$${_formatNumber(proceeds)}',
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  '${isPositive ? '+' : '-'}\$${_formatNumber(gainLoss.abs())}',
+                                  style: TextStyle(color: gainLossColor),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                              DataCell(Text(gain['type'] ?? '-')),
+                            ],
+                          );
+                        }),
+
+                      if (capitalGL.isNotEmpty)
+                        DataRow(
+                          cells: [
+                            const DataCell(
+                              Text(
+                                'Total Realized Gains/Losses',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const DataCell(Text('')),
+                            const DataCell(Text('')),
+                            const DataCell(Text('')),
+                            const DataCell(Text('')),
+                            DataCell(
+                              Builder(
+                                builder: (context) {
+                                  final totalGainLoss = capitalGL.fold<num>(
+                                    0,
+                                    (sum, gain) =>
+                                        sum +
+                                        ((gain['proceeds'] ?? 0) -
+                                            (gain['costBasis'] ?? 0)),
+                                  );
+                                  final isPositive = totalGainLoss >= 0;
+                                  return Text(
+                                    '${isPositive ? '+' : '-'}\$${_formatNumber(totalGainLoss.abs())}',
+                                    style: TextStyle(
+                                      color: isPositive
+                                          ? Colors.green
+                                          : Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                     textAlign: TextAlign.right,
-                                  ),
-                                ),
-                                DataCell(
-                                  Text(
-                                    '\$${_formatNumber(proceeds)}',
-                                    textAlign: TextAlign.right,
-                                  ),
-                                ),
-                                DataCell(
-                                  Text(
-                                    '${isPositive ? '+' : '-'}\$${_formatNumber(gainLoss.abs())}',
-                                    style: TextStyle(color: gainLossColor),
-                                    textAlign: TextAlign.right,
-                                  ),
-                                ),
-                                DataCell(Text(gain['type'] ?? '-')),
-                              ],
-                            );
-                          }).toList(),
+                                  );
+                                },
+                              ),
+                            ),
+                            const DataCell(Text('')),
+                          ],
+                        ),
+
+                      if (capitalGL.isEmpty)
+                        const DataRow(
+                          cells: [
+                            DataCell(
+                              Text('No Capital Gains/Losses to display.'),
+                            ),
+                            DataCell.empty,
+                            DataCell.empty,
+                            DataCell.empty,
+                            DataCell.empty,
+                            DataCell.empty,
+                            DataCell.empty,
+                          ],
+                        ),
+                    ],
                   ),
                 ),
-
-                // Total Row
-                if (capitalGL.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    color: Colors.grey.shade50,
-                    padding: const EdgeInsets.all(8),
-                    child: Row(
-                      children: [
-                        const Expanded(
-                          flex: 5,
-                          child: Text(
-                            'Total Realized Gains/Losses',
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Builder(
-                            builder: (context) {
-                              final totalGainLoss = capitalGL.fold<num>(
-                                0,
-                                (sum, gain) =>
-                                    sum +
-                                    ((gain['proceeds'] ?? 0) -
-                                        (gain['costBasis'] ?? 0)),
-                              );
-                              final isPositive = totalGainLoss >= 0;
-
-                              return Text(
-                                '${isPositive ? '+' : '-'}\$${_formatNumber(totalGainLoss.abs())}',
-                                style: TextStyle(
-                                  color: isPositive ? Colors.green : Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.right,
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-
-                const SizedBox(height: 16),
               ],
             ),
-          ),
-
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              TextButton.icon(
-                onPressed: _printPdfReport,
-                icon: const Icon(Icons.print),
-                label: const Text('Print Report'),
-              ),
-              const SizedBox(width: 12),
-              // TextButton.icon(
-              //   onPressed: _downloadPdfReport,
-              //   icon: const Icon(Icons.download),
-              //   label: const Text('Download PDF'),
-              // ),
-            ],
           ),
         ],
       ),
