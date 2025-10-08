@@ -879,20 +879,28 @@ class _TaxReportPageState extends State<TaxReportScreen> {
           const SizedBox(height: 10),
           Container(
             margin: const EdgeInsets.only(bottom: 24),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade400),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header
                 Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.all(8),
-                  color: Colors.grey.shade100,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    border: const Border(
+                      bottom: BorderSide(color: Colors.grey, width: 1),
+                      // no top border
+                    ),
+                  ),
                   child: const Text(
                     'Capital Gains/Losses Calculation',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
-                const SizedBox(height: 8),
-
                 // Table
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -1169,32 +1177,45 @@ String formatValue(num value) {
 Widget buildTransactionHistory(List<dynamic> transactions) {
   return Container(
     margin: const EdgeInsets.only(bottom: 24),
+    decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade400)),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Header
         Container(
+          width: double.infinity,
           padding: const EdgeInsets.all(8),
-          color: Colors.grey.shade100,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            border: const Border(
+              bottom: BorderSide(color: Colors.grey, width: 1),
+              // no top border
+            ),
+          ),
           child: const Text(
             'Transaction History',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
-        const SizedBox(height: 8),
-
         // Data Table
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: DataTable(
             columnSpacing: 16,
             headingRowColor: MaterialStateColor.resolveWith(
-              (states) => Colors.grey.shade50,
+              (states) => Colors.grey.shade100,
+            ),
+            border: TableBorder(
+              horizontalInside: BorderSide(
+                color: Colors.grey.shade300,
+                width: 1,
+              ),
+              verticalInside: BorderSide(color: Colors.grey.shade300, width: 1),
             ),
             columns: const [
               DataColumn(
                 label: SizedBox(
-                  width: 150,
+                  width: 90,
                   child: Text(
                     'Date',
                     style: TextStyle(fontWeight: FontWeight.w500),
@@ -1203,7 +1224,7 @@ Widget buildTransactionHistory(List<dynamic> transactions) {
               ),
               DataColumn(
                 label: SizedBox(
-                  width: 150,
+                  width: 120,
                   child: Text(
                     'Transaction Type',
                     style: TextStyle(fontWeight: FontWeight.w500),
@@ -1212,7 +1233,7 @@ Widget buildTransactionHistory(List<dynamic> transactions) {
               ),
               DataColumn(
                 label: SizedBox(
-                  width: 250,
+                  width: 230,
                   child: Text(
                     'Product Name',
                     style: TextStyle(fontWeight: FontWeight.w500),
@@ -1221,7 +1242,7 @@ Widget buildTransactionHistory(List<dynamic> transactions) {
               ),
               DataColumn(
                 label: SizedBox(
-                  width: 100,
+                  width: 50,
                   child: Text(
                     'Qty',
                     style: TextStyle(fontWeight: FontWeight.w500),
@@ -1231,7 +1252,7 @@ Widget buildTransactionHistory(List<dynamic> transactions) {
               ),
               DataColumn(
                 label: SizedBox(
-                  width: 150,
+                  width: 100,
                   child: Text(
                     'Price per Unit',
                     style: TextStyle(fontWeight: FontWeight.w500),
@@ -1269,11 +1290,18 @@ Widget buildTransactionHistory(List<dynamic> transactions) {
                         DataCell(Text(transactionDate)),
                         DataCell(Text(transactionType)),
                         DataCell(Text(productName)),
-                        DataCell(Text('$quantity', textAlign: TextAlign.right)),
                         DataCell(
-                          Text(
-                            '\$${_formatNumber(price)}',
-                            textAlign: TextAlign.right,
+                          Container(
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text('$quantity'),
+                          ),
+                        ),
+                        DataCell(
+                          Container(
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text('\$${_formatNumber(price)}'),
                           ),
                         ),
                       ],
