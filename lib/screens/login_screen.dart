@@ -1,12 +1,9 @@
 import 'package:bold_portfolio/login-api.dart';
 import 'package:bold_portfolio/screens/ForgotPasswordScreen.dart';
-import 'package:bold_portfolio/screens/dashboard_screen.dart';
-import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/utils/mobileFormater.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import '../providers/auth_provider.dart';
 import 'main_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -33,7 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
   // reCAPTCHA functionality
   final _firstNameFocusNode = FocusNode();
   String? _recaptchaToken;
-  bool _isRecaptchaVerified = false;
+  // bool _isRecaptchaVerified = false;
 
   bool _obscurePassword = true;
   int _selectedTab = 0; // 0 = login , 1 = register
@@ -214,165 +211,165 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _showRecaptcha() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: const Color.fromARGB(0, 242, 238, 238),
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        decoration: const BoxDecoration(
-          color: Color(0xFF1A1E29),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Complete reCAPTCHA',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: WebViewWidget(
-                controller: WebViewController()
-                  ..setJavaScriptMode(JavaScriptMode.unrestricted)
-                  ..setNavigationDelegate(
-                    NavigationDelegate(
-                      onPageFinished: (String url) {
-                        // Page loaded
-                      },
-                    ),
-                  )
-                  ..addJavaScriptChannel(
-                    'RecaptchaChannel',
-                    onMessageReceived: (JavaScriptMessage message) {
-                      final token = message.message;
-                      if (token.isNotEmpty && token != 'null') {
-                        setState(() {
-                          _recaptchaToken = token;
-                          _isRecaptchaVerified = true;
-                        });
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('reCAPTCHA verified successfully!'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      }
-                    },
-                  )
-                  ..loadHtmlString('''
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-                        <style>
-                            body {
-                                margin: 0;
-                                padding: 20px;
-                                background-color: #1A1E29;
-                                display: flex;
-                                justify-content: center;
-                                align-items: center;
-                                min-height: 100vh;
-                                font-family: Arial, sans-serif;
-                            }
-                            .recaptcha-container {
-                                background: white;
-                                padding: 20px;
-                                border-radius: 8px;
-                                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                            }
-                            .loading {
-                                color: white;
-                                text-align: center;
-                                font-size: 16px;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="recaptcha-container">
-                            <div class="loading" id="loading">Loading reCAPTCHA...</div>
-                            <div class="g-recaptcha" 
-                                 data-sitekey="6Ld321YdAAAAALuFjmWlaC57ilZQQ4Gp1yQeG8e0"
-                                 data-callback="onRecaptchaSuccess"
-                                 data-expired-callback="onRecaptchaExpired"
-                                 data-error-callback="onRecaptchaError">
-                            </div>
-                        </div>
-                        
-                        <script>
-                            function onRecaptchaSuccess(token) {
-                                document.getElementById('loading').style.display = 'none';
-                                if (window.RecaptchaChannel) {
-                                    window.RecaptchaChannel.postMessage(token);
-                                }
-                            }
-                            
-                            function onRecaptchaExpired() {
-                                if (window.RecaptchaChannel) {
-                                    window.RecaptchaChannel.postMessage('expired');
-                                }
-                            }
-                            
-                            function onRecaptchaError() {
-                                if (window.RecaptchaChannel) {
-                                    window.RecaptchaChannel.postMessage('error');
-                                }
-                            }
-                            
-                            // Hide loading text when reCAPTCHA loads
-                            window.addEventListener('load', function() {
-                                setTimeout(function() {
-                                    document.getElementById('loading').style.display = 'none';
-                                }, 2000);
-                            });
-                        </script>
-                    </body>
-                    </html>
-                  '''),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // void _showRecaptcha() {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     backgroundColor: const Color.fromARGB(0, 242, 238, 238),
+  //     builder: (context) => Container(
+  //       height: MediaQuery.of(context).size.height * 0.8,
+  //       decoration: const BoxDecoration(
+  //         color: Color(0xFF1A1E29),
+  //         borderRadius: BorderRadius.only(
+  //           topLeft: Radius.circular(20),
+  //           topRight: Radius.circular(20),
+  //         ),
+  //       ),
+  //       child: Column(
+  //         children: [
+  //           Container(
+  //             padding: const EdgeInsets.all(16),
+  //             child: Row(
+  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //               children: [
+  //                 const Text(
+  //                   'Complete reCAPTCHA',
+  //                   style: TextStyle(
+  //                     color: Colors.white,
+  //                     fontSize: 18,
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //                 IconButton(
+  //                   onPressed: () => Navigator.pop(context),
+  //                   icon: const Icon(Icons.close, color: Colors.white),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           Expanded(
+  //             child: WebViewWidget(
+  //               controller: WebViewController()
+  //                 ..setJavaScriptMode(JavaScriptMode.unrestricted)
+  //                 ..setNavigationDelegate(
+  //                   NavigationDelegate(
+  //                     onPageFinished: (String url) {
+  //                       // Page loaded
+  //                     },
+  //                   ),
+  //                 )
+  //                 ..addJavaScriptChannel(
+  //                   'RecaptchaChannel',
+  //                   onMessageReceived: (JavaScriptMessage message) {
+  //                     final token = message.message;
+  //                     if (token.isNotEmpty && token != 'null') {
+  //                       setState(() {
+  //                         _recaptchaToken = token;
+  //                         _isRecaptchaVerified = true;
+  //                       });
+  //                       Navigator.pop(context);
+  //                       ScaffoldMessenger.of(context).showSnackBar(
+  //                         const SnackBar(
+  //                           content: Text('reCAPTCHA verified successfully!'),
+  //                           backgroundColor: Colors.green,
+  //                         ),
+  //                       );
+  //                     }
+  //                   },
+  //                 )
+  //                 ..loadHtmlString('''
+  //                   <!DOCTYPE html>
+  //                   <html>
+  //                   <head>
+  //                       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  //                       <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  //                       <style>
+  //                           body {
+  //                               margin: 0;
+  //                               padding: 20px;
+  //                               background-color: #1A1E29;
+  //                               display: flex;
+  //                               justify-content: center;
+  //                               align-items: center;
+  //                               min-height: 100vh;
+  //                               font-family: Arial, sans-serif;
+  //                           }
+  //                           .recaptcha-container {
+  //                               background: white;
+  //                               padding: 20px;
+  //                               border-radius: 8px;
+  //                               box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  //                           }
+  //                           .loading {
+  //                               color: white;
+  //                               text-align: center;
+  //                               font-size: 16px;
+  //                           }
+  //                       </style>
+  //                   </head>
+  //                   <body>
+  //                       <div class="recaptcha-container">
+  //                           <div class="loading" id="loading">Loading reCAPTCHA...</div>
+  //                           <div class="g-recaptcha"
+  //                                data-sitekey="6Ld321YdAAAAALuFjmWlaC57ilZQQ4Gp1yQeG8e0"
+  //                                data-callback="onRecaptchaSuccess"
+  //                                data-expired-callback="onRecaptchaExpired"
+  //                                data-error-callback="onRecaptchaError">
+  //                           </div>
+  //                       </div>
+
+  //                       <script>
+  //                           function onRecaptchaSuccess(token) {
+  //                               document.getElementById('loading').style.display = 'none';
+  //                               if (window.RecaptchaChannel) {
+  //                                   window.RecaptchaChannel.postMessage(token);
+  //                               }
+  //                           }
+
+  //                           function onRecaptchaExpired() {
+  //                               if (window.RecaptchaChannel) {
+  //                                   window.RecaptchaChannel.postMessage('expired');
+  //                               }
+  //                           }
+
+  //                           function onRecaptchaError() {
+  //                               if (window.RecaptchaChannel) {
+  //                                   window.RecaptchaChannel.postMessage('error');
+  //                               }
+  //                           }
+
+  //                           // Hide loading text when reCAPTCHA loads
+  //                           window.addEventListener('load', function() {
+  //                               setTimeout(function() {
+  //                                   document.getElementById('loading').style.display = 'none';
+  //                               }, 2000);
+  //                           });
+  //                       </script>
+  //                   </body>
+  //                   </html>
+  //                 '''),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Future<void> _handleRegister() async {
     if (_formKey.currentState!.validate()) {
       // Check reCAPTCHA verification
-      if (!_isRecaptchaVerified || _recaptchaToken == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Please complete reCAPTCHA verification by tapping the security button above',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
+      // if (!_isRecaptchaVerified || _recaptchaToken == null) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     const SnackBar(
+      //       content: Text(
+      //         'Please complete reCAPTCHA verification by tapping the security button above',
+      //       ),
+      //       backgroundColor: Colors.red,
+      //     ),
+      //   );
+      //   return;
+      // }
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
@@ -383,7 +380,7 @@ class _LoginScreenState extends State<LoginScreen> {
         mobile: _mobileController.text.trim(),
         password: _regPasswordController.text,
         screenSize: "426, 616",
-        captchaToken: _recaptchaToken!,
+        captchaToken: "",
       );
 
       if (success && mounted) {
@@ -446,8 +443,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 8),
                       Text(
                         _selectedTab == 0
-                            ? 'Sign in to your account to continue'
-                            : 'Get Started with BOLD and enjoy a seamless shopping experience',
+                            ? 'Login using your BOLD account to access your bullion portfolio'
+                            : 'Create your BOLD account to track your bullion portfolio and enjoy a seamless shopping experience',
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.black,
@@ -701,36 +698,36 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
 
                         const SizedBox(height: 8),
-                        if (_isRecaptchaVerified)
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: Colors.green.withOpacity(0.3),
-                              ),
-                            ),
-                            child: const Row(
-                              children: [
-                                Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                  size: 20,
-                                ),
-                                SizedBox(width: 12),
-                                Text(
-                                  'reCAPTCHA verified successfully!',
-                                  style: TextStyle(
-                                    color: Colors.green,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                        // if (_isRecaptchaVerified)
+                        // Container(
+                        //   padding: const EdgeInsets.all(12),
+                        //   margin: const EdgeInsets.only(bottom: 16),
+                        //   decoration: BoxDecoration(
+                        //     color: Colors.green.withOpacity(0.1),
+                        //     borderRadius: BorderRadius.circular(8),
+                        //     border: Border.all(
+                        //       color: Colors.green.withOpacity(0.3),
+                        //     ),
+                        //   ),
+                        // child: const Row(
+                        //   children: [
+                        //     Icon(
+                        //       Icons.check_circle,
+                        //       color: Colors.green,
+                        //       size: 20,
+                        //     ),
+                        //     SizedBox(width: 12),
+                        //     Text(
+                        //       'reCAPTCHA verified successfully!',
+                        //       style: TextStyle(
+                        //         color: Colors.green,
+                        //         fontSize: 14,
+                        //         fontWeight: FontWeight.w600,
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
+                        // ),
                         const SizedBox(height: 16),
                         _buildField(
                           controller: _lastNameController,
@@ -875,36 +872,36 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 16),
 
                         // reCAPTCHA Button (if not verified)
-                        if (!_isRecaptchaVerified)
-                          Container(
-                            width: double.infinity,
-                            margin: const EdgeInsets.only(bottom: 16),
-                            child: OutlinedButton.icon(
-                              onPressed: _showRecaptcha,
-                              icon: const Icon(
-                                Icons.security,
-                                color: Color(0xFF00C566),
-                              ),
-                              label: const Text(
-                                'Complete reCAPTCHA Verification',
-                                style: TextStyle(
-                                  color: Color(0xFF00C566),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(
-                                  color: Color(0xFF00C566),
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                              ),
-                            ),
-                          ),
+                        // if (!_isRecaptchaVerified)
+                        //   Container(
+                        //     width: double.infinity,
+                        //     margin: const EdgeInsets.only(bottom: 16),
+                        //     child: OutlinedButton.icon(
+                        //       onPressed: _showRecaptcha,
+                        //       icon: const Icon(
+                        //         Icons.security,
+                        //         color: Color(0xFF00C566),
+                        //       ),
+                        //       label: const Text(
+                        //         'Complete reCAPTCHA Verification',
+                        //         style: TextStyle(
+                        //           color: Color(0xFF00C566),
+                        //           fontWeight: FontWeight.w600,
+                        //         ),
+                        //       ),
+                        //       style: OutlinedButton.styleFrom(
+                        //         side: const BorderSide(
+                        //           color: Color(0xFF00C566),
+                        //         ),
+                        //         shape: RoundedRectangleBorder(
+                        //           borderRadius: BorderRadius.circular(8),
+                        //         ),
+                        //         padding: const EdgeInsets.symmetric(
+                        //           vertical: 12,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ),
 
                         // Error Message (if any)
                         Consumer<AuthProvider>(
@@ -1112,10 +1109,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               prefixIcon: Icon(icon, color: Colors.black),
-              suffixIcon:
-                  _isRecaptchaVerified && focusNode == _firstNameFocusNode
-                  ? const Icon(Icons.verified, color: Colors.green)
-                  : null,
+              // suffixIcon:
+              //     _isRecaptchaVerified && focusNode == _firstNameFocusNode
+              //     ? const Icon(Icons.verified, color: Colors.green)
+              //     : null,
               filled: true,
               fillColor: const Color.fromARGB(255, 237, 239, 245),
               border: OutlineInputBorder(

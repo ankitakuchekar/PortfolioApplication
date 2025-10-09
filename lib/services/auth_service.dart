@@ -144,12 +144,12 @@ class AuthService extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    final captchaValidation = await validateCaptcha(captchaToken);
-    if (!captchaValidation.success) {
-      isLoading = false;
-      notifyListeners();
-      return captchaValidation;
-    }
+    // final captchaValidation = await validateCaptcha(captchaToken);
+    // if (!captchaValidation.success) {
+    //   isLoading = false;
+    //   notifyListeners();
+    //   return captchaValidation;
+    // }
     final String baseUrl = dotenv.env['API_URL']!;
     final url = Uri.parse('$baseUrl/Customer/register');
 
