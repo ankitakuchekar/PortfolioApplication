@@ -1,5 +1,7 @@
+import 'package:bold_portfolio/providers/portfolio_provider.dart';
 import 'package:bold_portfolio/widgets/PredictionPopup.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart'; // For DateFormat
 import '../models/portfolio_model.dart'; // Adjust the path accordingly
@@ -204,9 +206,9 @@ class MetalHoldingsLineChart extends StatelessWidget {
                       'Market Analyst Prediction',
                     ),
                   if (shouldRenderWorstPrediction)
-                    _buildLegendItem(Colors.blue, 'Silver Worst'),
+                    _buildLegendItem(Colors.red, 'Silver Worst'),
                   if (shouldRenderOptimalPrediction)
-                    _buildLegendItem(Colors.red, 'Silver Optimal'),
+                    _buildLegendItem(Colors.blue, 'Silver Optimal'),
                 ],
               )
             else
@@ -292,12 +294,20 @@ class MetalHoldingsLineChart extends StatelessWidget {
                           }
 
                           if (seriesToData.isEmpty) return const SizedBox();
+                          final provider = Provider.of<PortfolioProvider>(
+                            context,
+                            listen: false,
+                          );
 
                           final MetalInOunces firstDp =
                               seriesToData.values.first;
-                          final String date = DateFormat(
-                            'MMM d, yyyy',
-                          ).format(firstDp.orderDate);
+                          final String date = provider.frequency == '1D'
+                              ? DateFormat(
+                                  'MMM dd hh:mm a',
+                                ).format(firstDp.orderDate)
+                              : DateFormat(
+                                  'MMM d, yyyy',
+                                ).format(firstDp.orderDate);
 
                           final List<Widget> content = [
                             Text(
@@ -320,28 +330,28 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             if (seriesName == 'Silver Holdings') {
                               content.add(
                                 Text(
-                                  "Silver: \$${formatValue(dp.totalSilverOunces)}",
+                                  "Silver: \$${(dp.totalSilverOunces)}",
                                   style: baseStyle,
                                 ),
                               );
                             } else if (seriesName == 'Gold Holdings') {
                               content.add(
                                 Text(
-                                  "Gold: \$${formatValue(dp.totalGoldOunces)}",
+                                  "Gold: \$${(dp.totalGoldOunces)}",
                                   style: baseStyle,
                                 ),
                               );
                             } else if (seriesName == 'Total Holdings') {
                               content.add(
                                 Text(
-                                  "Total: \$${formatValue(dp.totalOunces)}",
+                                  "Total: \$${(dp.totalOunces)}",
                                   style: baseStyle,
                                 ),
                               );
                             } else if (seriesName == 'Market Prediction') {
                               content.add(
                                 Text(
-                                  "Market Prediction: \$${formatValue(isTotalHoldingsView
+                                  "Market Prediction: \$${(isTotalHoldingsView
                                       ? dp.totalOunces
                                       : isGoldView
                                       ? dp.totalGoldOunces
@@ -355,7 +365,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             } else if (seriesName == 'Worst Prediction') {
                               content.add(
                                 Text(
-                                  "Worst Prediction: \$${formatValue(isGoldView ? dp.totalGoldWorstPrediction : dp.totalSilverWorstPrediction)}",
+                                  "${isGoldView ? 'Gold' : 'Silver'} Worst: \$${isGoldView ? dp.totalGoldWorstPrediction : dp.totalSilverWorstPrediction}",
                                   style: const TextStyle(
                                     color: Colors.red,
                                     fontSize: 12,
@@ -365,7 +375,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             } else if (seriesName == 'Optimal Prediction') {
                               content.add(
                                 Text(
-                                  "Optimal Prediction: \$${formatValue(isGoldView ? dp.totalGoldOptimalPrediction : dp.totalSilverOptimalPrediction)}",
+                                  "${isGoldView ? 'Gold' : 'Silver'} Optimal: \$${(isGoldView ? dp.totalGoldOptimalPrediction : dp.totalSilverOptimalPrediction)}",
                                   style: const TextStyle(
                                     color: Colors.blue,
                                     fontSize: 12,

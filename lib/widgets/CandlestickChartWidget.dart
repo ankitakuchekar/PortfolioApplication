@@ -319,10 +319,8 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
             crosshairBehavior: _crosshairBehavior,
             primaryXAxis: DateTimeAxis(
               intervalType: DateTimeIntervalType.minutes,
-              interval: 35,
-              dateFormat: MediaQuery.of(context).size.width < 768
-                  ? DateFormat('hh:mm a')
-                  : DateFormat('MMM dd hh:mm a'),
+              // interval: 35,
+              dateFormat: DateFormat('hh:mm a'),
               majorGridLines: const MajorGridLines(
                 color: Color(0xFF333333),
                 dashArray: [4, 4],

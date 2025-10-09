@@ -58,18 +58,20 @@ class _GraphsScreenState extends State<GraphsScreen> {
   String detectMetalData(List<MetalCandleChartEntry> data) {
     final hasGoldData = data.any(
       (d) =>
-          d.openGold != 0 ||
-          d.highGold != 0 ||
-          d.lowGold != 0 ||
-          d.closeGold != 0,
+          d.openGold > 0 || d.highGold > 0 || d.lowGold > 0 || d.closeGold > 0,
     );
     final hasSilverData = data.any(
       (d) =>
-          d.openSilver != 0 ||
-          d.highSilver != 0 ||
-          d.lowSilver != 0 ||
-          d.closeSilver != 0,
+          d.openSilver > 0 ||
+          d.highSilver > 0 ||
+          d.lowSilver > 0 ||
+          d.closeSilver > 0,
     );
+    // Check if Silver data is available, if not, fallback to Gold
+    if (!hasSilverData && metalFilter == 'Silver') {
+      metalFilter =
+          'Gold'; // Automatically select 'Gold' if 'Silver' is unavailable
+    }
 
     if (!hasGoldData && hasSilverData) {
       return 'Silver';
@@ -173,30 +175,30 @@ class _GraphsScreenState extends State<GraphsScreen> {
           detectMetalData(metalCandleChartData);
           final hasGoldData = metalCandleChartData.any(
             (d) =>
-                d.openGold != 0 ||
-                d.highGold != 0 ||
-                d.lowGold != 0 ||
-                d.closeGold != 0,
+                d.openGold > 0 ||
+                d.highGold > 0 ||
+                d.lowGold > 0 ||
+                d.closeGold > 0,
           );
 
           final hasSilverData = metalCandleChartData.any(
             (d) =>
-                d.openSilver != 0 ||
-                d.highSilver != 0 ||
-                d.lowSilver != 0 ||
-                d.closeSilver != 0,
+                d.openSilver > 0 ||
+                d.highSilver > 0 ||
+                d.lowSilver > 0 ||
+                d.closeSilver > 0,
           );
           final hasAllData = metalCandleChartData.any(
             (d) =>
-                d.openMetal != 0 ||
-                d.highMetal != 0 ||
-                d.lowMetal != 0 ||
-                d.closeMetal != 0,
+                d.openMetal > 0 ||
+                d.highMetal > 0 ||
+                d.lowMetal > 0 ||
+                d.closeMetal > 0,
           );
           // Dynamically build button list
           final List<String> filterOptions = [];
 
-          if (hasAllData) {
+          if (hasGoldData && hasSilverData) {
             filterOptions.addAll(['All', 'Gold', 'Silver']);
           } else if (hasGoldData) {
             filterOptions.add('Gold');
