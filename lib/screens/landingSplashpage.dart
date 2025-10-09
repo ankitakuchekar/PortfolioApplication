@@ -1,76 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:bold_portfolio/screens/login_screen.dart';
-
-// class Landingsplashpage extends StatelessWidget {
-//   const Landingsplashpage({Key? key}) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.black,
-//       body: SafeArea(
-//         child: SingleChildScrollView(
-//           child: Stack(
-//             children: [
-//               // 🔹 Full image
-//               Image.network(
-//                 'https://res.cloudinary.com/bold-pm/image/upload/Graphics/portfolio-app-landing-page-1.webp',
-//                 fit: BoxFit.cover,
-//                 width: MediaQuery.of(context).size.width,
-//               ),
-
-//               // 🔹 Positioned Button over the image (near bottom, just above black edge)
-//               Positioned(
-//                 bottom: 80, // Adjust this to align with your red mark
-//                 left: 24,
-//                 right: 24,
-//                 child: Column(
-//                   children: [
-//                     SizedBox(
-//                       width: double.infinity,
-//                       height: 48,
-//                       child: ElevatedButton(
-//                         onPressed: () {
-//                           Navigator.push(
-//                             context,
-//                             MaterialPageRoute(
-//                               builder: (context) => const LoginScreen(),
-//                             ),
-//                           );
-//                         },
-//                         style: ElevatedButton.styleFrom(
-//                           backgroundColor: const Color(0xffF2B234),
-//                           shape: RoundedRectangleBorder(
-//                             borderRadius: BorderRadius.circular(14),
-//                           ),
-//                         ),
-//                         child: const Text(
-//                           "Manage Portfolio",
-//                           style: TextStyle(
-//                             fontSize: 17,
-//                             fontWeight: FontWeight.w600,
-//                             color: Colors.white,
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                     const SizedBox(height: 8),
-//                     const Text(
-//                       "Figures shown are for illustration purposes only.",
-//                       style: TextStyle(fontSize: 12, color: Colors.white70),
-//                       textAlign: TextAlign.center,
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:bold_portfolio/screens/login_screen.dart';
 
@@ -111,6 +38,7 @@ class _LandingPageState extends State<LandingPage>
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       body: Stack(
@@ -138,7 +66,7 @@ class _LandingPageState extends State<LandingPage>
                     // Logo
                     Image.network(
                       'https://res.cloudinary.com/bold-pm/image/upload/v1629887471/Graphics/email/BPM-White-Logo.png',
-                      width: 250,
+                      width: screenWidth * 0.6, // Adjust logo size dynamically
                     ),
                     const SizedBox(height: 15),
 
@@ -200,42 +128,41 @@ class _LandingPageState extends State<LandingPage>
                     const SizedBox(height: 20),
 
                     // CTA Button
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
+                    SizedBox(
+                      width: screenWidth * 0.8, // Make button width responsive
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.amber,
+                          minimumSize: const Size(250, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        minimumSize: const Size(
-                          250,
-                          50,
-                        ), // Adjust the size if needed
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
                         ),
-                      ),
-                      icon: const Icon(
-                        Icons.phone_android,
-                        color: Colors.black,
-                      ),
-                      label: Text(
-                        'Start Tracking Your Investments',
-                        style: TextStyle(
-                          fontSize: 17, // Adjusted font size if needed
-                          fontWeight: FontWeight.w500,
-                          color: Color.fromARGB(255, 38, 37, 37),
+                        icon: const Icon(
+                          Icons.phone_android,
+                          color: Colors.black,
                         ),
-                        overflow: TextOverflow
-                            .ellipsis, // Prevents overflow with ellipsis
-                        maxLines: 1, // Keeps the text in one line
+                        label: Text(
+                          'Start Tracking Your Investments',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                            color: Color.fromARGB(255, 38, 37, 37),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 40), // Bottom spacing
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
@@ -250,14 +177,12 @@ class _LandingPageState extends State<LandingPage>
 // Reuse FeatureCard
 class FeatureCard extends StatefulWidget {
   final Widget icon;
-  // final Color iconColor;
   final String title;
   final String description;
 
   const FeatureCard({
     super.key,
     required this.icon,
-    // required this.iconColor,
     required this.title,
     required this.description,
   });
@@ -318,10 +243,7 @@ class _FeatureCardState extends State<FeatureCard>
               children: [
                 Container(
                   padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    // color: widget.iconColor,
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: BoxDecoration(shape: BoxShape.circle),
                   child: widget.icon,
                 ),
                 const SizedBox(width: 20),
