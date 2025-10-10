@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/utils/app_colors.dart';
 import 'package:bold_portfolio/widgets/common_app_bar.dart';
 import 'package:bold_portfolio/widgets/common_drawer.dart';
@@ -292,17 +293,17 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                       padding: const pw.EdgeInsets.all(4),
                     ),
                     pw.Padding(
-                      child: pw.Text('\$${_formatNumber(cost)}'),
+                      child: pw.Text('\$${formatValue(cost)}'),
                       padding: const pw.EdgeInsets.all(4),
                     ),
                     pw.Padding(
-                      child: pw.Text('\$${_formatNumber(proceeds)}'),
+                      child: pw.Text('\$${formatValue(proceeds)}'),
                       padding: const pw.EdgeInsets.all(4),
                     ),
                     pw.Padding(
                       padding: const pw.EdgeInsets.all(4),
                       child: pw.Text(
-                        '${gainLoss >= 0 ? '+' : '-'}\$${_formatNumber(gainLoss.abs())}',
+                        '${gainLoss >= 0 ? '+' : '-'}\$${formatValue(gainLoss.abs())}',
                         style: pw.TextStyle(color: gainLossColor),
                       ),
                     ),
@@ -336,7 +337,7 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                 txn['transactionType'] ?? '-',
                 txn['productName'] ?? '-',
                 '${txn['transactionQuantity'] ?? '-'}',
-                '\$${_formatNumber(txn['transactionPrice'] ?? 0.0)}',
+                '\$${formatValue(txn['transactionPrice'] ?? 0.0)}',
               ];
             }).toList(),
           ),
@@ -359,9 +360,11 @@ class _TaxReportPageState extends State<TaxReportScreen> {
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ PDF saved to Downloads folder'),
-            duration: Duration(seconds: 3),
+          SnackBar(
+            content: Text(
+              '✅ PDF saved to Downloads folder ${directory.path}/BOLD_Tax_Reports_${DateTime.now().millisecondsSinceEpoch}.pdf',
+            ),
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -396,7 +399,9 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                 // Back Button
                 TextButton.icon(
                   onPressed: () {
-                    Navigator.pop(context);
+                    final mainState = context
+                        .findAncestorStateOfType<MainScreenState>();
+                    mainState?.onNavigationTap(0);
                   },
                   icon: const Icon(Icons.arrow_back),
                   label: Text(
@@ -948,19 +953,19 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                                 DataCell(Text(_formatDate(gain['dateSold']))),
                                 DataCell(
                                   Text(
-                                    '\$${_formatNumber(cost)}',
+                                    '\$${formatValue(cost)}',
                                     textAlign: TextAlign.right,
                                   ),
                                 ),
                                 DataCell(
                                   Text(
-                                    '\$${_formatNumber(proceeds)}',
+                                    '\$${formatValue(proceeds)}',
                                     textAlign: TextAlign.right,
                                   ),
                                 ),
                                 DataCell(
                                   Text(
-                                    '${isPositive ? '+' : '-'}\$${_formatNumber(gainLoss.abs())}',
+                                    '${isPositive ? '+' : '-'}\$${formatValue(gainLoss.abs())}',
                                     style: TextStyle(color: gainLossColor),
                                     textAlign: TextAlign.right,
                                   ),
@@ -995,7 +1000,7 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                                     );
                                     final isPositive = totalGainLoss >= 0;
                                     return Text(
-                                      '${isPositive ? '+' : '-'}\$${_formatNumber(totalGainLoss.abs())}',
+                                      '${isPositive ? '+' : '-'}\$${formatValue(totalGainLoss.abs())}',
                                       style: TextStyle(
                                         color: isPositive
                                             ? Colors.green
@@ -1187,11 +1192,6 @@ String _formatDate(dynamic dateInput) {
   }
 }
 
-String _formatNumber(num? number) {
-  if (number == null) return '0.00';
-  return number.toStringAsFixed(2);
-}
-
 Future<Map<String, dynamic>?> generateCustomerTaxReport(
   String token,
   int customerId,
@@ -1251,17 +1251,8 @@ String _formatCityZip(String? city, String? zip) {
 }
 
 String formatValue(num value) {
-  final absValue = value.abs();
-
-  if (absValue >= 1e9) {
-    return '${(value / 1e9).toStringAsFixed(1)}B';
-  } else if (absValue >= 1e6) {
-    return '${(value / 1e6).toStringAsFixed(1)}M';
-  } else if (absValue >= 1e3) {
-    return '${(value / 1e3).toStringAsFixed(1)}K';
-  } else {
-    return '${value.toStringAsFixed(0)}';
-  }
+  final formatter = NumberFormat('#,##0.00');
+  return formatter.format(value);
 }
 
 Widget buildTransactionHistory(List<dynamic> transactions) {
@@ -1391,7 +1382,7 @@ Widget buildTransactionHistory(List<dynamic> transactions) {
                           Container(
                             alignment: Alignment.centerLeft,
                             padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Text('\$${_formatNumber(price)}'),
+                            child: Text('\$${formatValue(price)}'),
                           ),
                         ),
                       ],
