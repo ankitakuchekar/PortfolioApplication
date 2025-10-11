@@ -289,15 +289,8 @@ class _DashboardScreenState extends State<BullionDashboard> {
                     purchaseValue:
                         "\$${investment.totalGoldInvested.toStringAsFixed(2) ?? 0.00}",
                     showReturns: showReturns,
-                    profit:
-                        investment.totalGoldCurrent -
-                        investment.totalGoldInvested,
-                    profitPct: investment.totalGoldInvested > 0
-                        ? ((investment.totalGoldCurrent -
-                                      investment.totalGoldInvested) /
-                                  investment.totalGoldInvested) *
-                              100
-                        : 0,
+                    profit: 0,
+                    profitPct: 0,
                     holdingData: [],
                     isProfit:
                         (investment.totalGoldCurrent -
@@ -535,9 +528,8 @@ class _DashboardScreenState extends State<BullionDashboard> {
 
     final double currentValueDouble = parseCurrency(currentValue);
     final double purchaseValueDouble = parseCurrency(purchaseValue);
-    double positionDifference = currentValueDouble;
-    bool isPositive = positionDifference > currentValueDouble;
-    bool isZero = positionDifference == currentValueDouble;
+    bool isPositive = currentValueDouble > purchaseValueDouble;
+    bool isZero = currentValueDouble == purchaseValueDouble;
     return InkWell(
       onTap: isHoldingDataEmpty
           ? null
@@ -602,20 +594,35 @@ class _DashboardScreenState extends State<BullionDashboard> {
                         prefix: '\$',
                         style: TextStyle(
                           fontSize: 18,
-                          color: (isPositive ? Colors.green : Colors.red),
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        " ${profitPct.toStringAsFixed(2)}%",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: isZero
+                          color: (profit == 0)
                               ? Colors.black
                               : (isPositive ? Colors.green : Colors.red),
                           fontWeight: FontWeight.w400,
                         ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (!isZero) // Show arrow only if not zero
+                            Icon(
+                              isPositive
+                                  ? Icons.arrow_drop_up
+                                  : Icons.arrow_drop_down,
+                              color: isPositive ? Colors.green : Colors.red,
+                              size: 20,
+                            ),
+                          Text(
+                            " ${profitPct.toStringAsFixed(2)}%",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: isZero
+                                  ? Colors.black
+                                  : (isPositive ? Colors.green : Colors.red),
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
                       ),
                     ]
                   : [
