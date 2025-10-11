@@ -74,7 +74,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          _buildFixedBox(
+                          _buildFlexibleBox(
                             child: _buildPriceBox(
                               label: 'Silver',
                               price: spotPrices.silverAsk,
@@ -82,9 +82,8 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                               color: const Color(0xFFE8F5F3),
                               highlight: Colors.grey,
                             ),
-                            boxWidth: 180,
                           ),
-                          _buildFixedBox(
+                          _buildFlexibleBox(
                             child: _buildPriceBox(
                               label: 'Gold',
                               price: spotPrices.goldAsk,
@@ -92,9 +91,8 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                               color: Colors.amber.shade50,
                               highlight: Colors.amber.shade700,
                             ),
-                            boxWidth: 180,
                           ),
-                          _buildFixedBox(
+                          _buildFlexibleBox(
                             child: _buildPriceBox(
                               label: 'Platinum',
                               price: spotPrices.platinumAsk,
@@ -102,9 +100,8 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                               color: const Color(0xFFE8F5F3),
                               highlight: Colors.grey,
                             ),
-                            boxWidth: 200,
                           ),
-                          _buildFixedBox(
+                          _buildFlexibleBox(
                             child: _buildPriceBox(
                               label: 'Palladium',
                               price: spotPrices.palladiumAsk,
@@ -112,7 +109,6 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                               color: Colors.amber.shade50,
                               highlight: Colors.amber.shade700,
                             ),
-                            boxWidth: 205,
                           ),
                         ],
                       ),
@@ -124,13 +120,10 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  Widget _buildFixedBox({required Widget child, required double boxWidth}) {
+  Widget _buildFlexibleBox({required Widget child}) {
     return Padding(
       padding: const EdgeInsets.only(right: 8), // spacing between boxes
-      child: SizedBox(
-        width: boxWidth, // or any fixed width you prefer
-        child: child,
-      ),
+      child: child, // let the child define its own width
     );
   }
 

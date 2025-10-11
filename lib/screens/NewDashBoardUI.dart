@@ -685,7 +685,7 @@ class AnimatedCounter extends StatelessWidget {
   const AnimatedCounter({
     super.key,
     required this.value,
-    this.duration = const Duration(seconds: 2),
+    this.duration = const Duration(milliseconds: 500),
     this.style,
     this.prefix = '',
     this.suffix = '',
