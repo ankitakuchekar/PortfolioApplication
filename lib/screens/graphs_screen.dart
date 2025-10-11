@@ -23,9 +23,10 @@ class GraphsScreen extends StatefulWidget {
 
 class _GraphsScreenState extends State<GraphsScreen> {
   String selectedTab = 'Candle Chart'; // Set Candle Chart as the initial tab
-  String frequency = '3M'; // Default frequency set to '3M'
+  String frequency = '1D'; // Default frequency set to '3M'
   bool isLoading = false; // Flag to show loading indicator
   bool _isPredictionView = false; // Add state to manage the chart view
+  final List<String> timePeriods = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'];
 
   final List<String> tabOptions = [
     'Candle Chart', // Added new tab
@@ -34,8 +35,6 @@ class _GraphsScreenState extends State<GraphsScreen> {
     'Gold Holdings',
     'Silver Holdings',
   ];
-
-  final List<String> timePeriods = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'];
 
   // Method to fetch the portfolio data when the frequency changes
 
@@ -224,6 +223,11 @@ class _GraphsScreenState extends State<GraphsScreen> {
                         onPressed: () {
                           setState(() {
                             selectedTab = label;
+                            if (selectedTab == 'Candle Chart') {
+                              frequency = '1D';
+                            } else {
+                              frequency = '3M';
+                            }
                           });
                         },
                         style: ElevatedButton.styleFrom(
@@ -249,7 +253,8 @@ class _GraphsScreenState extends State<GraphsScreen> {
                 ),
                 if (selectedTab == 'Total Holdings' ||
                     selectedTab == 'Gold Holdings' ||
-                    selectedTab == 'Silver Holdings')
+                    selectedTab == 'Silver Holdings' ||
+                    selectedTab == 'Candle Chart')
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 5),
                     child: Wrap(

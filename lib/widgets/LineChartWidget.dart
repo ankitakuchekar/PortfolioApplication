@@ -384,6 +384,27 @@ class MetalHoldingsLineChart extends StatelessWidget {
                               );
                             }
                           });
+                          final minValue = [
+                            ...combinedData.map(
+                              (d) => isTotalHoldingsView
+                                  ? d.totalOunces
+                                  : isGoldView
+                                  ? d.totalGoldOunces
+                                  : d.totalSilverOunces,
+                            ),
+                            ...predictionData.map(
+                              (d) => isTotalHoldingsView
+                                  ? d.totalOunces
+                                  : isGoldView
+                                  ? d.totalGoldWorstPrediction
+                                  : d.totalSilverWorstPrediction,
+                            ),
+                          ].reduce((a, b) => a < b ? a : b);
+
+                          // ✅ Only subtract 1 if result stays positive
+                          final adjustedMin = (minValue - 1) < 0
+                              ? minValue
+                              : minValue - 1;
 
                           // Final tooltip container
                           return Container(
@@ -441,22 +462,56 @@ class MetalHoldingsLineChart extends StatelessWidget {
                         majorGridLines: const MajorGridLines(width: 0.5),
                         minimum:
                             [
-                              ...combinedData.map(
-                                (d) => isTotalHoldingsView
-                                    ? d.totalOunces
-                                    : isGoldView
-                                    ? d.totalGoldOunces
-                                    : d.totalSilverOunces,
-                              ),
-                              ...predictionData.map(
-                                (d) => (isTotalHoldingsView
-                                    ? d.totalOunces
-                                    : isGoldView
-                                    ? d.totalGoldWorstPrediction
-                                    : d.totalSilverWorstPrediction),
-                              ),
-                            ].reduce((a, b) => a < b ? a : b) -
-                            1,
+                                  ...combinedData.map(
+                                    (d) => isTotalHoldingsView
+                                        ? d.totalOunces
+                                        : isGoldView
+                                        ? d.totalGoldOunces
+                                        : d.totalSilverOunces,
+                                  ),
+                                  ...predictionData.map(
+                                    (d) => isTotalHoldingsView
+                                        ? d.totalOunces
+                                        : isGoldView
+                                        ? d.totalGoldWorstPrediction
+                                        : d.totalSilverWorstPrediction,
+                                  ),
+                                ].reduce((a, b) => a < b ? a : b) <
+                                1
+                            ? [
+                                ...combinedData.map(
+                                  (d) => isTotalHoldingsView
+                                      ? d.totalOunces
+                                      : isGoldView
+                                      ? d.totalGoldOunces
+                                      : d.totalSilverOunces,
+                                ),
+                                ...predictionData.map(
+                                  (d) => isTotalHoldingsView
+                                      ? d.totalOunces
+                                      : isGoldView
+                                      ? d.totalGoldWorstPrediction
+                                      : d.totalSilverWorstPrediction,
+                                ),
+                              ].reduce((a, b) => a < b ? a : b)
+                            : [
+                                    ...combinedData.map(
+                                      (d) => isTotalHoldingsView
+                                          ? d.totalOunces
+                                          : isGoldView
+                                          ? d.totalGoldOunces
+                                          : d.totalSilverOunces,
+                                    ),
+                                    ...predictionData.map(
+                                      (d) => isTotalHoldingsView
+                                          ? d.totalOunces
+                                          : isGoldView
+                                          ? d.totalGoldWorstPrediction
+                                          : d.totalSilverWorstPrediction,
+                                    ),
+                                  ].reduce((a, b) => a < b ? a : b) -
+                                  1,
+
                         maximum:
                             [
                               ...combinedData.map(

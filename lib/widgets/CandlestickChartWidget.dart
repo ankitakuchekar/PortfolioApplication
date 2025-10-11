@@ -210,9 +210,10 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
         }
       }
     }
-    return groupedData.length >= 100
-        ? groupedData.sublist(groupedData.length - 100)
-        : groupedData;
+    return groupedData;
+    // .length >= 100
+    //     ? groupedData.sublist(groupedData.length - 100)
+    //     : groupedData;
   }
 
   Widget _buildChartButton(
