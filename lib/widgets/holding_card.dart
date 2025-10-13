@@ -1,5 +1,7 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/providers/portfolio_provider.dart';
+import 'package:bold_portfolio/screens/ProductLifeCycle.dart';
+import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/widgets/ExitForm.dart';
 import 'package:bold_portfolio/widgets/SellTousForm.dart';
@@ -38,7 +40,8 @@ class _HoldingCardState extends State<HoldingCard> {
 
   @override
   Widget build(BuildContext context) {
-    final profit = widget.holding.currentMetalValue - widget.holding.avgPrice;
+    final String redirectionUrl = dotenv.env['URL_Redirection'] ?? '';
+
     final selectedImage =
         "https://res.cloudinary.com/bold-pm/image/upload/q_auto:good/Graphics/no_img_preview_product.png";
 
@@ -84,28 +87,20 @@ class _HoldingCardState extends State<HoldingCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     InkWell(
-                      onTap: widget.holding.isBold
-                          ? () async {
-                              final encodedName = Uri.encodeComponent(
-                                widget.holding.name,
-                              );
-                              final url = Uri.parse(
-                                'https://www.bullionupdates.com/product/${widget.holding.productId}/$encodedName',
-                              );
-                              if (await canLaunchUrl(url)) {
-                                await launchUrl(
-                                  url,
-                                  mode: LaunchMode.externalApplication,
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Could not launch URL'),
-                                  ),
-                                );
-                              }
-                            }
-                          : null,
+                      onTap: () {
+                        final mainState = context
+                            .findAncestorStateOfType<MainScreenState>();
+                        mainState?.navigateToScreen(
+                          ProductLifecycleScreen(
+                            imageUrl: widget.holding.productImage,
+                            title: widget.holding.assetList,
+                            subtitle: 'Source: BOLD Precious Metals',
+                            productId: widget.holding.productId,
+                            frequency: '3M',
+                            metal: widget.holding.metal,
+                          ),
+                        );
+                      },
                       child: Text(
                         widget.holding.assetList,
                         style: const TextStyle(
