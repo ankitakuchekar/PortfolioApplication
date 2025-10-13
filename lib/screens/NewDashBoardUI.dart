@@ -616,7 +616,7 @@ class _DashboardScreenState extends State<BullionDashboard> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${profitPct.toStringAsFixed(2)}%',
+                        '${profitPct.abs().toStringAsFixed(2)}%',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
