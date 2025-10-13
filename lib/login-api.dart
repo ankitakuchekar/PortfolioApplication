@@ -10,6 +10,7 @@ class GoogleSignInApi {
   );
   static Future<Map<String, dynamic>?> login() async {
     try {
+      await _googleSignIn.signOut();
       final GoogleSignInAccount? user = await _googleSignIn.signIn();
       print("userdetails1 $user");
       if (user == null) {
