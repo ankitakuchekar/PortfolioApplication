@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/providers/portfolio_provider.dart';
+import 'package:bold_portfolio/screens/holdings_screen.dart';
+import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/utils/app_colors.dart';
 import 'package:bold_portfolio/widgets/LineChartWidget.dart';
@@ -210,15 +212,19 @@ class _ProductLifecycleScreenState extends State<ProductLifecycleScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Back Button
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                    ],
+                TextButton.icon(
+                  onPressed: () {
+                    final mainState = context
+                        .findAncestorStateOfType<MainScreenState>();
+                    mainState?.onNavigationTap(2);
+                  },
+                  icon: const Icon(Icons.arrow_back),
+                  label: Text(
+                    'Back',
+                    style: TextStyle(
+                      color: const Color.fromRGBO(0, 0, 0, 1),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
 

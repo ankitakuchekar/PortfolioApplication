@@ -530,6 +530,7 @@ class _DashboardScreenState extends State<BullionDashboard> {
     final double purchaseValueDouble = parseCurrency(purchaseValue);
     bool isPositive = currentValueDouble > purchaseValueDouble;
     bool isZero = currentValueDouble == purchaseValueDouble;
+
     return InkWell(
       onTap: isHoldingDataEmpty
           ? null
@@ -545,17 +546,15 @@ class _DashboardScreenState extends State<BullionDashboard> {
                   dayPL: dayProfit,
                   percentDayPL: dayPercentProfit,
                   purchaseCost: purchaseValueDouble,
-                  holdings: holdingData
-                      .map(
-                        (holding) => PortfolioItem(
-                          name: holding.name,
-                          imageUrl: holding.productImage,
-                          quantity: holding.totalQtyOrdered,
-                          purchasePrice: holding.avgPrice,
-                          currentPrice: holding.currentMetalValue,
-                        ),
-                      )
-                      .toList(),
+                  holdings: holdingData.map((holding) {
+                    return PortfolioItem(
+                      name: holding.name,
+                      imageUrl: holding.productImage,
+                      quantity: holding.totalQtyOrdered,
+                      purchasePrice: holding.avgPrice,
+                      currentPrice: holding.currentMetalValue,
+                    );
+                  }).toList(),
                 ),
               );
             },
@@ -563,8 +562,9 @@ class _DashboardScreenState extends State<BullionDashboard> {
         padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Metal + Quantity
+            // Left: Metal + Quantity
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -584,48 +584,50 @@ class _DashboardScreenState extends State<BullionDashboard> {
               ],
             ),
 
-            // Right side: Returns or Current + Purchase
+            // Center: Arrow Icon
+            Icon(
+              isZero
+                  ? Icons.horizontal_rule
+                  : isPositive
+                  ? Icons.trending_up
+                  : Icons.trending_down,
+              color: isZero
+                  ? Colors.grey
+                  : (isPositive ? Colors.green : Colors.red),
+              size: 24,
+            ),
+
+            // Right: Returns or Current/Purchase
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: showReturns
                   ? [
+                      // Show Total P/L
                       AnimatedCounter(
                         value: profit.abs(),
                         prefix: '\$',
                         style: TextStyle(
                           fontSize: 18,
-                          color: (profit == 0)
+                          fontWeight: FontWeight.w400,
+                          color: profit == 0
                               ? Colors.black
                               : (isPositive ? Colors.green : Colors.red),
-                          fontWeight: FontWeight.w400,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (!isZero) // Show arrow only if not zero
-                            Icon(
-                              isPositive
-                                  ? Icons.arrow_drop_up
-                                  : Icons.arrow_drop_down,
-                              color: isPositive ? Colors.green : Colors.red,
-                              size: 20,
-                            ),
-                          Text(
-                            " ${profitPct.toStringAsFixed(2)}%",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: isZero
-                                  ? Colors.black
-                                  : (isPositive ? Colors.green : Colors.red),
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        '${profitPct.toStringAsFixed(2)}%',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: profit == 0
+                              ? Colors.black
+                              : (isPositive ? Colors.green : Colors.red),
+                        ),
                       ),
                     ]
                   : [
+                      // Show Current Value
                       AnimatedCounter(
                         value: currentValueDouble,
                         prefix: '\$',
@@ -638,6 +640,7 @@ class _DashboardScreenState extends State<BullionDashboard> {
                         ),
                       ),
                       const SizedBox(height: 4),
+                      // Show Purchase Value
                       AnimatedCounter(
                         value: purchaseValueDouble,
                         prefix: '\$',

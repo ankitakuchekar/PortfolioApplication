@@ -149,6 +149,20 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
     }
   }
 
+  String formatValue(num value) {
+    final absValue = value.abs();
+
+    if (absValue >= 1e9) {
+      return '${(value / 1e9).toStringAsFixed(1)}B';
+    } else if (absValue >= 1e6) {
+      return '${(value / 1e6).toStringAsFixed(1)}M';
+    } else if (absValue >= 1e3) {
+      return '${(value / 1e3).toStringAsFixed(1)}K';
+    } else {
+      return '${value.toStringAsFixed(0)}';
+    }
+  }
+
   List<CandleData> _groupCandles(
     List<MetalCandleChartEntry> data,
     int groupSize,
@@ -347,9 +361,17 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
               axisLine: const AxisLine(color: Color(0xFF404040)),
               majorTickLines: const MajorTickLines(color: Color(0xFF404040)),
               labelStyle: TextStyle(
-                color: const Color(0xFF8c8c8c),
+                color: const Color(0xFF404040),
                 fontSize: MediaQuery.of(context).size.width < 768 ? 10 : 12,
               ),
+              axisLabelFormatter: (AxisLabelRenderDetails details) {
+                return ChartAxisLabel(
+                  '\$${formatValue(details.value)}',
+                  const TextStyle(
+                    color: Color(0xFF8c8c8c),
+                  ), // customize style as needed
+                );
+              },
             ),
             series: <CartesianSeries>[
               if (widget.showCombined) ...[

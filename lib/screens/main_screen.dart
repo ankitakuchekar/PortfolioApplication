@@ -1,13 +1,12 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
-import 'package:bold_portfolio/screens/NewDashBoardUI.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/portfolio_provider.dart';
 import '../utils/app_colors.dart';
-import 'dashboard_screen.dart';
 import 'graphs_screen.dart';
 import 'holdings_screen.dart';
 import '../widgets/common_drawer.dart';
+import 'NewDashBoardUI.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -18,7 +17,6 @@ class MainScreen extends StatefulWidget {
 
 class MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-
   late Widget _currentScreen;
 
   final List<Widget> _screens = [
@@ -47,6 +45,14 @@ class MainScreenState extends State<MainScreen> {
     });
   }
 
+  Future<bool> _onWillPop() async {
+    // Use Navigator.pop(context) to go back to the previous screen
+    Navigator.pop(
+      context,
+    ); // This will pop the current screen off the stack, going back to the previous one
+    return true; // Return true to indicate that the system can pop the screen
+  }
+
   @override
   Widget build(BuildContext context) {
     final portfolioProvider = Provider.of<PortfolioProvider>(context);
@@ -62,46 +68,49 @@ class MainScreenState extends State<MainScreen> {
     bool shouldDisableTabs =
         investmentData.customerId == 0 && portfolioSettings.customerId == 0;
 
-    return Scaffold(
-      body: _currentScreen, // ✅ Show current screen
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppColors.primary,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
+    return WillPopScope(
+      onWillPop: _onWillPop, // This is where we handle the back button
+      child: Scaffold(
+        body: _currentScreen, // ✅ Show current screen
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) {
+              if (shouldDisableTabs && (index == 1 || index == 2)) return;
+              onNavigationTap(index);
+            },
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: AppColors.black,
+            selectedItemColor: Colors.orangeAccent,
+            unselectedItemColor: Colors.white.withOpacity(0.6),
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.dashboard),
+                label: 'Dashboard',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.show_chart),
+                label: 'Graphs',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.inventory_2),
+                label: 'Holdings',
+              ),
+            ],
+          ),
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            if (shouldDisableTabs && (index == 1 || index == 2)) return;
-            onNavigationTap(index);
-          },
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: AppColors.black,
-          selectedItemColor: Colors.orangeAccent,
-          unselectedItemColor: Colors.white.withOpacity(0.6),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard),
-              label: 'Dashboard',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.show_chart),
-              label: 'Graphs',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.inventory_2),
-              label: 'Holdings',
-            ),
-          ],
-        ),
+        drawer: CommonDrawer(onNavigationTap: onNavigationTap),
       ),
-      drawer: CommonDrawer(onNavigationTap: onNavigationTap),
     );
   }
 }

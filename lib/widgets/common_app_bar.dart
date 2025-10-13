@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/portfolio_provider.dart';
 import '../utils/app_colors.dart';
@@ -17,6 +18,11 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   void _onTimerComplete(BuildContext context) {
     final provider = Provider.of<PortfolioProvider>(context, listen: false);
     provider.refreshDataFromAPIs(provider.frequency);
+  }
+
+  String formatPrice(double price) {
+    final format = NumberFormat.simpleCurrency(locale: 'en_US');
+    return format.format(price);
   }
 
   @override
@@ -158,7 +164,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Row(
           children: [
             Text(
-              '$label: \$${price.toStringAsFixed(2)}',
+              '$label: ${formatPrice(price)}',
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
@@ -171,7 +177,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
               size: 16,
             ),
             Text(
-              '\$${change.abs().toStringAsFixed(2)}',
+              formatPrice(change),
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,

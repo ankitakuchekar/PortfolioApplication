@@ -445,6 +445,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         _selectedTab == 0
                             ? 'Login using your BOLD account to access your bullion portfolio'
                             : 'Create your BOLD account to track your bullion portfolio and enjoy a seamless shopping experience',
+                        textAlign: TextAlign.center, // Center each line
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.black,
@@ -998,7 +999,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ).clearError();
                               },
                               child: const Text(
-                                "Sign in",
+                                "Login",
                                 style: TextStyle(
                                   color: Color(0xFF00C566),
                                   fontWeight: FontWeight.w600,
