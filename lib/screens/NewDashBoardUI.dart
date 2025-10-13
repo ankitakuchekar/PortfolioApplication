@@ -442,8 +442,8 @@ class _DashboardScreenState extends State<BullionDashboard> {
                     const SizedBox(width: 2), // very tight spacing
                     Text(
                       difference > 0
-                          ? '(+${percentDifference.toStringAsFixed(2)})%'
-                          : '(-${percentDifference.abs().toStringAsFixed(2)}%)',
+                          ? '(${percentDifference.toStringAsFixed(2)})%'
+                          : '(${percentDifference.abs().toStringAsFixed(2)}%)',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -474,8 +474,8 @@ class _DashboardScreenState extends State<BullionDashboard> {
                     const SizedBox(width: 3), // very tight spacing
                     Text(
                       percentDayProfitLoss >= 0
-                          ? '(+${percentDayProfitLoss.toStringAsFixed(2)})%'
-                          : '(-${percentDayProfitLoss.abs().toStringAsFixed(2)}%)',
+                          ? '(${percentDayProfitLoss.toStringAsFixed(2)})%'
+                          : '(${percentDayProfitLoss.abs().toStringAsFixed(2)}%)',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
