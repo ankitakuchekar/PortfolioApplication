@@ -110,6 +110,11 @@ class MetalHoldingsLineChart extends StatelessWidget {
       }
     }
 
+    String formatPrice(num price) {
+      final format = NumberFormat.simpleCurrency(locale: 'en_US');
+      return format.format(price);
+    }
+
     // Calculate dynamic min and max for Y-axis based on selected metal (gold or silver)
     final List<MetalInOunces> combinedData = isPredictionView
         ? [...actualData, ...predictionData]
@@ -330,21 +335,21 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             if (seriesName == 'Silver Holdings') {
                               content.add(
                                 Text(
-                                  "Silver: \$${(dp.totalSilverOunces)}",
+                                  "Silver: ${formatPrice(dp.totalSilverOunces)}",
                                   style: baseStyle,
                                 ),
                               );
                             } else if (seriesName == 'Gold Holdings') {
                               content.add(
                                 Text(
-                                  "Gold: \$${(dp.totalGoldOunces)}",
+                                  "Gold: ${formatPrice(dp.totalGoldOunces)}",
                                   style: baseStyle,
                                 ),
                               );
                             } else if (seriesName == 'Total Holdings') {
                               content.add(
                                 Text(
-                                  "Total: \$${(dp.totalOunces)}",
+                                  "Total: ${formatPrice(dp.totalOunces)}",
                                   style: baseStyle,
                                 ),
                               );

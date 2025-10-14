@@ -88,19 +88,19 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    'Open: \$${candle.open.toStringAsFixed(2)}',
+                    'Open: ${formatPrice(candle.open)}',
                     style: const TextStyle(color: Color(0xFF00cc00)),
                   ),
                   Text(
-                    'High: \$${candle.high.toStringAsFixed(2)}',
+                    'High: ${formatPrice(candle.high)}',
                     style: const TextStyle(color: Color(0xFF00cc00)),
                   ),
                   Text(
-                    'Low: \$${candle.low.toStringAsFixed(2)}',
+                    'Low: ${formatPrice(candle.low)}',
                     style: const TextStyle(color: Color(0xFFff3333)),
                   ),
                   Text(
-                    'Close: \$${candle.close.toStringAsFixed(2)}',
+                    'Close: ${formatPrice(candle.close)}',
                     style: const TextStyle(color: Colors.white),
                   ),
                 ],
@@ -161,6 +161,11 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
     } else {
       return '${value.toStringAsFixed(0)}';
     }
+  }
+
+  String formatPrice(num price) {
+    final format = NumberFormat.simpleCurrency(locale: 'en_US');
+    return format.format(price);
   }
 
   List<CandleData> _groupCandles(

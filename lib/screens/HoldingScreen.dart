@@ -96,7 +96,7 @@ class HoldingDetailScreen extends StatelessWidget {
           _buildValueRow(
             label: 'Total P/L',
             value:
-                '${totalPL >= 0 ? '+' : '-'}${currencyFormatter.format(totalPL.abs())} (${percentPL.toStringAsFixed(2)}%)',
+                '${totalPL >= 0 ? '+' : '-'}${currencyFormatter.format(totalPL.abs())} (${percentPL.abs().toStringAsFixed(2)}%)',
             valueColor: totalPL >= 0 ? Colors.green : Colors.red,
           ),
           const SizedBox(height: 8),
