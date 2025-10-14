@@ -286,6 +286,7 @@ class _TaxReportPageState extends State<TaxReportScreen> {
               ];
             }).toList(),
           ),
+          pw.SizedBox(height: 16),
 
           // Capital Gains/Losses
           pw.Text(
