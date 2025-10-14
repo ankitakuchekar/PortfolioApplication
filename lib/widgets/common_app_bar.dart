@@ -177,7 +177,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
               size: 16,
             ),
             Text(
-              formatPrice(change),
+              formatPrice(change.abs()),
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,

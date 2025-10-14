@@ -10,9 +10,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 // import 'dart:io'; // For Platform, File
@@ -89,6 +87,39 @@ class _TaxReportPageState extends State<TaxReportScreen> {
     }
   }
 
+  pw.Widget buildPdfNumbered(int number, String text) {
+    return pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          "$number. ",
+          style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+        ),
+        pw.Expanded(
+          child: pw.Text(
+            text,
+            style: pw.TextStyle(fontSize: 12, color: PdfColors.grey600),
+          ),
+        ),
+      ],
+    );
+  }
+
+  pw.Widget buildPdfBullet(String text) {
+    return pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text("• ", style: pw.TextStyle(fontSize: 12)),
+        pw.Expanded(
+          child: pw.Text(
+            text,
+            style: pw.TextStyle(fontSize: 12, color: PdfColors.grey600),
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<void> _downloadPdfReport() async {
     final pdf = pw.Document();
 
@@ -147,6 +178,14 @@ class _TaxReportPageState extends State<TaxReportScreen> {
             style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
           ),
           pw.Table(
+            columnWidths: {
+              0: const pw.FlexColumnWidth(4), // Product Name
+              1: const pw.FlexColumnWidth(2), // Qty (wider than before)
+              2: const pw.FlexColumnWidth(3), // Purchase Date
+              3: const pw.FlexColumnWidth(3), // Purchase Price
+              4: const pw.FlexColumnWidth(3), // Current Value
+              5: const pw.FlexColumnWidth(3), // Gain/Loss
+            },
             border: pw.TableBorder.all(width: 0.5),
             children: [
               // Header Row
@@ -178,9 +217,7 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                     padding: const pw.EdgeInsets.all(4),
                   ),
                 ],
-              ),
-
-              // Data Rows
+              ), // Data Rows
               ...productsForPortfolio.map((item) {
                 final past = item['pastMetalValue'] ?? 0.0;
                 final current = item['currentMetalValue'] ?? 0.0;
@@ -226,12 +263,45 @@ class _TaxReportPageState extends State<TaxReportScreen> {
 
           pw.SizedBox(height: 16),
 
+          // ✅ Transaction History
+          pw.Text(
+            'Transaction History',
+            style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+          ),
+          pw.Table.fromTextArray(
+            headers: [
+              'Date',
+              'Transaction Type',
+              'Product Name',
+              'Qty',
+              'Price per Unit',
+            ],
+            data: transactions.map((txn) {
+              return [
+                _formatDate(txn['transactionDate']),
+                txn['transactionType'] ?? '-',
+                txn['productName'] ?? '-',
+                '${txn['transactionQuantity'] ?? '-'}',
+                '\$${formatValue(txn['transactionPrice'] ?? 0.0)}',
+              ];
+            }).toList(),
+          ),
+
           // Capital Gains/Losses
           pw.Text(
             'Capital Gains/Losses',
             style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
           ),
           pw.Table(
+            columnWidths: {
+              0: const pw.FlexColumnWidth(4),
+              1: const pw.FlexColumnWidth(3),
+              2: const pw.FlexColumnWidth(3),
+              3: const pw.FlexColumnWidth(3),
+              4: const pw.FlexColumnWidth(3),
+              5: const pw.FlexColumnWidth(3),
+              6: const pw.FlexColumnWidth(3),
+            },
             border: pw.TableBorder.all(width: 0.5),
             children: [
               // Header Row
@@ -318,28 +388,64 @@ class _TaxReportPageState extends State<TaxReportScreen> {
           ),
           pw.SizedBox(height: 16),
 
-          // ✅ Transaction History
-          pw.Text(
-            'Transaction History',
-            style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
-          ),
-          pw.Table.fromTextArray(
-            headers: [
-              'Date',
-              'Transaction Type',
-              'Product Name',
-              'Qty',
-              'Price per Unit',
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                "Calculation Notes:",
+                style: pw.TextStyle(
+                  fontSize: 18,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 10),
+              buildPdfBullet(
+                "Cost basis includes original purchase price plus applicable fees",
+              ),
+              buildPdfBullet(
+                "Short-term gains apply to assets held for one year or less",
+              ),
+              buildPdfBullet(
+                "Long-term gains apply to assets held for more than one year",
+              ),
+
+              pw.SizedBox(height: 20),
+              pw.Divider(thickness: 1),
+              pw.SizedBox(height: 20),
+
+              pw.Text(
+                "Disclaimers",
+                style: pw.TextStyle(
+                  fontSize: 18,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 10),
+              buildPdfNumbered(
+                1,
+                "This report is provided for informational purposes only. BOLD Precious Metals does not provide tax advice. Consult with a qualified tax professional for personalized advice regarding your specific tax situation and bullion investments.",
+              ),
+              buildPdfNumbered(
+                2,
+                "All calculations in this report are based on transaction data from BOLD Precious Metals and any information manually entered by the client. BOLD is not responsible for client-entered data accuracy.",
+              ),
+              buildPdfNumbered(
+                3,
+                "Precious metals are classified as 'collectibles' by the IRS, which may result in different tax rates. Consult a tax professional.",
+              ),
+              buildPdfNumbered(
+                4,
+                "BOLD is not responsible for any errors or omissions in this report.",
+              ),
+              buildPdfNumbered(
+                5,
+                "Retain this report and supporting documents for your tax records.",
+              ),
+              buildPdfNumbered(
+                6,
+                "Tax laws are subject to change. It is your responsibility to stay updated.",
+              ),
             ],
-            data: transactions.map((txn) {
-              return [
-                _formatDate(txn['transactionDate']),
-                txn['transactionType'] ?? '-',
-                txn['productName'] ?? '-',
-                '${txn['transactionQuantity'] ?? '-'}',
-                '\$${formatValue(txn['transactionPrice'] ?? 0.0)}',
-              ];
-            }).toList(),
           ),
         ],
       ),

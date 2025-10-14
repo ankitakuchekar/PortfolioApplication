@@ -524,213 +524,263 @@ class _ProductLifecycleScreenState extends State<ProductLifecycleScreen> {
                                   style: TextStyle(color: Colors.grey),
                                 ),
                               )
-                            : SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Table(
-                                    defaultColumnWidth:
-                                        const IntrinsicColumnWidth(),
-                                    border: TableBorder.symmetric(
-                                      inside: BorderSide(
-                                        color: Colors.grey.shade200,
+                            : LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        minWidth: constraints.maxWidth,
                                       ),
-                                    ),
-                                    children: [
-                                      const TableRow(
-                                        decoration: BoxDecoration(
-                                          color: Color(0xFFF8FAFC),
-                                        ),
-                                        children: [
-                                          Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 10,
-                                            ),
-                                            child: Text(
-                                              "Date",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 10,
-                                              horizontal: 8,
-                                            ),
-                                            child: Text(
-                                              "Transaction\nType",
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 10,
-                                              horizontal: 8,
-                                            ),
-                                            child: Text(
-                                              "Transaction\nQty",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 10,
-                                              horizontal: 8,
-                                            ),
-                                            child: Text(
-                                              "Available\nQty",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 10,
-                                              horizontal: 8,
-                                            ),
-                                            child: Text(
-                                              "Unit\nPrice",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 13,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      ...transactionProducts.map((tx) {
-                                        final transactionType =
-                                            tx['transactionType'] ?? '';
-                                        final isPurchase =
-                                            transactionType == 'PURCHASED';
-                                        final color = isPurchase
-                                            ? Colors.blue
-                                            : Colors.green;
-                                        final icon = isPurchase
-                                            ? Icons.arrow_downward
-                                            : Icons.arrow_upward;
-
-                                        final rawDateStr =
-                                            tx['transactionDate'] ?? '';
-                                        DateTime? parsedDate;
-                                        try {
-                                          parsedDate = DateFormat(
-                                            "MM/dd/yyyy HH:mm:ss",
-                                          ).parse(rawDateStr);
-                                        } catch (_) {}
-
-                                        final formattedDate = parsedDate != null
-                                            ? "${DateFormat("MMM d,").format(parsedDate)}\n${DateFormat("yyyy").format(parsedDate)}"
-                                            : 'Invalid Date';
-
-                                        return TableRow(
-                                          children: [
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 10,
-                                                    horizontal: 4,
-                                                  ),
-                                              child: Text(
-                                                formattedDate,
-                                                style: const TextStyle(
-                                                  fontSize: 13,
+                                      child: IntrinsicWidth(
+                                        child: SingleChildScrollView(
+                                          scrollDirection: Axis.vertical,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Table(
+                                              columnWidths: const {
+                                                0: FlexColumnWidth(1), // Date
+                                                1: FlexColumnWidth(2.5), // Type
+                                                2: FlexColumnWidth(1.5), // Qty
+                                                3: FlexColumnWidth(
+                                                  1.5,
+                                                ), // Available
+                                                4: FlexColumnWidth(
+                                                  1.5,
+                                                ), // Price
+                                              },
+                                              border: TableBorder.symmetric(
+                                                inside: BorderSide(
+                                                  color: Colors.grey.shade200,
                                                 ),
                                               ),
-                                            ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 10,
-                                                    horizontal: 8,
+                                              children: [
+                                                const TableRow(
+                                                  decoration: BoxDecoration(
+                                                    color: Color(0xFFF8FAFC),
                                                   ),
-                                              child: Row(
-                                                children: [
-                                                  Icon(
-                                                    icon,
-                                                    size: 14,
-                                                    color: color,
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Flexible(
-                                                    child: Text(
-                                                      isPurchase
-                                                          ? "Purchased"
-                                                          : "Exit",
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        color: color,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        fontSize: 13,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            vertical: 10,
+                                                          ),
+                                                      child: Text(
+                                                        "Date",
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontSize: 13,
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 10,
-                                                    horizontal: 8,
-                                                  ),
-                                              child: Text(
-                                                tx['transactionQuantity']
-                                                        ?.toString() ??
-                                                    "0",
-                                                style: const TextStyle(
-                                                  fontSize: 13,
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            vertical: 10,
+                                                            horizontal: 8,
+                                                          ),
+                                                      child: Text(
+                                                        "Transaction\nType",
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            vertical: 10,
+                                                            horizontal: 8,
+                                                          ),
+                                                      child: Text(
+                                                        "Transaction\nQty",
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            vertical: 10,
+                                                            horizontal: 8,
+                                                          ),
+                                                      child: Text(
+                                                        "Available\nQty",
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            vertical: 10,
+                                                            horizontal: 8,
+                                                          ),
+                                                      child: Text(
+                                                        "Unit\nPrice",
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
-                                              ),
+                                                ...transactionProducts.map((
+                                                  tx,
+                                                ) {
+                                                  final transactionType =
+                                                      tx['transactionType'] ??
+                                                      '';
+                                                  final isPurchase =
+                                                      transactionType ==
+                                                      'PURCHASED';
+                                                  final color = isPurchase
+                                                      ? Colors.blue
+                                                      : Colors.green;
+                                                  final icon = isPurchase
+                                                      ? Icons.arrow_downward
+                                                      : Icons.arrow_upward;
+
+                                                  final rawDateStr =
+                                                      tx['transactionDate'] ??
+                                                      '';
+                                                  DateTime? parsedDate;
+                                                  try {
+                                                    parsedDate = DateFormat(
+                                                      "MM/dd/yyyy HH:mm:ss",
+                                                    ).parse(rawDateStr);
+                                                  } catch (_) {}
+
+                                                  final formattedDate =
+                                                      parsedDate != null
+                                                      ? "${DateFormat("MMM d,").format(parsedDate)}\n${DateFormat("yyyy").format(parsedDate)}"
+                                                      : 'Invalid Date';
+
+                                                  return TableRow(
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              vertical: 10,
+                                                              horizontal: 4,
+                                                            ),
+                                                        child: Text(
+                                                          formattedDate,
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 13,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              vertical: 10,
+                                                              horizontal: 8,
+                                                            ),
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(
+                                                              icon,
+                                                              size: 14,
+                                                              color: color,
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 4,
+                                                            ),
+                                                            Flexible(
+                                                              child: Text(
+                                                                isPurchase
+                                                                    ? "Purchased"
+                                                                    : tx['transactionType'],
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                style: TextStyle(
+                                                                  color: color,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                  fontSize: 13,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              vertical: 10,
+                                                              horizontal: 8,
+                                                            ),
+                                                        child: Text(
+                                                          tx['transactionQuantity']
+                                                                  ?.toString() ??
+                                                              "0",
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 13,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              vertical: 10,
+                                                              horizontal: 8,
+                                                            ),
+                                                        child: Text(
+                                                          tx['afterQuantity']
+                                                                  ?.toString() ??
+                                                              "0",
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 13,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              vertical: 10,
+                                                              horizontal: 8,
+                                                            ),
+                                                        child: Text(
+                                                          "\$${(tx['transactionPrice'] ?? 0).toString()}",
+                                                          style:
+                                                              const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500,
+                                                                fontSize: 13,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  );
+                                                }).toList(),
+                                              ],
                                             ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 10,
-                                                    horizontal: 8,
-                                                  ),
-                                              child: Text(
-                                                tx['afterQuantity']
-                                                        ?.toString() ??
-                                                    "0",
-                                                style: const TextStyle(
-                                                  fontSize: 13,
-                                                ),
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    vertical: 10,
-                                                    horizontal: 8,
-                                                  ),
-                                              child: Text(
-                                                "\$${(tx['transactionPrice'] ?? 0).toString()}",
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.w500,
-                                                  fontSize: 13,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      }).toList(),
-                                    ],
-                                  ),
-                                ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                       ],
                     ),

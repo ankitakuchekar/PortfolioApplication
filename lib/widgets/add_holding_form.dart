@@ -49,18 +49,25 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
   bool isLoading = false; // To track the loading state
 
   final List<Map<String, String>> steps = [
-    {"title": "Type the product name.", "image": "https://.../product-5.webp"},
+    {
+      "title": "Type the product name.",
+      "image":
+          "https://res.cloudinary.com/bold-pm/image/upload/v1739187199/Graphics/product-5.webp",
+    },
     {
       "title": "Select it from the suggestions or enter the full name.",
-      "image": "https://.../product-6.webp",
+      "image":
+          "https://res.cloudinary.com/bold-pm/image/upload/v1739187200/Graphics/product-6.webp",
     },
     {
       "title": "List appears—select the first option if product isn't found.",
-      "image": "https://.../product-4.webp",
+      "image":
+          "https://res.cloudinary.com/bold-pm/image/upload/v1739187200/Graphics/product-6.webp",
     },
     {
       "title": "Selected product name will be displayed.",
-      "image": "https://.../product-7.webp",
+      "image":
+          "https://res.cloudinary.com/bold-pm/image/upload/v1739187200/Graphics/product-6.webp",
     },
   ];
 
@@ -128,18 +135,22 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
         List<dynamic> results = data['dataList']['searchProductsByKW'] ?? [];
 
         if (selectedDealer == 'Not Purchased on Bold' &&
-            productController.text.trim().isNotEmpty &&
-            !results.any(
-              (p) =>
-                  (p['name'] as String?)?.toLowerCase() ==
-                  productController.text.trim().toLowerCase(),
-            )) {
+            productController.text.trim().isNotEmpty
+        //  &&
+        // !results.any(
+        //   (p) =>
+        //       (p['name'] as String?)?.toLowerCase() ==
+        //       productController.text.trim().toLowerCase(),
+        // )
+        ) {
+          print("insde ");
           results.insert(0, {
             'id': 0,
             'name': productController.text.trim(),
             'imagePath': null,
           });
         }
+        print("outdide ");
 
         setState(() {
           searchResults = results;
@@ -164,43 +175,61 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
       context: context,
       builder: (_) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Add any product to your portfolio outside of BOLD',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 24), // space for close icon
+                    const Text(
+                      'Add any product to your portfolio outside of BOLD',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    for (int i = 0; i < steps.length; i++) ...[
+                      Text(
+                        'Step ${i + 1}: ${steps[i]['title']}',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          steps[i]['image']!,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Close'),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 16),
-              for (int i = 0; i < steps.length; i++) ...[
-                Text(
-                  'Step ${i + 1}: ${steps[i]['title']}',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    steps[i]['image']!,
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
-                ),
+            ),
+            // Close Icon in top right
+            Positioned(
+              right: 0,
+              child: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.of(context).pop(),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -466,7 +495,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      // const SizedBox(height: 12),
                       if (selectedDealer == 'Not Purchased on Bold') ...[
                         const SizedBox(
                           height: 12,
@@ -620,7 +649,9 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                       // Purchase Cost Field
                       TextFormField(
                         controller: purchaseCostController,
-                        keyboardType: TextInputType.number,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         decoration: InputDecoration(
                           label: RichText(
                             text: const TextSpan(
@@ -638,7 +669,6 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                             ),
                           ),
                         ),
-
                         validator: (value) =>
                             value == null || value.isEmpty ? 'Required' : null,
                         onChanged: (_) {

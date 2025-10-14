@@ -434,7 +434,7 @@ Future<void> _showConfirmationDialog(
             backgroundColor: Colors.black,
             foregroundColor: Colors.white,
           ),
-          child: const Text("Confirm"),
+          child: const Text("Remove Position"),
         ),
       ],
     ),
