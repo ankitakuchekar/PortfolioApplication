@@ -84,6 +84,11 @@ class MetalHoldingsLineChartForPLC extends StatelessWidget {
       }
     }
 
+    String formatPrice(num price) {
+      final format = NumberFormat.simpleCurrency(locale: 'en_US');
+      return format.format(price);
+    }
+
     return Card(
       elevation: 4,
       // margin: const EdgeInsets.all(4.0),
@@ -221,14 +226,14 @@ class MetalHoldingsLineChartForPLC extends StatelessWidget {
                             if (seriesName == 'Silver') {
                               content.add(
                                 Text(
-                                  "Silver: \$${(dp.totalSilverOunces)}",
+                                  "Silver: ${formatPrice(dp.totalSilverOunces)}",
                                   style: baseStyle,
                                 ),
                               );
                             } else if (seriesName == 'Gold') {
                               content.add(
                                 Text(
-                                  "Gold: \$${(dp.totalGoldOunces)}",
+                                  "Gold: ${formatPrice(dp.totalGoldOunces)}",
                                   style: baseStyle,
                                 ),
                               );

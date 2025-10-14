@@ -169,10 +169,12 @@ class BullionPortfolioGuideScreen extends StatelessWidget {
     );
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     _stepCounter = 1; // Reset step counter before building steps
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.background,
       appBar: const CommonAppBar(title: 'Portfolio Charts'),
       drawer: const CommonDrawer(),

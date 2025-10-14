@@ -25,7 +25,13 @@ class _GraphsScreenState extends State<GraphsScreen> {
   String selectedTab = 'Candle Chart'; // Set Candle Chart as the initial tab
   String frequency = '1D'; // Default frequency set to '3M'
   bool isLoading = false; // Flag to show loading indicator
-  bool _isPredictionView = false; // Add state to manage the chart view
+  bool showGoldPrediction = false; // This can be dynamic based on your data
+  bool showSilverPrediction = false;
+  bool showTotalPrediction = false;
+
+  // Determine the value of _isPredictionView
+  bool _isPredictionView = false;
+
   final List<String> timePeriods = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'];
 
   final List<String> tabOptions = [
@@ -133,9 +139,12 @@ class _GraphsScreenState extends State<GraphsScreen> {
     }
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.background,
       appBar: const CommonAppBar(title: 'Portfolio Charts'),
       drawer: const CommonDrawer(),
@@ -169,7 +178,17 @@ class _GraphsScreenState extends State<GraphsScreen> {
           final metalInOuncesData = portfolioData.data[0].metalInOunces ?? [];
           final metalCandleChartData = portfolioData.data[0].metalCandleChart;
           final portfolioSettings = portfolioData.data[0].portfolioSettings;
-          this._isPredictionView = portfolioSettings.showPrediction;
+          showGoldPrediction = portfolioSettings.showGoldPrediction;
+          showSilverPrediction = portfolioSettings.showSilverPrediction;
+          showTotalPrediction = portfolioSettings.showTotalPrediction;
+
+          if (selectedTab == 'Gold Holdings') {
+            _isPredictionView = !showGoldPrediction;
+          } else if (selectedTab == 'Silver Holdings') {
+            _isPredictionView = !showSilverPrediction;
+          } else if (selectedTab == 'Total Holdings') {
+            _isPredictionView = !showTotalPrediction;
+          }
 
           detectMetalData(metalCandleChartData);
           final hasGoldData = metalCandleChartData.any(

@@ -378,8 +378,10 @@ class _TaxReportPageState extends State<TaxReportScreen> {
   @override
   Widget build(BuildContext context) {
     final ScrollController scrollController = ScrollController();
+    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.background,
       appBar: const CommonAppBar(title: 'Tax Report'),
       drawer: const CommonDrawer(),

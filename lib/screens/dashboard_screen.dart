@@ -111,9 +111,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.background,
       appBar: const CommonAppBar(title: 'Bullion Portfolio'),
       drawer: const CommonDrawer(),

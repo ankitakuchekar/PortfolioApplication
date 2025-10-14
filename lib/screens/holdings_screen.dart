@@ -27,9 +27,12 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
     super.dispose();
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.background,
       appBar: const CommonAppBar(title: 'Holdings'),
       drawer: const CommonDrawer(),

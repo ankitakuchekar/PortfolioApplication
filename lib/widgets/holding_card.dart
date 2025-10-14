@@ -7,6 +7,7 @@ import 'package:bold_portfolio/widgets/ExitForm.dart';
 import 'package:bold_portfolio/widgets/SellTousForm.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
@@ -36,6 +37,11 @@ class _HoldingCardState extends State<HoldingCard> {
     setState(() {
       showPercentage = !showPercentage;
     });
+  }
+
+  String formatPrice(num price) {
+    final format = NumberFormat.simpleCurrency(locale: 'en_US');
+    return format.format(price);
   }
 
   @override
@@ -158,7 +164,7 @@ class _HoldingCardState extends State<HoldingCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text("Average Unit Price"),
-              Text("\$${widget.holding.avgPrice.toStringAsFixed(2)}"),
+              Text(formatPrice(widget.holding.avgPrice)),
             ],
           ),
           Row(
@@ -170,7 +176,7 @@ class _HoldingCardState extends State<HoldingCard> {
                     : "Purchase Metal Value",
                 style: TextStyle(color: Colors.black),
               ),
-              Text("\$${widget.holding.pastMetalValue.toStringAsFixed(2)}"),
+              Text("${formatPrice(widget.holding.pastMetalValue)}"),
             ],
           ),
           Row(
@@ -181,7 +187,7 @@ class _HoldingCardState extends State<HoldingCard> {
                     ? "Approx. Current Price"
                     : 'Approx. Metal Value',
               ),
-              Text("\$${widget.holding.currentMetalValue.toStringAsFixed(2)}"),
+              Text("${formatPrice(widget.holding.currentMetalValue)}"),
             ],
           ),
 
@@ -220,7 +226,7 @@ class _HoldingCardState extends State<HoldingCard> {
                     child: Text(
                       showPercentage
                           ? "${gainLossPercentage.toStringAsFixed(2)}%"
-                          : "\$${gainLossValue.abs().toStringAsFixed(2)}",
+                          : "${formatPrice(gainLossValue.abs())}",
                       style: TextStyle(
                         color: valueColor,
                         fontWeight: FontWeight.bold,

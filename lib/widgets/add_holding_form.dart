@@ -353,15 +353,20 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
           });
           widget.onClose(); // Only close if requested
         }
-
+        setState(() {
+          isLoading =
+              false; // Set isLoading to false after the operation finishes
+        });
         // Clear form for Add More
-        if (!closeOnSuccess) {
-          qtyController.clear();
-          purchaseCostController.clear();
-          spotPriceController.clear();
-          premiumCostController.clear();
-          // Reset dropdowns, selections, etc., as needed
-        }
+        // if (!closeOnSuccess) {
+        purchaseDate = null;
+        productController.clear();
+        qtyController.clear();
+        purchaseCostController.clear();
+        spotPriceController.clear();
+        premiumCostController.clear();
+        // Reset dropdowns, selections, etc., as needed
+        // }
       } else {
         setState(() {
           isLoading =
