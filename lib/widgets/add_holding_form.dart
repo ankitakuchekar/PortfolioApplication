@@ -262,11 +262,11 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
 
   Future<void> getPremiumPrice() async {
     final productName = productController.text.trim();
-    final metal = selectedProduct?['metal'] ?? '';
+    final metal = selectedProduct?['metal'] ?? 'Silver';
     final purchaseCost = double.tryParse(purchaseCostController.text) ?? 0;
     final ounces = selectedProduct?['ouncesPerUnit'] ?? 0;
 
-    if (productName.isEmpty || purchaseDate == null || metal.isEmpty) return;
+    if (purchaseDate == null || metal.isEmpty) return;
 
     setState(() => isLoadingSpot = true);
 
@@ -339,7 +339,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
       "goldSpot": selectedProduct?['goldSpot'] ?? 0,
       "silverSpot": selectedProduct?['silverSpot'] ?? 0,
       "source": selectedDealer,
-      "metal": selectedProduct?['metal'] ?? "N/A",
+      "metal": selectedProduct?['metal'] ?? "Silver",
       "ouncesPerUnit": selectedProduct?['ouncesPerUnit'] ?? 0,
       "productName": productController.text,
       "sourceName": selectedDealer == 'Not Purchased on Bold'
@@ -402,7 +402,8 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
               false; // Set isLoading to false after the operation finishes
         });
         Fluttertoast.showToast(
-          msg: "Failed to add holding ",
+          msg:
+              "Spot price not found for the transaction date or within the previous 30 days",
           backgroundColor: Colors.grey,
           textColor: Colors.black,
         );
@@ -635,50 +636,52 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                     const Duration(milliseconds: 50),
                                     () => _isSelectingProduct = false,
                                   );
-                                  if (purchaseDate != null &&
-                                      purchaseCostController.text.isNotEmpty) {
-                                    getPremiumPrice();
-                                  }
+                                  // if (purchaseDate != null &&
+                                  //     purchaseCostController.text.isNotEmpty) {
+                                  //   getPremiumPrice();
+                                  // }
                                 },
                               );
                             },
                           ),
                         ),
                       const SizedBox(height: 12),
-
-                      // Purchase Cost Field
-                      TextFormField(
-                        controller: purchaseCostController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        decoration: InputDecoration(
-                          label: RichText(
-                            text: const TextSpan(
-                              text: 'Purchase Cost (Per Unit)',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: ' *',
-                                  style: TextStyle(color: Colors.red),
+                      if (selectedDealer != 'Not Purchased on Bold') ...[
+                        // Purchase Cost Field
+                        TextFormField(
+                          controller: purchaseCostController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: InputDecoration(
+                            label: RichText(
+                              text: const TextSpan(
+                                text: 'Purchase Cost (Per Unit)',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
                                 ),
-                              ],
+                                children: [
+                                  TextSpan(
+                                    text: ' *',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Required'
+                              : null,
+                          onChanged: (_) {
+                            if (purchaseDate != null &&
+                                selectedProduct != null) {
+                              getPremiumPrice();
+                            }
+                          },
                         ),
-                        validator: (value) =>
-                            value == null || value.isEmpty ? 'Required' : null,
-                        onChanged: (_) {
-                          if (purchaseDate != null && selectedProduct != null) {
-                            getPremiumPrice();
-                          }
-                        },
-                      ),
-                      const SizedBox(height: 12),
-
+                        const SizedBox(height: 12),
+                      ],
                       // Optional fields for Not Purchased on Bold
                       if (selectedDealer == 'Not Purchased on Bold') ...[
                         const SizedBox(height: 12),
