@@ -45,6 +45,13 @@ class _SellFormState extends State<SellForm> {
   String selectedImage =
       "https://res.cloudinary.com/bold-pm/image/upload/q_auto:good/Graphics/no_img_preview_product.png";
 
+  String getTrimmedFileName(String fileName, {int maxLength = 20}) {
+    if (fileName.length > maxLength) {
+      return '${fileName.substring(0, maxLength)}...';
+    }
+    return fileName;
+  }
+
   void pickAndUploadImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -427,7 +434,7 @@ class _SellFormState extends State<SellForm> {
               ), // Adds some space between the button and the file name
               selectedFileName != null
                   ? Text(
-                      selectedFileName!,
+                      getTrimmedFileName(selectedFileName!),
                       style: const TextStyle(fontSize: 14, color: Colors.black),
                     )
                   : const Text(
