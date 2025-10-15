@@ -55,6 +55,14 @@ class _DashboardScreenState extends State<BullionDashboard> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  String formatPrice(num price) {
+    final format = NumberFormat(
+      '#,##0',
+      'en_US',
+    ); // Format without currency symbol
+    return format.format(price);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,11 +91,29 @@ class _DashboardScreenState extends State<BullionDashboard> {
                     color: AppColors.error,
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    portfolioProvider.errorMessage!,
-                    style: const TextStyle(color: AppColors.error),
+                  Text.rich(
+                    TextSpan(
+                      text:
+                          'No internet connection', // First part of the message (bold)
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.error, // Set color for error message
+                      ),
+                      children: [
+                        TextSpan(
+                          text:
+                              '\nPlease check your network connection and try again.', // Second part (normal font)
+                          style: const TextStyle(
+                            fontWeight: FontWeight.normal,
+                            color: AppColors
+                                .error, // Keep the same error color for the second part
+                          ),
+                        ),
+                      ],
+                    ),
                     textAlign: TextAlign.center,
                   ),
+
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => portfolioProvider.loadPortfolioData(),
@@ -193,7 +219,7 @@ class _DashboardScreenState extends State<BullionDashboard> {
                   _buildHoldingRow(
                     metal: "Silver",
                     quantity:
-                        "${investment.totalSilverOunces.toStringAsFixed(2)} ounces",
+                        "${formatPrice(investment.totalSilverOunces)} ounces",
                     currentValue:
                         "\$${investment.totalSilverCurrent.toStringAsFixed(2)}",
                     purchaseValue:
@@ -225,7 +251,7 @@ class _DashboardScreenState extends State<BullionDashboard> {
                   _buildHoldingRow(
                     metal: "Gold",
                     quantity:
-                        "${investment.totalGoldOunces.toStringAsFixed(2)} ounces",
+                        "${formatPrice(investment.totalGoldOunces)} ounces",
                     currentValue:
                         "\$${investment.totalGoldCurrent.toStringAsFixed(2)}",
                     purchaseValue:

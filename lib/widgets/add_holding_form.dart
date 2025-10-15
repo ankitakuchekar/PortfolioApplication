@@ -949,7 +949,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                         TextFormField(
                           controller: spotPriceController,
                           decoration: InputDecoration(
-                            labelText: 'Spot Price',
+                            labelText: 'Spot Price (per 1 troy oz)',
                             suffix: isLoadingSpot
                                 ? const SizedBox(
                                     width: 16,
@@ -966,7 +966,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                         TextFormField(
                           controller: premiumCostController,
                           decoration: const InputDecoration(
-                            labelText: 'Premium Cost',
+                            labelText: 'Premium Cost (per unit)',
                           ),
                           keyboardType: TextInputType.number,
                         ),

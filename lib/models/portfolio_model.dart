@@ -413,6 +413,7 @@ class ProductHolding {
   final String productImage;
   final String assetList;
   final int totalQtyOrdered;
+  final String sourceName;
 
   ProductHolding({
     required this.productId,
@@ -428,6 +429,7 @@ class ProductHolding {
     required this.productImage,
     required this.assetList,
     required this.totalQtyOrdered,
+    required this.sourceName,
   });
 
   double get profit => (currentMetalValue - avgPrice) * weight;
@@ -453,6 +455,7 @@ class ProductHolding {
       productImage: json['productImage'] ?? '',
       assetList: json['assetList'] ?? '',
       totalQtyOrdered: json['totalQtyOrdered'] ?? 0,
+      sourceName: json['sourceName'] ?? '',
     );
   }
 }

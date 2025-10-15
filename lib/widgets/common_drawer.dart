@@ -27,6 +27,8 @@ class _CommonDrawerState extends State<CommonDrawer> {
   bool isLoadingToggle = false;
   String? token;
   String? userId;
+  String? firstName;
+  String? lastName;
 
   @override
   void initState() {
@@ -68,6 +70,8 @@ class _CommonDrawerState extends State<CommonDrawer> {
     final fetchedUser = await authService.getUser();
     setState(() {
       userId = fetchedUser?.id;
+      firstName = fetchedUser?.firstName;
+      lastName = fetchedUser?.lastName;
     });
   }
 
@@ -129,6 +133,19 @@ class _CommonDrawerState extends State<CommonDrawer> {
     }
   }
 
+  String capitalizeFirstLetter(String text) {
+    if (text.isEmpty) return text;
+
+    return text
+        .split(' ')
+        .map((word) {
+          return word.isNotEmpty
+              ? word[0].toUpperCase() + word.substring(1).toLowerCase()
+              : '';
+        })
+        .join(' ');
+  }
+
   @override
   Widget build(BuildContext context) {
     // Get provider instance
@@ -173,6 +190,30 @@ class _CommonDrawerState extends State<CommonDrawer> {
               ),
             ),
           ),
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      "Hello, ${capitalizeFirstLetter(firstName ?? '')} ${capitalizeFirstLetter(lastName ?? '')}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    // Icon(Icons.info_outline, size: 18, color: Colors.grey),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const Divider(),
+
           // Premium Toggle
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),

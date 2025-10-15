@@ -100,7 +100,6 @@ class _HoldingCardState extends State<HoldingCard> {
                           ProductLifecycleScreen(
                             imageUrl: widget.holding.productImage,
                             title: widget.holding.assetList,
-                            subtitle: 'Source: BOLD Precious Metals',
                             productId: widget.holding.productId,
                             frequency: '3M',
                             metal: widget.holding.metal,

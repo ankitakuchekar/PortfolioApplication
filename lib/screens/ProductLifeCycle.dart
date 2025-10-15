@@ -52,7 +52,6 @@ class ProductLife {
 class ProductLifecycleScreen extends StatefulWidget {
   final String imageUrl;
   final String title;
-  final String subtitle;
   final int productId;
   final String frequency;
   final String metal;
@@ -61,7 +60,6 @@ class ProductLifecycleScreen extends StatefulWidget {
     super.key,
     required this.imageUrl,
     required this.title,
-    required this.subtitle,
     required this.productId,
     this.frequency = '1D',
     required this.metal,
@@ -204,9 +202,13 @@ class _ProductLifecycleScreenState extends State<ProductLifecycleScreen> {
           final Color profitColor = isProfit ? Colors.green : Colors.red;
           final selectedImage =
               "https://res.cloudinary.com/bold-pm/image/upload/q_auto:good/Graphics/no_img_preview_product.png";
+          final productsForPortfolios =
+              (_productLife?.productsForPortfolio[0] ?? []);
+          print("sdfsdfs ${productsForPortfolios} ");
 
-          final transactionProducts =
-              (_productLife?.transactions ?? []) as List<dynamic>;
+          final sour = productsForPortfolios['sourceName'];
+          print("sdfsdf $sour");
+          final transactionProducts = (_productLife?.transactions ?? []);
 
           return SingleChildScrollView(
             child: Column(
@@ -274,7 +276,7 @@ class _ProductLifecycleScreenState extends State<ProductLifecycleScreen> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      widget.subtitle,
+                                      'Source: ${productsForPortfolios['sourceName']}',
                                       style: TextStyle(
                                         color: Colors.grey[600],
                                         fontSize: 12,
