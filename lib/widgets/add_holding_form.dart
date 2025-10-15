@@ -29,6 +29,9 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
   final TextEditingController purchaseCostController = TextEditingController(
     text: '0',
   );
+  final TextEditingController ouncesController = TextEditingController(
+    text: '0',
+  );
   final TextEditingController qtyController = TextEditingController(text: '1');
   final TextEditingController spotPriceController = TextEditingController();
   final TextEditingController premiumCostController = TextEditingController();
@@ -264,7 +267,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
     final productName = productController.text.trim();
     final metal = selectedProduct?['metal'] ?? 'Silver';
     final purchaseCost = double.tryParse(purchaseCostController.text) ?? 0;
-    final ounces = selectedProduct?['ouncesPerUnit'] ?? 0;
+    final ounces = selectedProduct?['ouncesPerUnit'] ?? ouncesController.text;
 
     if (purchaseDate == null || metal.isEmpty) return;
 
@@ -310,6 +313,16 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
     }
   }
 
+  // Function to reset ouncesPerUnit
+  void resetOuncesPerUnit() {
+    setState(() {
+      selectedProduct = {
+        ...?selectedProduct,
+        'ouncesPerUnit': 0, // Reset to the default value, e.g., 0
+      };
+    });
+  }
+
   Future<void> _addHolding({bool closeOnSuccess = true}) async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -340,7 +353,8 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
       "silverSpot": selectedProduct?['silverSpot'] ?? 0,
       "source": selectedDealer,
       "metal": selectedProduct?['metal'] ?? "Silver",
-      "ouncesPerUnit": selectedProduct?['ouncesPerUnit'] ?? 0,
+      "ouncesPerUnit":
+          selectedProduct?['ouncesPerUnit'] ?? ouncesController.text,
       "productName": productController.text,
       "sourceName": selectedDealer == 'Not Purchased on Bold'
           ? dealerNameController.text
@@ -394,7 +408,8 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
         purchaseCostController.clear();
         spotPriceController.clear();
         premiumCostController.clear();
-        // Reset dropdowns, selections, etc., as needed
+        ouncesController
+            .clear(); // Reset dropdowns, selections, etc., as needed
         // }
       } else {
         setState(() {
@@ -728,9 +743,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                           children: [
                             Expanded(
                               child: TextFormField(
-                                initialValue:
-                                    (selectedProduct?['ouncesPerUnit'] ?? 0)
-                                        .toString(),
+                                controller: ouncesController,
                                 decoration: InputDecoration(
                                   label: RichText(
                                     text: const TextSpan(
@@ -748,7 +761,6 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                     ),
                                   ),
                                 ),
-
                                 keyboardType: TextInputType.number,
                                 onChanged: (val) {
                                   setState(() {

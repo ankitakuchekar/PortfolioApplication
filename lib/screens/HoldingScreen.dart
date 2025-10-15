@@ -269,7 +269,7 @@ class PortfolioItemCard extends StatelessWidget {
                       currencyFormatter.format(item.currentPrice),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: currentPriceColor,
+                        color: Colors.black,
                       ),
                     ),
                   ],
