@@ -651,10 +651,6 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                     const Duration(milliseconds: 50),
                                     () => _isSelectingProduct = false,
                                   );
-                                  // if (purchaseDate != null &&
-                                  //     purchaseCostController.text.isNotEmpty) {
-                                  //   getPremiumPrice();
-                                  // }
                                 },
                               );
                             },
@@ -725,6 +721,11 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                 ...?selectedProduct,
                                 'metal': val,
                               };
+                              if (productController.text.isNotEmpty &&
+                                  purchaseCostController.text.isNotEmpty &&
+                                  selectedProduct != null) {
+                                getPremiumPrice();
+                              }
                             });
                           },
                           decoration: InputDecoration(
