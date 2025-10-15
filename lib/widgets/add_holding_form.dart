@@ -84,9 +84,9 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
   void _onProductChanged() {
     if (_isSelectingProduct) return;
     setState(() {
-      selectedProduct = null;
-      spotPriceController.clear();
-      premiumCostController.clear();
+      // selectedProduct = null;
+      // spotPriceController.clear();
+      // premiumCostController.clear();
     });
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
@@ -265,7 +265,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
 
   Future<void> getPremiumPrice() async {
     final productName = productController.text.trim();
-    final metal = selectedProduct?['metal'] ?? 'Silver';
+    final metal = selectedProduct?['metal'] ?? '';
     final purchaseCost = double.tryParse(purchaseCostController.text) ?? 0;
     final ounces = selectedProduct?['ouncesPerUnit'] ?? ouncesController.text;
 
@@ -352,7 +352,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
       "goldSpot": selectedProduct?['goldSpot'] ?? 0,
       "silverSpot": selectedProduct?['silverSpot'] ?? 0,
       "source": selectedDealer,
-      "metal": selectedProduct?['metal'] ?? "Silver",
+      "metal": selectedProduct?['metal'] ?? "",
       "ouncesPerUnit":
           selectedProduct?['ouncesPerUnit'] ?? ouncesController.text,
       "productName": productController.text,
@@ -640,11 +640,11 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                   setState(() {
                                     _isSelectingProduct = true;
                                     productController.text = prod['name'] ?? '';
-                                    selectedProduct = prod;
+                                    // selectedProduct = prod;
                                     searchResults.clear();
                                     isSearching = false;
                                     selectedProduct?['ouncesPerUnit'] =
-                                        prod['ounces'] ?? '';
+                                        prod['ounces'] ?? ouncesController.text;
                                   });
                                   _productFocusNode.unfocus();
                                   Future.delayed(
@@ -701,13 +701,24 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                       if (selectedDealer == 'Not Purchased on Bold') ...[
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
-                          initialValue: selectedProduct?['metal'] ?? 'Silver',
-                          items: ['Silver', 'Gold']
-                              .map(
-                                (m) =>
-                                    DropdownMenuItem(value: m, child: Text(m)),
-                              )
-                              .toList(),
+                          initialValue:
+                              selectedProduct?['metal'] ??
+                              '', // Set to '' to start with no metal selected
+                          items:
+                              [
+                                    'Select Metal', // Add this as the first option
+                                    'Silver',
+                                    'Gold',
+                                  ]
+                                  .map(
+                                    (m) => DropdownMenuItem(
+                                      value: m == 'Select Metal'
+                                          ? ''
+                                          : m, // If it's the "Select Metal" option, set value to empty string
+                                      child: Text(m),
+                                    ),
+                                  )
+                                  .toList(),
                           onChanged: (val) {
                             setState(() {
                               selectedProduct = {
@@ -733,7 +744,6 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                               ),
                             ),
                           ),
-
                           validator: (value) => value == null || value.isEmpty
                               ? 'Required'
                               : null,
