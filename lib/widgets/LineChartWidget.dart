@@ -329,8 +329,6 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             color: Colors.white,
                             fontSize: 12,
                           );
-
-                          // Loop through all series and display values properly
                           seriesToData.forEach((seriesName, dp) {
                             if (seriesName == 'Silver Holdings') {
                               content.add(
@@ -519,20 +517,33 @@ class MetalHoldingsLineChart extends StatelessWidget {
 
                         maximum:
                             [
-                              ...combinedData.map(
-                                (d) => isTotalHoldingsView
+                              ...combinedData.map((d) {
+                                return isTotalHoldingsView
                                     ? d.totalOunces
                                     : isGoldView
                                     ? d.totalGoldOunces
-                                    : d.totalSilverOunces,
-                              ),
-                              ...predictionData.map(
-                                (d) => (isTotalHoldingsView
+                                    : d.totalSilverOunces;
+                              }),
+                              ...predictionData.map((d) {
+                                // Determine which is greater: totalGoldOptimalPrediction or totalSilverOptimalPrediction
+                                double totalSilver =
+                                    (d.totalSilverWorstPrediction >
+                                        d.totalSilverOptimalPrediction)
+                                    ? d.totalSilverWorstPrediction
+                                    : d.totalSilverOptimalPrediction;
+                                double totalGold =
+                                    (d.totalGoldOptimalPrediction >
+                                        d.totalGoldWorstPrediction)
+                                    ? d.totalGoldOptimalPrediction
+                                    : d.totalGoldWorstPrediction;
+
+                                // Return the necessary value based on the view
+                                return isTotalHoldingsView
                                     ? d.totalOunces
                                     : isGoldView
-                                    ? d.totalGoldOptimalPrediction
-                                    : d.totalSilverOptimalPrediction),
-                              ),
+                                    ? totalGold
+                                    : totalSilver;
+                              }),
                             ].reduce((a, b) => a > b ? a : b) +
                             1,
                       ),
@@ -600,12 +611,15 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             ),
                             borderWidth: 0, // No border on the fill itself
                           ),
-
                           LineSeries<MetalInOunces, DateTime>(
-                            key: ValueKey('${selectedTab}_lineprediction'),
+                            key: ValueKey('${selectedTab}_linepredictions'),
                             dataSource: connectedPredictionData,
                             xValueMapper: (d, _) => d.orderDate,
-                            yValueMapper: (d, _) => d.totalOunces,
+                            yValueMapper: (d, _) => isTotalHoldingsView
+                                ? d.totalOunces
+                                : isGoldView
+                                ? d.totalGoldOunces
+                                : d.totalSilverOunces,
                             color: predictionLineColor,
                             width: 1.5,
                             name: 'Market Prediction',
@@ -621,8 +635,8 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             dataSource: connectedPredictionData,
                             xValueMapper: (d, _) => d.orderDate,
                             yValueMapper: (d, _) => isGoldView
-                                ? d.totalGoldOptimalPrediction
-                                : d.totalSilverOptimalPrediction,
+                                ? d.totalGoldWorstPrediction
+                                : d.totalSilverWorstPrediction,
                             // lowValueMapper: (d, _) => d.totalSilverOunces,
                             gradient: LinearGradient(
                               colors: [
@@ -640,22 +654,23 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             dataSource: connectedPredictionData,
                             xValueMapper: (d, _) => d.orderDate,
                             yValueMapper: (d, _) => isGoldView
-                                ? d.totalGoldOptimalPrediction
-                                : d.totalSilverOptimalPrediction,
+                                ? d.totalGoldWorstPrediction
+                                : d.totalSilverWorstPrediction,
                             color: Colors.red,
                             width: 1.5,
                             name: 'Worst Prediction',
                           ),
                         ],
                         if (shouldRenderOptimalPrediction &&
-                            isPredictionView) ...[
+                            isPredictionView &&
+                            !isTotalHoldingsView) ...[
                           AreaSeries<MetalInOunces, DateTime>(
                             key: ValueKey('${selectedTab}_Optimalprediction'),
                             dataSource: connectedPredictionData,
                             xValueMapper: (d, _) => d.orderDate,
                             yValueMapper: (d, _) => isGoldView
-                                ? d.totalGoldWorstPrediction
-                                : d.totalSilverWorstPrediction,
+                                ? d.totalGoldOptimalPrediction
+                                : d.totalSilverOptimalPrediction,
                             // lowValueMapper: (d, _) => d.totalSilverOunces,
                             gradient: LinearGradient(
                               colors: [
@@ -675,8 +690,8 @@ class MetalHoldingsLineChart extends StatelessWidget {
                             dataSource: connectedPredictionData,
                             xValueMapper: (d, _) => d.orderDate,
                             yValueMapper: (d, _) => isGoldView
-                                ? d.totalGoldWorstPrediction
-                                : d.totalSilverWorstPrediction,
+                                ? d.totalGoldOptimalPrediction
+                                : d.totalSilverOptimalPrediction,
                             color: Colors.blue,
                             width: 1.5,
                             name: 'Optimal Prediction',
