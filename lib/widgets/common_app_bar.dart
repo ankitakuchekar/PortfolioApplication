@@ -1,3 +1,4 @@
+import 'package:bold_portfolio/widgets/timer_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -7,13 +8,8 @@ import 'circular_timer_widget.dart';
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  final int timerDurationSeconds;
 
-  const CommonAppBar({
-    super.key,
-    required this.title,
-    this.timerDurationSeconds = 45,
-  });
+  const CommonAppBar({super.key, required this.title});
 
   void _onTimerComplete(BuildContext context) {
     final provider = Provider.of<PortfolioProvider>(context, listen: false);
@@ -57,9 +53,13 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           const Spacer(), // This will push the timer to the far right
           // The timer widget is now on the right side
-          CountdownTimerWidget(
-            durationSeconds: timerDurationSeconds,
-            onTimerComplete: () => _onTimerComplete(context),
+          Consumer<TimerProvider>(
+            builder: (context, timerProvider, child) {
+              return CountdownTimerWidget(
+                durationSeconds: timerProvider.remainingSeconds,
+                onTimerComplete: () => _onTimerComplete(context),
+              );
+            },
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bold_portfolio/widgets/timer_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -37,7 +38,12 @@ Future<void> main() async {
     debugPrint('❌ Failed to load .env file: $e');
   }
 
-  runApp(const BoldPortfolioApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => TimerProvider(), // Provide the TimerProvider
+      child: BoldPortfolioApp(),
+    ),
+  );
 }
 
 class BoldPortfolioApp extends StatelessWidget {

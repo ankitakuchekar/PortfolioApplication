@@ -250,7 +250,9 @@ class PortfolioItemCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      currencyFormatter.format(item.purchasePrice),
+                      currencyFormatter.format(
+                        item.purchasePrice * item.quantity,
+                      ),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],

@@ -1,6 +1,7 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/screens/landingSplashpage.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
+import 'package:bold_portfolio/widgets/common_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/portfolio_provider.dart';
