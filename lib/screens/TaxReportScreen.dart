@@ -697,12 +697,13 @@ class _TaxReportPageState extends State<TaxReportScreen> {
 
         debugPrint('✅ PDF saved at: $filePath');
       } else if (Platform.isIOS) {
-        // iOS-specific file saving logic
-        final directory = await getDownloadsDirectory();
+        final directory = await getApplicationDocumentsDirectory();
         final filePath =
-            '${directory!.path}/BOLD_Tax_Reports_${DateTime.now().millisecondsSinceEpoch}.pdf';
+            '${directory.path}/BOLD_Tax_Report_${DateTime.now().millisecondsSinceEpoch}.pdf';
         final file = File(filePath);
         await file.writeAsBytes(await pdf.save());
+
+        // Share the PDF using iOS share sheet
         await Share.shareXFiles([
           XFile(file.path),
         ], text: 'Here is your tax report PDF');
@@ -715,7 +716,6 @@ class _TaxReportPageState extends State<TaxReportScreen> {
             ),
           );
         }
-
         debugPrint('✅ PDF saved at: $filePath');
       }
     } catch (e) {
