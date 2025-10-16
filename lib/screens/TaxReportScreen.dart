@@ -12,6 +12,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
 
 // import 'dart:io'; // For Platform, File
 // import 'package:path_provider/path_provider.dart'; // For getExternalStorageDirectory
@@ -122,7 +123,6 @@ class _TaxReportPageState extends State<TaxReportScreen> {
 
   Future<void> _downloadPdfReport() async {
     final pdf = pw.Document();
-
     pdf.addPage(
       pw.MultiPage(
         build: (pw.Context context) => [
@@ -453,30 +453,50 @@ class _TaxReportPageState extends State<TaxReportScreen> {
     );
 
     try {
-      await Permission.storage.request();
+      if (Platform.isAndroid) {
+        // Android-specific file saving logic
+        await Permission.storage.request();
+        final directory = Directory('/storage/emulated/0/Download');
+        if (!await directory.exists()) {
+          await directory.create(recursive: true);
+        }
 
-      final directory = Directory('/storage/emulated/0/Download');
-      if (!await directory.exists()) {
-        await directory.create(recursive: true);
-      }
+        final filePath =
+            '${directory.path}/BOLD_Tax_Reports_${DateTime.now().millisecondsSinceEpoch}.pdf';
+        final file = File(filePath);
+        await file.writeAsBytes(await pdf.save());
 
-      final filePath =
-          '${directory.path}/BOLD_Tax_Reports_${DateTime.now().millisecondsSinceEpoch}.pdf';
-      final file = File(filePath);
-      await file.writeAsBytes(await pdf.save());
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '✅ PDF saved to Downloads folder ${directory.path}/BOLD_Tax_Reports_${DateTime.now().millisecondsSinceEpoch}.pdf',
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '✅ PDF saved to Downloads folder ${directory.path}/BOLD_Tax_Reports_${DateTime.now().millisecondsSinceEpoch}.pdf',
+              ),
+              duration: const Duration(seconds: 3),
             ),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
+          );
+        }
 
-      debugPrint('✅ PDF saved at: $filePath');
+        debugPrint('✅ PDF saved at: $filePath');
+      } else if (Platform.isIOS) {
+        // iOS-specific file saving logic
+        final directory = await getApplicationDocumentsDirectory();
+        final filePath =
+            '${directory.path}/BOLD_Tax_Reports_${DateTime.now().millisecondsSinceEpoch}.pdf';
+        final file = File(filePath);
+        await file.writeAsBytes(await pdf.save());
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('✅ PDF saved to app documents: $filePath'),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+
+        debugPrint('✅ PDF saved at: $filePath');
+      }
     } catch (e) {
       debugPrint('❌ Error saving PDF: $e');
     }
