@@ -13,6 +13,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 // import 'dart:io'; // For Platform, File
 // import 'package:path_provider/path_provider.dart'; // For getExternalStorageDirectory
@@ -697,11 +698,14 @@ class _TaxReportPageState extends State<TaxReportScreen> {
         debugPrint('✅ PDF saved at: $filePath');
       } else if (Platform.isIOS) {
         // iOS-specific file saving logic
-        final directory = await getApplicationDocumentsDirectory();
+        final directory = await getDownloadsDirectory();
         final filePath =
-            '${directory.path}/BOLD_Tax_Reports_${DateTime.now().millisecondsSinceEpoch}.pdf';
+            '${directory!.path}/BOLD_Tax_Reports_${DateTime.now().millisecondsSinceEpoch}.pdf';
         final file = File(filePath);
         await file.writeAsBytes(await pdf.save());
+        await Share.shareXFiles([
+          XFile(file.path),
+        ], text: 'Here is your tax report PDF');
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

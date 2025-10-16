@@ -1,6 +1,5 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
-import 'package:bold_portfolio/services/portfolio_service.dart';
 import 'package:bold_portfolio/widgets/CandlestickChartWidget.dart';
 import 'package:bold_portfolio/widgets/LineChartWidget.dart';
 import 'package:flutter/material.dart';
@@ -175,7 +174,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
               ? 0
               : (investment.totalSilverInvested / totalInvestment) * 100;
 
-          final metalInOuncesData = portfolioData.data[0].metalInOunces ?? [];
+          final metalInOuncesData = portfolioData.data[0].metalInOunces;
           final metalCandleChartData = portfolioData.data[0].metalCandleChart;
           final portfolioSettings = portfolioData.data[0].portfolioSettings;
           showGoldPrediction = portfolioSettings.showGoldPrediction;

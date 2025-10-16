@@ -408,6 +408,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
         purchaseCostController.clear();
         spotPriceController.clear();
         premiumCostController.clear();
+        dealerNameController.clear();
         ouncesController
             .clear(); // Reset dropdowns, selections, etc., as needed
         // }
