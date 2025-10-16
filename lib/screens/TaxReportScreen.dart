@@ -106,11 +106,11 @@ class _TaxReportPageState extends State<TaxReportScreen> {
     );
   }
 
-  pw.Widget buildPdfBullet(String text) {
+  pw.Widget buildPdfBullet(int numbers, String text) {
     return pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text("• ", style: pw.TextStyle(fontSize: 12)),
+        pw.Text("$numbers. ", style: pw.TextStyle(fontSize: 12)),
         pw.Expanded(
           child: pw.Text(
             text,
@@ -151,7 +151,7 @@ class _TaxReportPageState extends State<TaxReportScreen> {
           pw.Text(
             'This report includes all investment transactions and holdings for the specified period.',
             style: pw.TextStyle(fontSize: 14, color: PdfColors.grey600),
-            textAlign: pw.TextAlign.center,
+            textAlign: pw.TextAlign.left,
           ),
           // Customer Info
           if (customerInfo != null)
@@ -180,7 +180,7 @@ class _TaxReportPageState extends State<TaxReportScreen> {
           pw.Table(
             columnWidths: {
               0: const pw.FlexColumnWidth(4), // Product Name
-              1: const pw.FlexColumnWidth(2), // Qty (wider than before)
+              1: const pw.FlexColumnWidth(2), // Qty
               2: const pw.FlexColumnWidth(3), // Purchase Date
               3: const pw.FlexColumnWidth(3), // Purchase Price
               4: const pw.FlexColumnWidth(3), // Current Value
@@ -217,47 +217,120 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                     padding: const pw.EdgeInsets.all(4),
                   ),
                 ],
-              ), // Data Rows
-              ...productsForPortfolio.map((item) {
-                final past = item['pastMetalValue'] ?? 0.0;
-                final current = item['currentMetalValue'] ?? 0.0;
-                final gainLoss = current - past;
-                final gainLossColor = gainLoss >= 0
-                    ? PdfColors.green
-                    : PdfColors.red;
+              ),
 
-                return pw.TableRow(
+              // No data message
+              if (productsForPortfolio.isEmpty)
+                pw.TableRow(
                   children: [
-                    pw.Padding(
-                      child: pw.Text(item['assetList'] ?? '-'),
-                      padding: const pw.EdgeInsets.all(4),
-                    ),
-                    pw.Padding(
-                      child: pw.Text('${item['totalQtyOrdered'] ?? '-'}'),
-                      padding: const pw.EdgeInsets.all(4),
-                    ),
-                    pw.Padding(
-                      child: pw.Text(_formatDate(item['orderDate'])),
-                      padding: const pw.EdgeInsets.all(4),
-                    ),
-                    pw.Padding(
-                      child: pw.Text('\$${formatValue(past)}'),
-                      padding: const pw.EdgeInsets.all(4),
-                    ),
-                    pw.Padding(
-                      child: pw.Text('\$${formatValue(current)}'),
-                      padding: const pw.EdgeInsets.all(4),
-                    ),
                     pw.Padding(
                       padding: const pw.EdgeInsets.all(4),
                       child: pw.Text(
-                        '${gainLoss >= 0 ? '+' : '-'}\$${formatValue(gainLoss.abs())}',
-                        style: pw.TextStyle(color: gainLossColor),
+                        'No investment data available.',
+                        textAlign: pw.TextAlign.center,
                       ),
                     ),
+                    for (int i = 0; i < 5; i++) pw.SizedBox(),
                   ],
-                );
-              }),
+                )
+              else ...[
+                // Data rows
+                ...productsForPortfolio.map((item) {
+                  final past = item['pastMetalValue'] ?? 0.0;
+                  final current = item['currentMetalValue'] ?? 0.0;
+                  final gainLoss = current - past;
+                  final gainLossColor = gainLoss >= 0
+                      ? PdfColors.green
+                      : PdfColors.red;
+
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        child: pw.Text(item['assetList'] ?? '-'),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                      pw.Padding(
+                        child: pw.Text('${item['totalQtyOrdered'] ?? '-'}'),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                      pw.Padding(
+                        child: pw.Text(_formatDate(item['orderDate'])),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                      pw.Padding(
+                        child: pw.Text('\$${formatValue(past)}'),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                      pw.Padding(
+                        child: pw.Text('\$${formatValue(current)}'),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: pw.Text(
+                          '${gainLoss >= 0 ? '+' : '-'}\$${formatValue(gainLoss.abs())}',
+                          style: pw.TextStyle(color: gainLossColor),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+
+                // Total Row
+                () {
+                  final totalPast = productsForPortfolio.fold<double>(
+                    0.0,
+                    (sum, item) => sum + (item['pastMetalValue'] ?? 0.0),
+                  );
+                  final totalCurrent = productsForPortfolio.fold<double>(
+                    0.0,
+                    (sum, item) => sum + (item['currentMetalValue'] ?? 0.0),
+                  );
+                  final totalGainLoss = totalCurrent - totalPast;
+                  final gainLossColor = totalGainLoss >= 0
+                      ? PdfColors.green
+                      : PdfColors.red;
+
+                  return pw.TableRow(
+                    decoration: pw.BoxDecoration(color: PdfColors.grey200),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: pw.Text(
+                          'Total Portfolio Value',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
+                      pw.SizedBox(),
+                      pw.SizedBox(),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: pw.Text(
+                          '\$${formatValue(totalPast)}',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: pw.Text(
+                          '\$${formatValue(totalCurrent)}',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: pw.Text(
+                          '${totalGainLoss >= 0 ? '+' : '-'}\$${formatValue(totalGainLoss.abs())}',
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            color: gainLossColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }(),
+              ],
             ],
           ),
 
@@ -268,24 +341,106 @@ class _TaxReportPageState extends State<TaxReportScreen> {
             'Transaction History',
             style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
           ),
-          pw.Table.fromTextArray(
-            headers: [
-              'Date',
-              'Transaction Type',
-              'Product Name',
-              'Qty',
-              'Price per Unit',
+          pw.Table(
+            columnWidths: {
+              0: const pw.FlexColumnWidth(3), // Date
+              1: const pw.FlexColumnWidth(3), // Transaction Type
+              2: const pw.FlexColumnWidth(4), // Product Name
+              3: const pw.FlexColumnWidth(2), // Qty
+              4: const pw.FlexColumnWidth(3), // Price per Unit
+            },
+            border: pw.TableBorder.all(width: 0.5),
+            children: [
+              // Header Row
+              pw.TableRow(
+                decoration: pw.BoxDecoration(color: PdfColors.grey300),
+                children: [
+                  pw.Padding(
+                    child: pw.Text('Date'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Transaction Type'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Product Name'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Qty'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                  pw.Padding(
+                    child: pw.Text('Price per Unit'),
+                    padding: const pw.EdgeInsets.all(4),
+                  ),
+                ],
+              ),
+
+              // Check if transactions list is empty
+              if (transactions.isEmpty)
+                pw.TableRow(
+                  children: [
+                    pw.Padding(
+                      child: pw.Text(
+                        'No transactions available.',
+                        textAlign: pw.TextAlign.center,
+                      ),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                    pw.Padding(
+                      child: pw.Text(''),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                    pw.Padding(
+                      child: pw.Text(''),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                    pw.Padding(
+                      child: pw.Text(''),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                    pw.Padding(
+                      child: pw.Text(''),
+                      padding: const pw.EdgeInsets.all(4),
+                    ),
+                  ],
+                ),
+
+              // Data Rows (only if transactions are available)
+              if (transactions.isNotEmpty)
+                ...transactions.map((txn) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        child: pw.Text(_formatDate(txn['transactionDate'])),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                      pw.Padding(
+                        child: pw.Text(txn['transactionType'] ?? '-'),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                      pw.Padding(
+                        child: pw.Text(txn['productName'] ?? '-'),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                      pw.Padding(
+                        child: pw.Text('${txn['transactionQuantity'] ?? '-'}'),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                      pw.Padding(
+                        child: pw.Text(
+                          '\$${formatValue(txn['transactionPrice'] ?? 0.0)}',
+                        ),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                    ],
+                  );
+                }).toList(),
             ],
-            data: transactions.map((txn) {
-              return [
-                _formatDate(txn['transactionDate']),
-                txn['transactionType'] ?? '-',
-                txn['productName'] ?? '-',
-                '${txn['transactionQuantity'] ?? '-'}',
-                '\$${formatValue(txn['transactionPrice'] ?? 0.0)}',
-              ];
-            }).toList(),
           ),
+
           pw.SizedBox(height: 16),
 
           // Capital Gains/Losses
@@ -340,51 +495,110 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                 ],
               ),
 
-              // Data Rows
-              ...capitalGL.map((gain) {
-                final cost = gain['costBasis'] ?? 0.0;
-                final proceeds = gain['proceeds'] ?? 0.0;
-                final gainLoss = proceeds - cost;
-                final gainLossColor = gainLoss >= 0
-                    ? PdfColors.green
-                    : PdfColors.red;
-
-                return pw.TableRow(
+              if (capitalGL.isEmpty)
+                pw.TableRow(
                   children: [
-                    pw.Padding(
-                      child: pw.Text(gain['productName'] ?? '-'),
-                      padding: const pw.EdgeInsets.all(4),
-                    ),
-                    pw.Padding(
-                      child: pw.Text(_formatDate(gain['dateAcquired'])),
-                      padding: const pw.EdgeInsets.all(4),
-                    ),
-                    pw.Padding(
-                      child: pw.Text(_formatDate(gain['dateSold'])),
-                      padding: const pw.EdgeInsets.all(4),
-                    ),
-                    pw.Padding(
-                      child: pw.Text('\$${formatValue(cost)}'),
-                      padding: const pw.EdgeInsets.all(4),
-                    ),
-                    pw.Padding(
-                      child: pw.Text('\$${formatValue(proceeds)}'),
-                      padding: const pw.EdgeInsets.all(4),
-                    ),
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.all(4),
-                      child: pw.Text(
-                        '${gainLoss >= 0 ? '+' : '-'}\$${formatValue(gainLoss.abs())}',
-                        style: pw.TextStyle(color: gainLossColor),
+                    pw.Expanded(
+                      child: pw.Container(
+                        padding: const pw.EdgeInsets.symmetric(vertical: 12),
+                        decoration: pw.BoxDecoration(
+                          color: PdfColors.grey100,
+                          border: pw.Border.all(width: 0.5),
+                        ),
+                        alignment: pw.Alignment.center,
+                        child: pw.Text(
+                          'No Capital Gains/Losses to display.',
+                          style: pw.TextStyle(fontSize: 10),
+                        ),
                       ),
                     ),
-                    pw.Padding(
-                      child: pw.Text(gain['type'] ?? '-'),
-                      padding: const pw.EdgeInsets.all(4),
-                    ),
                   ],
-                );
-              }),
+                )
+              else ...[
+                // Map Data Rows
+                ...capitalGL.map((gain) {
+                  final cost = gain['costBasis'] ?? 0.0;
+                  final proceeds = gain['proceeds'] ?? 0.0;
+                  final gainLoss = proceeds - cost;
+                  final gainLossColor = gainLoss >= 0
+                      ? PdfColors.green
+                      : PdfColors.red;
+
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        child: pw.Text(gain['productName'] ?? '-'),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                      pw.Padding(
+                        child: pw.Text(_formatDate(gain['dateAcquired'])),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                      pw.Padding(
+                        child: pw.Text(_formatDate(gain['dateSold'])),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                      pw.Padding(
+                        child: pw.Text('\$${formatValue(cost)}'),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                      pw.Padding(
+                        child: pw.Text('\$${formatValue(proceeds)}'),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: pw.Text(
+                          '${gainLoss >= 0 ? '+' : '-'}\$${formatValue(gainLoss.abs())}',
+                          style: pw.TextStyle(color: gainLossColor),
+                        ),
+                      ),
+                      pw.Padding(
+                        child: pw.Text(gain['type'] ?? '-'),
+                        padding: const pw.EdgeInsets.all(4),
+                      ),
+                    ],
+                  );
+                }).toList(),
+
+                // Total Row
+                () {
+                  final totalGainLoss = capitalGL.fold<num>(
+                    0,
+                    (sum, gain) =>
+                        sum +
+                        ((gain['proceeds'] ?? 0.0) -
+                            (gain['costBasis'] ?? 0.0)),
+                  );
+                  final isPositive = totalGainLoss >= 0;
+                  final color = isPositive ? PdfColors.green : PdfColors.red;
+
+                  return pw.TableRow(
+                    decoration: pw.BoxDecoration(color: PdfColors.grey200),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: pw.Text(
+                          'Total Realized Gains/Losses',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
+                      for (int i = 0; i < 4; i++) pw.SizedBox(),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: pw.Text(
+                          '${isPositive ? '+' : '-'}\$${formatValue(totalGainLoss.abs())}',
+                          style: pw.TextStyle(
+                            color: color,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      pw.SizedBox(),
+                    ],
+                  );
+                }(),
+              ],
             ],
           ),
           pw.SizedBox(height: 16),
@@ -401,12 +615,15 @@ class _TaxReportPageState extends State<TaxReportScreen> {
               ),
               pw.SizedBox(height: 10),
               buildPdfBullet(
+                1,
                 "Cost basis includes original purchase price plus applicable fees",
               ),
               buildPdfBullet(
+                2,
                 "Short-term gains apply to assets held for one year or less",
               ),
               buildPdfBullet(
+                3,
                 "Long-term gains apply to assets held for more than one year",
               ),
 
