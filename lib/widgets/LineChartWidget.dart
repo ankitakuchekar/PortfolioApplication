@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:bold_portfolio/providers/portfolio_provider.dart';
 import 'package:bold_portfolio/widgets/PredictionPopup.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +48,83 @@ class MetalHoldingsLineChart extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  double getCurrentValue(MetalInOunces data) {
+    if (isTotalHoldingsView) {
+      return data.totalOunces;
+    } else if (isGoldView) {
+      return data.totalGoldOunces;
+    } else {
+      return data.totalSilverOunces;
+    }
+  }
+
+  double getPrediction(MetalInOunces data) {
+    if (isPredictionView) {
+      if (isTotalHoldingsView) {
+        return data.totalOunces;
+      } else if (isGoldView) {
+        final totalSilver = data.totalGoldOunces;
+        final totalSilverWorst = data.totalGoldWorstPrediction;
+        final totalSilverOptimal = data.totalGoldOptimalPrediction;
+        final maxGold = max(
+          totalSilver,
+          max(totalSilverWorst, totalSilverOptimal),
+        );
+        return maxGold;
+      } else {
+        final totalSilver = data.totalSilverOunces;
+        final totalSilverWorst = data.totalSilverWorstPrediction;
+        final totalSilverOptimal = data.totalSilverOptimalPrediction;
+        final maxSilver = max(
+          totalSilver,
+          max(totalSilverWorst, totalSilverOptimal),
+        );
+        return maxSilver;
+      }
+    } else {
+      if (isTotalHoldingsView) {
+        return data.totalOunces;
+      } else if (isGoldView) {
+        return data.totalGoldOunces;
+      } else {
+        return data.totalSilverOunces;
+      }
+    }
+  }
+
+  double getMinY(
+    List<MetalInOunces> combinedData,
+    List<MetalInOunces> predictionData,
+  ) {
+    final allValues = [
+      ...combinedData.map((d) => getCurrentValue(d)),
+      ...predictionData.map((d) => getPrediction(d)),
+    ].where((value) => value > 0).toList(); // Filter only positive values
+
+    final minValue = allValues.reduce(min);
+    print("minvalye ${minValue - 1} ${minValue < 0}");
+    return minValue - 1;
+  }
+
+  double getMaxY(
+    List<MetalInOunces> actualData,
+    List<MetalInOunces> predictionData,
+  ) {
+    final List<double> allValues;
+    print(" $isPredictionView");
+    if (isPredictionView) {
+      allValues = [
+        // ...actualData.map((d) => getCurrentValue(d)),
+        ...predictionData.map((d) => getPrediction(d)),
+      ];
+    } else {
+      allValues = [...actualData.map((d) => getCurrentValue(d))];
+    }
+    print(" ${allValues.reduce(max)}");
+
+    return allValues.reduce(max) + 1;
   }
 
   @override
@@ -463,91 +542,11 @@ class MetalHoldingsLineChart extends StatelessWidget {
                           );
                         },
                         majorGridLines: const MajorGridLines(width: 0.5),
-                        minimum:
-                            [
-                                  ...combinedData.map(
-                                    (d) => isTotalHoldingsView
-                                        ? d.totalOunces
-                                        : isGoldView
-                                        ? d.totalGoldOunces
-                                        : d.totalSilverOunces,
-                                  ),
-                                  ...predictionData.map(
-                                    (d) => isTotalHoldingsView
-                                        ? d.totalOunces
-                                        : isGoldView
-                                        ? d.totalGoldWorstPrediction
-                                        : d.totalSilverWorstPrediction,
-                                  ),
-                                ].reduce((a, b) => a < b ? a : b) <
-                                1
-                            ? [
-                                ...combinedData.map(
-                                  (d) => isTotalHoldingsView
-                                      ? d.totalOunces
-                                      : isGoldView
-                                      ? d.totalGoldOunces
-                                      : d.totalSilverOunces,
-                                ),
-                                ...predictionData.map(
-                                  (d) => isTotalHoldingsView
-                                      ? d.totalOunces
-                                      : isGoldView
-                                      ? d.totalGoldWorstPrediction
-                                      : d.totalSilverWorstPrediction,
-                                ),
-                              ].reduce((a, b) => a < b ? a : b)
-                            : [
-                                    ...combinedData.map(
-                                      (d) => isTotalHoldingsView
-                                          ? d.totalOunces
-                                          : isGoldView
-                                          ? d.totalGoldOunces
-                                          : d.totalSilverOunces,
-                                    ),
-                                    ...predictionData.map(
-                                      (d) => isTotalHoldingsView
-                                          ? d.totalOunces
-                                          : isGoldView
-                                          ? d.totalGoldWorstPrediction
-                                          : d.totalSilverWorstPrediction,
-                                    ),
-                                  ].reduce((a, b) => a < b ? a : b) -
-                                  1,
-
-                        maximum:
-                            [
-                              ...combinedData.map((d) {
-                                return isTotalHoldingsView
-                                    ? d.totalOunces
-                                    : isGoldView
-                                    ? d.totalGoldOunces
-                                    : d.totalSilverOunces;
-                              }),
-                              ...predictionData.map((d) {
-                                // Determine which is greater: totalGoldOptimalPrediction or totalSilverOptimalPrediction
-                                double totalSilver =
-                                    (d.totalSilverWorstPrediction >
-                                        d.totalSilverOptimalPrediction)
-                                    ? d.totalSilverWorstPrediction
-                                    : d.totalSilverOptimalPrediction;
-                                double totalGold =
-                                    (d.totalGoldOptimalPrediction >
-                                        d.totalGoldWorstPrediction)
-                                    ? d.totalGoldOptimalPrediction
-                                    : d.totalGoldWorstPrediction;
-
-                                // Return the necessary value based on the view
-                                return isTotalHoldingsView
-                                    ? d.totalOunces
-                                    : isGoldView
-                                    ? totalGold
-                                    : totalSilver;
-                              }),
-                            ].reduce((a, b) => a > b ? a : b) +
-                            1,
+                        // Set the minimum value using the getMinY function
+                        minimum: getMinY(combinedData, predictionData),
+                        // Set the maximum value using the getMaxY function
+                        maximum: getMaxY(actualData, predictionData),
                       ),
-
                       series: <CartesianSeries<MetalInOunces, DateTime>>[
                         // Actual Silver
                         AreaSeries<MetalInOunces, DateTime>(
