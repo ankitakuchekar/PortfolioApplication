@@ -60,7 +60,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
     }
   }
 
-  double getPrediction(MetalInOunces data) {
+  double getPredictionMax(MetalInOunces data) {
     if (isPredictionView) {
       if (isTotalHoldingsView) {
         return data.totalOunces;
@@ -94,17 +94,81 @@ class MetalHoldingsLineChart extends StatelessWidget {
     }
   }
 
+  double getPredictionMin(MetalInOunces data) {
+    if (isPredictionView) {
+      if (isTotalHoldingsView) {
+        return data.totalOunces;
+      } else if (isGoldView) {
+        final totalSilver = data.totalGoldOunces;
+        final totalSilverWorst = data.totalGoldWorstPrediction > 0
+            ? data.totalGoldWorstPrediction
+            : totalSilver;
+        final totalSilverOptimal = data.totalGoldOptimalPrediction > 0
+            ? data.totalGoldOptimalPrediction
+            : totalSilver;
+        final maxGold = min(
+          totalSilver,
+          min(totalSilverWorst, totalSilverOptimal),
+        );
+        return maxGold;
+      } else {
+        final totalSilver = data.totalSilverOunces;
+        final totalSilverWorst = data.totalSilverWorstPrediction;
+        final totalSilverOptimal = data.totalSilverOptimalPrediction;
+        final maxSilver = min(
+          totalSilver,
+          min(totalSilverWorst, totalSilverOptimal),
+        );
+        return maxSilver;
+      }
+    } else {
+      if (isTotalHoldingsView) {
+        return data.totalOunces;
+      } else if (isGoldView) {
+        return data.totalGoldOunces;
+      } else {
+        return data.totalSilverOunces;
+      }
+    }
+  }
+
   double getMinY(
-    List<MetalInOunces> combinedData,
+    List<MetalInOunces> actualData,
     List<MetalInOunces> predictionData,
   ) {
-    final allValues = [
-      ...combinedData.map((d) => getCurrentValue(d)),
-      ...predictionData.map((d) => getPrediction(d)),
-    ].where((value) => value > 0).toList(); // Filter only positive values
+    final List<double> allValues;
+    final actualDataValue = [
+      ...actualData
+          .where((d) => getCurrentValue(d) < 0)
+          .map((d) => getCurrentValue(d)),
+    ];
+    // final predictionDataValue = [
+    //   ...predictionData.map((d) => getPredictionMin(d) ),
+    // ];
+    if (isPredictionView) {
+      allValues = [
+        ...actualData
+            .where((d) => getCurrentValue(d) > 0)
+            .map((d) => getCurrentValue(d)),
+
+        // ...actualData.map((d) => getCurrentValue(d)),
+        ...predictionData.map((d) => getPredictionMin(d)),
+      ];
+      // allValues = [
+      //   ...actualData.map((d) => getCurrentValue(d)),
+      //   ...predictionData.map((d) => getPredictionMin(d)),
+      // ].where((value) => value > 0).toList(); // Filter only positive values
+    } else {
+      allValues = [
+        ...actualData
+            .where((d) => getCurrentValue(d) > 0)
+            .map((d) => getCurrentValue(d)),
+      ];
+    }
+
+    // Filter only positive values
 
     final minValue = allValues.reduce(min);
-    print("minvalye ${minValue - 1} ${minValue < 0}");
     return minValue - 1;
   }
 
@@ -113,17 +177,14 @@ class MetalHoldingsLineChart extends StatelessWidget {
     List<MetalInOunces> predictionData,
   ) {
     final List<double> allValues;
-    print(" $isPredictionView");
     if (isPredictionView) {
       allValues = [
-        // ...actualData.map((d) => getCurrentValue(d)),
-        ...predictionData.map((d) => getPrediction(d)),
+        ...actualData.map((d) => getCurrentValue(d)),
+        ...predictionData.map((d) => getPredictionMax(d)),
       ];
     } else {
       allValues = [...actualData.map((d) => getCurrentValue(d))];
     }
-    print(" ${allValues.reduce(max)}");
-
     return allValues.reduce(max) + 1;
   }
 
@@ -543,7 +604,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
                         },
                         majorGridLines: const MajorGridLines(width: 0.5),
                         // Set the minimum value using the getMinY function
-                        minimum: getMinY(combinedData, predictionData),
+                        minimum: getMinY(actualData, predictionData),
                         // Set the maximum value using the getMaxY function
                         maximum: getMaxY(actualData, predictionData),
                       ),
