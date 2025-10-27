@@ -492,8 +492,8 @@ class _DashboardScreenState extends State<BullionDashboard> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     AnimatedCounter(
-                      value: dayProfitLoss,
-                      prefix: dayProfitLoss >= 0 ? '+\$' : '\$',
+                      value: dayProfitLoss.abs(),
+                      prefix: dayProfitLoss >= 0 ? '+\$' : '-\$',
                       style: TextStyle(
                         fontWeight: FontWeight.w200,
                         color: dayProfitLoss >= 0 ? Colors.green : Colors.red,

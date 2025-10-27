@@ -49,6 +49,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
       await provider.refreshDataFromAPIs(
         frequency,
       ); // Or refreshDataFromAPIs() depending on what you want
+      _isLoading = false;
     } catch (error) {
       debugPrint('Error fetching chart data: $error');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -86,9 +87,13 @@ class _GraphsScreenState extends State<GraphsScreen> {
     }
   }
 
+  bool _isLoading = false;
+
   // Method to toggle the chart view and call the API
   void _toggleChartType(bool value) async {
     setState(() {
+      _isLoading = true; // Show loading indicator
+
       _isPredictionView = value;
     });
 
@@ -368,15 +373,19 @@ class _GraphsScreenState extends State<GraphsScreen> {
                         : (selectedTab == 'Silver Holdings' ||
                               selectedTab == 'Gold Holdings' ||
                               selectedTab == 'Total Holdings')
-                        ? MetalHoldingsLineChart(
-                            metalInOuncesData: metalInOuncesData,
-                            onToggleView: _toggleChartType,
-                            isPredictionView: _isPredictionView,
-                            isGoldView: selectedTab == 'Gold Holdings',
-                            isTotalHoldingsView:
-                                selectedTab == 'Total Holdings',
-                            selectedTab: selectedTab,
-                          )
+                        ? _isLoading
+                              ? Center(
+                                  child: CircularProgressIndicator(),
+                                ) // Show loading spinner while loading
+                              : MetalHoldingsLineChart(
+                                  metalInOuncesData: metalInOuncesData,
+                                  onToggleView: _toggleChartType,
+                                  isPredictionView: _isPredictionView,
+                                  isGoldView: selectedTab == 'Gold Holdings',
+                                  isTotalHoldingsView:
+                                      selectedTab == 'Total Holdings',
+                                  selectedTab: selectedTab,
+                                )
                         : Text(
                             '$selectedTab View Coming Soon',
                             style: const TextStyle(
