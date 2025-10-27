@@ -82,7 +82,6 @@ class _CommonDrawerState extends State<CommonDrawer> {
 
     try {
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
-      print("indied");
       bool result = await updatePortfolioSettings(
         customerId: int.tryParse(userId ?? '0') ?? 0,
         settings: provider.portfolioData!.data[0].portfolioSettings,

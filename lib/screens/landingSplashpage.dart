@@ -21,8 +21,10 @@ class _LandingPageState extends State<LandingPage>
       duration: const Duration(seconds: 2),
     );
 
-    _fadeAnimation = Tween<double>(begin: 0, end: 1)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+    _fadeAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
 
     _controller.forward();
   }
@@ -121,21 +123,30 @@ class _LandingPageState extends State<LandingPage>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: const [
                               FeatureCard(
-                                icon: Text('🔒', style: TextStyle(fontSize: 28)),
+                                icon: Text(
+                                  '🔒',
+                                  style: TextStyle(fontSize: 28),
+                                ),
                                 title: 'Secure & Simple Experience',
                                 description:
                                     'Your data is protected with an easy-to-use interface.',
                               ),
                               SizedBox(height: 8),
                               FeatureCard(
-                                icon: Text('📊', style: TextStyle(fontSize: 28)),
+                                icon: Text(
+                                  '📊',
+                                  style: TextStyle(fontSize: 28),
+                                ),
                                 title: 'Real-Time Investment Tracking',
                                 description:
                                     'See your gold and silver’s live value anytime.',
                               ),
                               SizedBox(height: 8),
                               FeatureCard(
-                                icon: Text('📈', style: TextStyle(fontSize: 28)),
+                                icon: Text(
+                                  '📈',
+                                  style: TextStyle(fontSize: 28),
+                                ),
                                 title: 'Add & Compare Predictions',
                                 description:
                                     'Forecast your investments and compare with market values.',
@@ -163,11 +174,11 @@ class _LandingPageState extends State<LandingPage>
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            icon: const Icon(Icons.phone_android,
-                                color: Colors.black),
+                            // icon: const Icon(Icons.phone_android,
+                            //     color: Colors.black),
                             label: FittedBox(
                               child: Text(
-                                'Start Tracking Your Investments',
+                                'Track Portfolio',
                                 style: TextStyle(
                                   fontSize: scaleFont(17, screenWidth),
                                   fontWeight: FontWeight.w600,
@@ -225,18 +236,18 @@ class FeatureCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: TextStyle(
-                          fontSize: titleFont,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: titleFont,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: TextStyle(
-                      fontSize: descFont,
-                      color: Colors.white70,
-                    ),
+                    style: TextStyle(fontSize: descFont, color: Colors.white70),
                   ),
                 ],
               ),

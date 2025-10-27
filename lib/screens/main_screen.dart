@@ -3,6 +3,7 @@ import 'package:bold_portfolio/screens/landingSplashpage.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/widgets/common_app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/portfolio_provider.dart';
 import '../utils/app_colors.dart';
@@ -65,13 +66,20 @@ class MainScreenState extends State<MainScreen> {
 
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => MainScreen()),
-          (Route<dynamic> route) => false,
-        );
-
-        return false; // Prevent default back behavior
+        // Check if we are on the MainScreen (the first screen in your bottom navigation)
+        if (_currentIndex == 0) {
+          // Close the app if on the MainScreen
+          SystemNavigator.pop(); // This will close the app
+          return false; // Prevent default back behavior
+        } else {
+          // Navigate to MainScreen if not on MainScreen
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => MainScreen()),
+            (Route<dynamic> route) => false,
+          );
+          return false; // Prevent default back behavior
+        }
       },
       child: Scaffold(
         body: _currentScreen, // ✅ Show current screen
