@@ -199,13 +199,14 @@ class MetalHoldingsLineChart extends StatelessWidget {
         .toList();
 
     // Create a new list for prediction data that connects to the actual data.
-    final List<MetalInOunces> connectedPredictionData = List.from(
-      predictionData,
-    );
-    if (actualData.isNotEmpty && connectedPredictionData.isNotEmpty) {
-      // Insert the last actual point at the beginning of the prediction data to join the charts.
-      connectedPredictionData.insert(0, actualData.last);
-    }
+    final MetalInOunces lastActualPoint = actualData.last;
+
+    // 2. Create the connected list: [last historical point, ...all prediction points]
+    // This assumes predictionData does NOT already contain the last actual point.
+    List<MetalInOunces> connectedPredictionData = [
+      lastActualPoint,
+      ...predictionData,
+    ];
 
     Color predictionLineColor = const Color(
       0xFF97FF00,

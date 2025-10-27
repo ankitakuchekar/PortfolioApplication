@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'main_screen.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+// import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -159,57 +159,57 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isLoading = false;
 
-  Future<void> _handleGoogleSignIn() async {
-    setState(() {
-      _isLoading = true;
-    });
+  // Future<void> _handleGoogleSignIn() async {
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
 
-    final user = await GoogleSignInApi.login();
-    setState(() {
-      _isLoading = false;
-    });
-    print("User from google: $user");
-    print("email ${user?['email']}");
+  //   final user = await GoogleSignInApi.login();
+  //   setState(() {
+  //     _isLoading = false;
+  //   });
+  //   print("User from google: $user");
+  //   print("email ${user?['email']}");
 
-    if (user != null) {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  //   if (user != null) {
+  //     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-      final success = await authProvider.login(
-        user['email'],
-        "",
-        true,
-        user['googleToken'],
-        user['firstName'],
-        user['lastName'],
-        user['profilePhoto'],
-      );
+  //     final success = await authProvider.login(
+  //       user['email'],
+  //       "",
+  //       true,
+  //       user['googleToken'],
+  //       user['firstName'],
+  //       user['lastName'],
+  //       user['profilePhoto'],
+  //     );
 
-      if (success && mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
-      } else if (mounted) {
-        // Show error toast/snackbar
-        final errorMessage =
-            authProvider.errorMessage ??
-            'Login failed,Username or password is incorrect';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.redAccent,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Google sign-in failed.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
+  //     if (success && mounted) {
+  //       Navigator.of(context).pushReplacement(
+  //         MaterialPageRoute(builder: (context) => const MainScreen()),
+  //       );
+  //     } else if (mounted) {
+  //       // Show error toast/snackbar
+  //       final errorMessage =
+  //           authProvider.errorMessage ??
+  //           'Login failed,Username or password is incorrect';
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text(errorMessage),
+  //           backgroundColor: Colors.redAccent,
+  //           behavior: SnackBarBehavior.floating,
+  //         ),
+  //       );
+  //     }
+  //   } else {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('Google sign-in failed.'),
+  //         backgroundColor: Colors.red,
+  //       ),
+  //     );
+  //   }
+  // }
 
   // void _showRecaptcha() {
   //   showModalBottomSheet(
@@ -601,40 +601,40 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 24),
 
-                        GestureDetector(
-                          onTap: _handleGoogleSignIn,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 16,
-                            ),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey[300]!),
-                              borderRadius: BorderRadius.circular(8),
-                              color: Colors.white,
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SvgPicture.network(
-                                  'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                                  width: 20,
-                                  height: 20,
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Sign up with Google',
-                                  style: TextStyle(
-                                    color: Color(0xFF00C566),
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
+                        // GestureDetector(
+                        //   onTap: _handleGoogleSignIn,
+                        //   child: Container(
+                        //     padding: EdgeInsets.symmetric(
+                        //       vertical: 12,
+                        //       horizontal: 16,
+                        //     ),
+                        //     decoration: BoxDecoration(
+                        //       border: Border.all(color: Colors.grey[300]!),
+                        //       borderRadius: BorderRadius.circular(8),
+                        //       color: Colors.white,
+                        //     ),
+                        //     child: Row(
+                        //       mainAxisSize: MainAxisSize.min,
+                        //       children: [
+                        //         SvgPicture.network(
+                        //           'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                        //           width: 20,
+                        //           height: 20,
+                        //         ),
+                        //         SizedBox(width: 8),
+                        //         Text(
+                        //           'Sign up with Google',
+                        //           style: TextStyle(
+                        //             color: Color(0xFF00C566),
+                        //             fontWeight: FontWeight.w500,
+                        //             fontSize: 16,
+                        //           ),
+                        //         ),
+                        //       ],
+                        //     ),
+                        //   ),
+                        // ),
+                        // const SizedBox(height: 16),
                         TextButton(
                           onPressed: () {
                             Navigator.push(

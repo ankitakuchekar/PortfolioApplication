@@ -246,11 +246,11 @@ class _GraphsScreenState extends State<GraphsScreen> {
                         onPressed: () {
                           setState(() {
                             selectedTab = label;
-                            if (selectedTab == 'Candle Chart') {
-                              frequency = '1D';
-                            } else {
-                              frequency = '3M';
-                            }
+                            // if (selectedTab == 'Candle Chart') {
+                            //   frequency = '1D';
+                            // } else {
+                            frequency = '3M';
+                            // }
                           });
                         },
                         style: ElevatedButton.styleFrom(
@@ -276,8 +276,9 @@ class _GraphsScreenState extends State<GraphsScreen> {
                 ),
                 if (selectedTab == 'Total Holdings' ||
                     selectedTab == 'Gold Holdings' ||
-                    selectedTab == 'Silver Holdings' ||
-                    selectedTab == 'Candle Chart')
+                    selectedTab == 'Silver Holdings'
+                //  || selectedTab == 'Candle Chart'
+                )
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 5),
                     child: Wrap(

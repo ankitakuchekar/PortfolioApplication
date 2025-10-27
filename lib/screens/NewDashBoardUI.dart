@@ -603,6 +603,7 @@ class _DashboardScreenState extends State<BullionDashboard> {
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
+                    decoration: TextDecoration.underline,
                   ),
                 ),
                 const SizedBox(height: 4),
