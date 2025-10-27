@@ -139,7 +139,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
     final List<double> allValues;
     final actualDataValue = [
       ...actualData
-          .where((d) => getCurrentValue(d) < 0)
+          .where((d) => getCurrentValue(d) <= 0)
           .map((d) => getCurrentValue(d)),
     ];
     // final predictionDataValue = [
@@ -148,7 +148,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
     if (isPredictionView) {
       allValues = [
         ...actualData
-            .where((d) => getCurrentValue(d) > 0)
+            .where((d) => getCurrentValue(d) >= 0)
             .map((d) => getCurrentValue(d)),
 
         // ...actualData.map((d) => getCurrentValue(d)),
@@ -161,7 +161,7 @@ class MetalHoldingsLineChart extends StatelessWidget {
     } else {
       allValues = [
         ...actualData
-            .where((d) => getCurrentValue(d) > 0)
+            .where((d) => getCurrentValue(d) >= 0)
             .map((d) => getCurrentValue(d)),
       ];
     }
