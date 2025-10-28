@@ -93,14 +93,13 @@ class _GraphsScreenState extends State<GraphsScreen> {
   void _toggleChartType(bool value) async {
     setState(() {
       _isLoading = true; // Show loading indicator
-
       _isPredictionView = value;
     });
 
     // API request data based on the current toggle state
     final requestData = {
       "customerId": 98937,
-      "showPrediction": value, // Toggle prediction view
+      "showPrediction": value ? false : true, // Toggle prediction view
       "showActualPrice": true,
       "showMetalPrice": false,
       "showVdo": false,
@@ -184,7 +183,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
           final portfolioSettings = portfolioData.data[0].portfolioSettings;
           showGoldPrediction = portfolioSettings.showGoldPrediction;
           showSilverPrediction = portfolioSettings.showSilverPrediction;
-          showTotalPrediction = portfolioSettings.showTotalPrediction;
+          showTotalPrediction = portfolioSettings.showPrediction;
 
           if (selectedTab == 'Gold Holdings') {
             _isPredictionView = !showGoldPrediction;

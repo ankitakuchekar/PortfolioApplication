@@ -47,6 +47,15 @@ class _HoldingCardState extends State<HoldingCard> {
   @override
   Widget build(BuildContext context) {
     final String redirectionUrl = dotenv.env['URL_Redirection'] ?? '';
+    final _url =
+        '${redirectionUrl}product/${widget.holding.productId}/${Uri.encodeComponent(widget.holding.name)}';
+
+    Future<void> _launchUrl() async {
+      final Uri uri = Uri.parse(_url);
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        throw Exception('Could not launch $_url');
+      }
+    }
 
     final selectedImage =
         "https://res.cloudinary.com/bold-pm/image/upload/q_auto:good/Graphics/no_img_preview_product.png";
@@ -243,20 +252,7 @@ class _HoldingCardState extends State<HoldingCard> {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: widget.holding.isBold
-                      ? () async {
-                          final url = Uri.parse(
-                            'https://www.bullionupdates.com/product/${widget.holding.productId}/${widget.holding.name}',
-                          );
-                          if (await canLaunchUrl(url)) {
-                            await launchUrl(url);
-                            _isLoading = true;
-                          } else {
-                            _isLoading = false;
-                            throw 'Could not launch $url';
-                          }
-                        }
-                      : null,
+                  onPressed: _launchUrl,
                   icon: const Icon(Icons.arrow_upward),
                   label: const Text("Buy"),
                   style: ElevatedButton.styleFrom(
