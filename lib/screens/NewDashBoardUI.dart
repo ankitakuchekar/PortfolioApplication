@@ -57,9 +57,9 @@ class _DashboardScreenState extends State<BullionDashboard> {
 
   String formatPrice(num price) {
     final format = NumberFormat(
-      '#,##0',
+      '#,##0.00', // This allows for 2 decimal places
       'en_US',
-    ); // Format without currency symbol
+    );
     return format.format(price);
   }
 
