@@ -267,7 +267,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
     final productName = productController.text.trim();
     final metal = selectedProduct?['metal'] ?? '';
     final purchaseCost = double.tryParse(purchaseCostController.text) ?? 0;
-    final ounces = selectedProduct?['ouncesPerUnit'] ?? ouncesController.text;
+    final ounces = selectedProduct?['ounces'] ?? ouncesController.text;
 
     if (purchaseDate == null || metal.isEmpty) return;
 
@@ -318,7 +318,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
     setState(() {
       selectedProduct = {
         ...?selectedProduct,
-        'ouncesPerUnit': 0, // Reset to the default value, e.g., 0
+        'ounces': 0, // Reset to the default value, e.g., 0
       };
     });
   }
@@ -353,8 +353,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
       "silverSpot": selectedProduct?['silverSpot'] ?? 0,
       "source": selectedDealer,
       "metal": selectedProduct?['metal'] ?? "",
-      "ouncesPerUnit":
-          selectedProduct?['ouncesPerUnit'] ?? ouncesController.text,
+      "ouncesPerUnit": selectedProduct?['ounces'] ?? ouncesController.text,
       "productName": productController.text,
       "sourceName": selectedDealer == 'Not Purchased on Bold'
           ? dealerNameController.text
@@ -641,10 +640,12 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                   setState(() {
                                     _isSelectingProduct = true;
                                     productController.text = prod['name'] ?? '';
-                                    // selectedProduct = prod;
+                                    selectedProduct = prod;
                                     searchResults.clear();
                                     isSearching = false;
-                                    selectedProduct?['ouncesPerUnit'] =
+                                    ouncesController.text =
+                                        (prod['ounces'] ?? '0').toString();
+                                    selectedProduct?['ounces'] =
                                         prod['ounces'] ?? ouncesController.text;
                                   });
                                   _productFocusNode.unfocus();
@@ -778,8 +779,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                   setState(() {
                                     selectedProduct = {
                                       ...?selectedProduct,
-                                      'ouncesPerUnit':
-                                          double.tryParse(val) ?? 0,
+                                      'ounces': double.tryParse(val) ?? 0,
                                     };
                                   });
                                   if (purchaseDate != null) getPremiumPrice();
