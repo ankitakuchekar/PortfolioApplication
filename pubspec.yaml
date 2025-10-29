@@ -37,6 +37,7 @@ dependencies:
   flutter_native_splash: ^2.3.10
   provider: ^6.1.1
   syncfusion_flutter_charts: ^30.2.4
+  flutter_background_service_ios: ^5.0.3  # Update to this version or the latest available version
   # chart_engine: ^2.1.1
   # flutter_typeahead: ^5.2.0
   # flutter_keyboard_visibility: ^6.0.0
