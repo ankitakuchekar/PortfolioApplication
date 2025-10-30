@@ -341,10 +341,11 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
     final transactionDate = purchaseDate != null
         ? '${purchaseDate!.month.toString().padLeft(2, '0')}/${purchaseDate!.day.toString().padLeft(2, '0')}/${purchaseDate!.year}'
         : '';
-
     final payload = {
       "customerId": 98937,
-      "productId": selectedProduct?['id'] ?? 0,
+      "productId": selectedDealer == 'Not Purchased on Bold'
+          ? 0
+          : selectedProduct?['id'] ?? 0,
       "transactionDate": transactionDate,
       "transactionQuantity": int.tryParse(qtyController.text) ?? 1,
       "productUnitPrice": double.tryParse(purchaseCostController.text) ?? 0.0,
