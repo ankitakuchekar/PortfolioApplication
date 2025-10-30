@@ -188,11 +188,16 @@ class _ProductLifecycleScreenState extends State<ProductLifecycleScreen> {
               (_productLife?.investment.isNotEmpty ?? false)
               ? _productLife!.investment[0] as Map<String, dynamic>
               : {};
-
-          final double currentValue =
-              (currentInvestment['totalSilverCurrent'] ?? 0).toDouble();
-          final double totalInvested =
-              (currentInvestment['totalSilverInvested'] ?? 0).toDouble();
+          final productsForPortfolios =
+              (_productLife?.productsForPortfolio[0] ?? []);
+          print("sdfsdfs ${productsForPortfolios} ");
+          final metalType = productsForPortfolios['metal'];
+          final double currentValue = metalType == 'Gold'
+              ? (currentInvestment['totalGoldCurrent'] ?? 0).toDouble()
+              : (currentInvestment['totalSilverCurrent'] ?? 0).toDouble();
+          final double totalInvested = metalType == 'Gold'
+              ? (currentInvestment['totalGoldInvested'] ?? 0).toDouble()
+              : (currentInvestment['totalSilverInvested'] ?? 0).toDouble();
           final double difference = currentValue - totalInvested;
           final bool isProfit = difference >= 0;
 
@@ -202,9 +207,6 @@ class _ProductLifecycleScreenState extends State<ProductLifecycleScreen> {
           final Color profitColor = isProfit ? Colors.green : Colors.red;
           final selectedImage =
               "https://res.cloudinary.com/bold-pm/image/upload/q_auto:good/Graphics/no_img_preview_product.png";
-          final productsForPortfolios =
-              (_productLife?.productsForPortfolio[0] ?? []);
-          print("sdfsdfs ${productsForPortfolios} ");
 
           final sour = productsForPortfolios['sourceName'];
           print("sdfsdf $sour");
@@ -336,9 +338,9 @@ class _ProductLifecycleScreenState extends State<ProductLifecycleScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                "Silver Performance Chart",
-                                style: TextStyle(
+                              Text(
+                                "${metalType == 'Gold' ? 'Gold' : 'Silver'} Performance Chart",
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                   color: Color(0xFF1E293B), // Dark text
