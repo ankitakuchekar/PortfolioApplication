@@ -737,10 +737,51 @@ class _TaxReportPageState extends State<TaxReportScreen> {
         padding: const EdgeInsets.all(16.0),
         children: [
           if (productsForPortfolio.isEmpty) ...[
-            const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+
+              children: [
+                // Back Button - Positioned at the top
+                TextButton.icon(
+                  onPressed: () {
+                    final mainState = context
+                        .findAncestorStateOfType<MainScreenState>();
+                    mainState?.onNavigationTap(0);
+                  },
+                  icon: const Icon(Icons.arrow_back),
+                  label: Text(
+                    'Back',
+                    style: TextStyle(
+                      color: const Color.fromRGBO(0, 0, 0, 1),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                // Spacer to separate the Back button from the center content
+                SizedBox(height: 20), // Adjust this value for spacing
+                // Center the "No data available" message vertically and horizontally
+                Container(
+                  padding: EdgeInsets.all(10), // Padding inside the container
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200], // Light gray background
+                    borderRadius: BorderRadius.circular(8), // Rounded corners
+                    border: Border.all(
+                      color: Colors.grey,
+                      width: 1,
+                    ), // Border color and width
+                  ),
+                  child: Center(
+                    child: Text(
+                      "No data available",
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.black, // Black text color
+                        fontWeight: FontWeight.bold, // Bold text
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ] else ...[
             // Move Download PDF and Year Dropdown to the top
