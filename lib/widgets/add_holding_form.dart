@@ -795,7 +795,10 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                             Expanded(
                               child: TextFormField(
                                 controller: purchaseCostController,
-                                keyboardType: TextInputType.number,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 decoration: InputDecoration(
                                   label: RichText(
                                     text: const TextSpan(
