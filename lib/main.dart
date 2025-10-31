@@ -57,7 +57,7 @@ class BoldPortfolioApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PortfolioProvider()),
       ],
       child: MaterialApp(
-        title: 'BOLD Bullion Portfolio',
+        title: 'Bold Bullion Portfolio',
         theme: AppTheme.lightTheme,
         home: const SplashScreen(),
         debugShowCheckedModeBanner: false,
