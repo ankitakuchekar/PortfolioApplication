@@ -60,8 +60,5 @@
   <false/>
   <key>UIFileSharingEnabled</key>
   <true/> 
-  <key>ITSAppUsesNonExemptEncryption</key>
-<true/> <!-- or <false/> if your app uses exempt encryption -->
-
 </dict>
 </plist>
