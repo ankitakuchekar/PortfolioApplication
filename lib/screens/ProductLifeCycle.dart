@@ -211,6 +211,10 @@ class _ProductLifecycleScreenState extends State<ProductLifecycleScreen> {
           final sour = productsForPortfolios['sourceName'];
           print("sdfsdf $sour");
           final transactionProducts = (_productLife?.transactions ?? []);
+          String formatPrice(num price) {
+            final format = NumberFormat.simpleCurrency(locale: 'en_US');
+            return format.format(price);
+          }
 
           return SingleChildScrollView(
             child: Column(
@@ -291,15 +295,15 @@ class _ProductLifecycleScreenState extends State<ProductLifecycleScreen> {
 
                           _buildValueRow(
                             "Current Value",
-                            "\$${currentValue.toStringAsFixed(2)}",
+                            formatPrice(currentValue),
                           ),
                           _buildValueRow(
                             "Cost Basis",
-                            "\$${totalInvested.toStringAsFixed(2)}",
+                            formatPrice(totalInvested),
                           ),
                           _buildValueRow(
                             "Profit/Loss",
-                            "${isProfit ? '+' : '-'}\$${difference.abs().toStringAsFixed(2)} ($profitLossPercentStr)",
+                            "${isProfit ? '+' : '-'}${formatPrice(difference.abs())} ($profitLossPercentStr)",
                             color: profitColor,
                           ),
                         ],
@@ -762,7 +766,10 @@ class _ProductLifecycleScreenState extends State<ProductLifecycleScreen> {
                                                               horizontal: 8,
                                                             ),
                                                         child: Text(
-                                                          "\$${(tx['transactionPrice'] ?? 0).toString()}",
+                                                          (formatPrice(
+                                                            tx['transactionPrice'] ??
+                                                                0,
+                                                          )),
                                                           style:
                                                               const TextStyle(
                                                                 fontWeight:
