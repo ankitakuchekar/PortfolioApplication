@@ -219,9 +219,7 @@ class _ProductLifecycleScreenState extends State<ProductLifecycleScreen> {
                 // Back Button
                 TextButton.icon(
                   onPressed: () {
-                    final mainState = context
-                        .findAncestorStateOfType<MainScreenState>();
-                    mainState?.onNavigationTap(2);
+                    Navigator.pop(context);
                   },
                   icon: const Icon(Icons.arrow_back),
                   label: Text(

@@ -103,15 +103,16 @@ class _HoldingCardState extends State<HoldingCard> {
                   children: [
                     InkWell(
                       onTap: () {
-                        final mainState = context
-                            .findAncestorStateOfType<MainScreenState>();
-                        mainState?.navigateToScreen(
-                          ProductLifecycleScreen(
-                            imageUrl: widget.holding.productImage,
-                            title: widget.holding.assetList,
-                            productId: widget.holding.productId,
-                            frequency: '3M',
-                            metal: widget.holding.metal,
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ProductLifecycleScreen(
+                              imageUrl: widget.holding.productImage,
+                              title: widget.holding.assetList,
+                              productId: widget.holding.productId,
+                              frequency: '3M',
+                              metal: widget.holding.metal,
+                            ),
                           ),
                         );
                       },

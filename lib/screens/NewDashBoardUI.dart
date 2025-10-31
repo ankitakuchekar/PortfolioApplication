@@ -564,26 +564,28 @@ class _DashboardScreenState extends State<BullionDashboard> {
       onTap: isHoldingDataEmpty
           ? null
           : () {
-              final mainState = context
-                  .findAncestorStateOfType<MainScreenState>();
-              mainState?.navigateToScreen(
-                HoldingDetailScreen(
-                  metal: metal,
-                  currentValue: currentValueDouble,
-                  totalPL: profit,
-                  percentPL: profitPct,
-                  dayPL: dayProfit,
-                  percentDayPL: dayPercentProfit,
-                  purchaseCost: purchaseValueDouble,
-                  holdings: holdingData.map((holding) {
-                    return PortfolioItem(
-                      name: holding.name,
-                      imageUrl: holding.productImage,
-                      quantity: holding.totalQtyOrdered,
-                      purchasePrice: holding.avgPrice,
-                      currentPrice: holding.currentMetalValue,
-                    );
-                  }).toList(),
+              // ✅ CORRECT
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HoldingDetailScreen(
+                    metal: metal,
+                    currentValue: currentValueDouble,
+                    totalPL: profit,
+                    percentPL: profitPct,
+                    dayPL: dayProfit,
+                    percentDayPL: dayPercentProfit,
+                    purchaseCost: purchaseValueDouble,
+                    holdings: holdingData.map((holding) {
+                      return PortfolioItem(
+                        name: holding.name,
+                        imageUrl: holding.productImage,
+                        quantity: holding.totalQtyOrdered,
+                        purchasePrice: holding.avgPrice,
+                        currentPrice: holding.currentMetalValue,
+                      );
+                    }).toList(),
+                  ),
                 ),
               );
             },

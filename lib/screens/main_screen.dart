@@ -1,7 +1,4 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
-import 'package:bold_portfolio/screens/landingSplashpage.dart';
-import 'package:bold_portfolio/services/auth_service.dart';
-import 'package:bold_portfolio/widgets/common_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -42,6 +39,35 @@ class MainScreenState extends State<MainScreen> {
     });
   }
 
+  DateTime? lastPressed;
+
+  Future<bool> _onWillPop() async {
+    // If not on dashboard, go back to dashboard first
+    if (_currentIndex != 0) {
+      setState(() {
+        _currentIndex = 0;
+        _currentScreen = _screens[0];
+      });
+      return false; // don’t exit yet
+    }
+
+    // If already on dashboard, check for double press
+    final now = DateTime.now();
+    final backButtonHasNotBeenPressedTwice =
+        lastPressed == null ||
+        now.difference(lastPressed!) > const Duration(seconds: 2);
+
+    if (backButtonHasNotBeenPressedTwice) {
+      lastPressed = now;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Press back again to exit')));
+      return false; // prevent exit first time
+    }
+    SystemNavigator.pop();
+    return true; // exit app on second press
+  }
+
   // ✅ Used to show screens like HoldingDetailScreen
   void navigateToScreen(Widget screen) {
     setState(() {
@@ -65,22 +91,7 @@ class MainScreenState extends State<MainScreen> {
         investmentData.customerId == 0 && portfolioSettings.customerId == 0;
 
     return WillPopScope(
-      onWillPop: () async {
-        // Check if we are on the MainScreen (the first screen in your bottom navigation)
-        if (_currentIndex == 0) {
-          // Close the app if on the MainScreen
-          SystemNavigator.pop(); // This will close the app
-          return false; // Prevent default back behavior
-        } else {
-          // Navigate to MainScreen if not on MainScreen
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => MainScreen()),
-            (Route<dynamic> route) => false,
-          );
-          return false; // Prevent default back behavior
-        }
-      },
+      onWillPop: _onWillPop,
       child: Scaffold(
         body: _currentScreen, // ✅ Show current screen
         bottomNavigationBar: Container(

@@ -56,9 +56,7 @@ class HoldingDetailScreen extends StatelessWidget {
                 style: TextStyle(color: Colors.black, fontSize: 16),
               ),
               onPressed: () {
-                final mainState = context
-                    .findAncestorStateOfType<MainScreenState>();
-                mainState?.onNavigationTap(0);
+                Navigator.pop(context);
               },
             ),
             _buildSummaryCard(currencyFormatter),
