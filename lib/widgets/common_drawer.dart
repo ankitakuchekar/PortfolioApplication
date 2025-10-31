@@ -261,13 +261,14 @@ class _CommonDrawerState extends State<CommonDrawer> {
                   ),
                   title: const Text("Tax Report"),
                   onTap: () {
-                    final mainState = context
-                        .findAncestorStateOfType<MainScreenState>();
-                    mainState?.navigateToScreen(
-                      TaxReportScreen(
-                        token: token ?? '',
-                        customerId: userId ?? '',
-                        selectedYear: '',
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => TaxReportScreen(
+                          token: token ?? '',
+                          customerId: userId ?? '',
+                          selectedYear: '',
+                        ),
                       ),
                     );
                   },
@@ -293,9 +294,12 @@ class _CommonDrawerState extends State<CommonDrawer> {
                   ),
                   title: const Text("Guide"),
                   onTap: () {
-                    final mainState = context
-                        .findAncestorStateOfType<MainScreenState>();
-                    mainState?.navigateToScreen(BullionPortfolioGuideScreen());
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => BullionPortfolioGuideScreen(),
+                      ),
+                    );
                   },
                 ),
                 ListTile(
@@ -305,9 +309,10 @@ class _CommonDrawerState extends State<CommonDrawer> {
                   ),
                   title: const Text("Privacy Policy"),
                   onTap: () {
-                    final mainState = context
-                        .findAncestorStateOfType<MainScreenState>();
-                    mainState?.navigateToScreen(PrivacyPolicyScreen());
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => PrivacyPolicyScreen()),
+                    );
                   },
                 ),
               ],
