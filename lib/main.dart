@@ -27,7 +27,7 @@ Future<void> main() async {
   // ✅ Load environment variables
   const envFile = String.fromEnvironment(
     'ENV_FILE',
-    defaultValue: 'assets/env/.env.stagging',
+    defaultValue: 'assets/env/.env.production',
   );
 
   try {
