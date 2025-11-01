@@ -222,12 +222,43 @@ class _ExitFormState extends State<ExitForm> {
               suffixIcon: Icon(Icons.calendar_today),
             ),
             onTap: () async {
+              // Get today's date
+              DateTime today = DateTime.now();
+
+              // Check if previousOrderDate is a String or DateTime
+              DateTime previousOrderDate;
+              if (widget.holding.previousOrderDate is String) {
+                // If it's a string, parse it into a DateTime
+                previousOrderDate = DateTime.parse(
+                  widget.holding.previousOrderDate as String,
+                );
+              } else if (widget.holding.previousOrderDate is DateTime) {
+                // If it's already a DateTime object, use it directly
+                previousOrderDate = widget.holding.previousOrderDate;
+              } else {
+                // Handle error if it's neither a String nor DateTime (e.g., log or throw)
+                throw Exception('Invalid previousOrderDate type');
+              }
+
+              // Show date picker with custom date range
               final picked = await showDatePicker(
                 context: context,
                 initialDate: DateTime.now(),
-                firstDate: DateTime(2020),
-                lastDate: DateTime.now(), // 👈 Prevent selecting a future date
+                firstDate: previousOrderDate,
+                lastDate: today, // Disable dates after today
+                builder: (BuildContext context, Widget? child) {
+                  return Theme(
+                    data: ThemeData.light().copyWith(
+                      primaryColor: Colors.blue,
+                      buttonTheme: ButtonThemeData(
+                        textTheme: ButtonTextTheme.primary,
+                      ),
+                    ),
+                    child: child!,
+                  );
+                },
               );
+
               if (picked != null) {
                 setState(() {
                   soldDate = picked;

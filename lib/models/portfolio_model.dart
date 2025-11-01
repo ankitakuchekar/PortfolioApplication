@@ -414,6 +414,7 @@ class ProductHolding {
   final String assetList;
   final int totalQtyOrdered;
   final String sourceName;
+  final DateTime previousOrderDate;
 
   ProductHolding({
     required this.productId,
@@ -430,6 +431,7 @@ class ProductHolding {
     required this.assetList,
     required this.totalQtyOrdered,
     required this.sourceName,
+    required this.previousOrderDate,
   });
 
   double get profit => (currentMetalValue - avgPrice) * weight;
@@ -456,6 +458,9 @@ class ProductHolding {
       assetList: json['assetList'] ?? '',
       totalQtyOrdered: json['totalQtyOrdered'] ?? 0,
       sourceName: json['sourceName'] ?? '',
+      previousOrderDate: json['previousOrderDate'] != null
+          ? dateFormat.parse(json['previousOrderDate'])
+          : DateTime.now(),
     );
   }
 }
