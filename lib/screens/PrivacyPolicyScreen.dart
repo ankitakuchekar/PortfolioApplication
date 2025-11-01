@@ -19,6 +19,27 @@ class PrivacyPolicyScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            TextButton.icon(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: const Icon(Icons.arrow_back, color: Colors.black87),
+              label: const Text(
+                'Back',
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.black87,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                minimumSize: Size.zero, // To prevent default min button size
+                tapTargetSize:
+                    MaterialTapTargetSize.shrinkWrap, // Compact tap area
+              ),
+            ),
             const Text(
               "Privacy Policy for Bullion Portfolio",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),

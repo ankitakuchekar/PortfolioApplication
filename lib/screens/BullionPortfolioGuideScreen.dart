@@ -765,9 +765,7 @@ class BullionPortfolioGuideScreen extends StatelessWidget {
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               onPressed: () {
-                final mainState = context
-                    .findAncestorStateOfType<MainScreenState>();
-                mainState?.onNavigationTap(0);
+                Navigator.pop(context);
               },
             ),
           ],
