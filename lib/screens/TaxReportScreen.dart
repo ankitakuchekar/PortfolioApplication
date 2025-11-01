@@ -1040,238 +1040,279 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                         overscroll: false,
                         scrollbars: false,
                       ),
-                      child: Scrollbar(
-                        controller: scrollController,
-                        thumbVisibility:
-                            true, // Always show the scrollbar thumb
-                        thickness: 8, // Thickness of the scrollbar
-                        interactive: true,
-                        radius: const Radius.circular(4),
-                        child: // adds space for scrollbar
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              // Outer border
-                            ),
-                            child: DataTable(
-                              headingRowColor:
-                                  MaterialStateProperty.resolveWith(
-                                    (states) => Colors.grey.shade100,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Scrollable DataTable section
+                          Expanded(
+                            child: Scrollbar(
+                              controller: scrollController,
+                              thumbVisibility: true,
+                              thickness: 8,
+                              interactive: true,
+                              radius: const Radius.circular(4),
+                              notificationPredicate: (_) => true,
+                              child: SingleChildScrollView(
+                                controller: scrollController,
+                                scrollDirection: Axis.horizontal,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.grey.shade300,
+                                    ),
                                   ),
-                              dataRowColor: MaterialStateProperty.resolveWith(
-                                (states) => Colors.white,
-                              ),
-                              dividerThickness: 1,
-                              headingTextStyle: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                              columnSpacing: 0,
-                              border: TableBorder(
-                                horizontalInside: BorderSide(
-                                  color: Colors.grey.shade300,
-                                  width: 1,
-                                ),
-                                verticalInside: BorderSide(
-                                  color: Colors.grey.shade300,
-                                  width: 1,
-                                ),
-                              ),
-                              columns: const [
-                                DataColumn(
-                                  label: Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Text('Product Name'),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Text('Qty'),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Text('Purchase Date'),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Text('Purchase Price'),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Text('Current Value'),
-                                  ),
-                                ),
-                                DataColumn(
-                                  label: Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: Text('Gain/Loss'),
-                                  ),
-                                ),
-                              ],
-                              rows: [
-                                if (productsForPortfolio.isNotEmpty)
-                                  ...productsForPortfolio.map<DataRow>((item) {
-                                    final pastValue =
-                                        item['pastMetalValue'] ?? 0.0;
-                                    final currentValue =
-                                        item['currentMetalValue'] ?? 0.0;
-                                    final gainLoss = currentValue - pastValue;
-                                    final gainLossColor = gainLoss >= 0
-                                        ? Colors.green
-                                        : Colors.red;
+                                  child: DataTable(
+                                    headingRowColor:
+                                        MaterialStateProperty.resolveWith(
+                                          (states) => Colors.grey.shade100,
+                                        ),
+                                    dataRowColor:
+                                        MaterialStateProperty.resolveWith(
+                                          (states) => Colors.white,
+                                        ),
+                                    dividerThickness: 1,
+                                    headingTextStyle: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    columnSpacing: 0,
+                                    border: TableBorder(
+                                      horizontalInside: BorderSide(
+                                        color: Colors.grey.shade300,
+                                        width: 1,
+                                      ),
+                                      verticalInside: BorderSide(
+                                        color: Colors.grey.shade300,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    columns: const [
+                                      DataColumn(
+                                        label: Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Text('Product Name'),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Text('Qty'),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Text('Purchase Date'),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Text('Purchase Price'),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Text('Current Value'),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Padding(
+                                          padding: EdgeInsets.all(12.0),
+                                          child: Text('Gain/Loss'),
+                                        ),
+                                      ),
+                                    ],
+                                    rows: [
+                                      if (productsForPortfolio.isNotEmpty)
+                                        ...productsForPortfolio.map<DataRow>((
+                                          item,
+                                        ) {
+                                          final pastValue =
+                                              item['pastMetalValue'] ?? 0.0;
+                                          final currentValue =
+                                              item['currentMetalValue'] ?? 0.0;
+                                          final gainLoss =
+                                              currentValue - pastValue;
+                                          final gainLossColor = gainLoss >= 0
+                                              ? Colors.green
+                                              : Colors.red;
 
-                                    return DataRow(
-                                      cells: [
-                                        DataCell(
-                                          Padding(
-                                            padding: const EdgeInsets.all(12),
-                                            child: Text(
-                                              item['assetList'] ?? '-',
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          Padding(
-                                            padding: const EdgeInsets.all(12),
-                                            child: Text(
-                                              '${item['totalQtyOrdered'] ?? '-'}',
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          Padding(
-                                            padding: const EdgeInsets.all(12),
-                                            child: Text(
-                                              _formatDate(item['orderDate']),
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          Padding(
-                                            padding: const EdgeInsets.all(12),
-                                            child: Text(
-                                              '\$${formatValue(pastValue)}',
-                                              textAlign: TextAlign.right,
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          Padding(
-                                            padding: const EdgeInsets.all(12),
-                                            child: Text(
-                                              '\$${formatValue(currentValue)}',
-                                              textAlign: TextAlign.right,
-                                            ),
-                                          ),
-                                        ),
-                                        DataCell(
-                                          Padding(
-                                            padding: const EdgeInsets.all(12),
-                                            child: Text(
-                                              '${gainLoss >= 0 ? '+' : '-'}\$${formatValue(gainLoss.abs())}',
-                                              style: TextStyle(
-                                                color: gainLossColor,
-                                              ),
-                                              textAlign: TextAlign.right,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  }).toList(),
-                                if (productsForPortfolio.isNotEmpty)
-                                  DataRow(
-                                    cells: [
-                                      const DataCell(
-                                        Padding(
-                                          padding: EdgeInsets.all(12),
-                                          child: Text(
-                                            'Total Portfolio Value',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const DataCell(Text('')), // Qty
-                                      const DataCell(Text('')), // Purchase Date
-                                      DataCell(
-                                        Padding(
-                                          padding: const EdgeInsets.all(12),
-                                          child: Text(
-                                            '\$${formatValue(productsForPortfolio.fold(0.0, (sum, item) => sum + (item['pastMetalValue'] ?? 0.0)))}',
-                                            textAlign: TextAlign.right,
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Padding(
-                                          padding: const EdgeInsets.all(12),
-                                          child: Text(
-                                            '\$${formatValue(productsForPortfolio.fold(0.0, (sum, item) => sum + (item['currentMetalValue'] ?? 0.0)))}',
-                                            textAlign: TextAlign.right,
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Padding(
-                                          padding: const EdgeInsets.all(12),
-                                          child: Builder(
-                                            builder: (context) {
-                                              final totalGainLoss =
-                                                  productsForPortfolio.fold<
-                                                    double
-                                                  >(
-                                                    0.0,
-                                                    (sum, item) =>
-                                                        sum +
-                                                        ((item['currentMetalValue'] ??
-                                                                0.0) -
-                                                            (item['pastMetalValue'] ??
-                                                                0.0)),
-                                                  );
-                                              final isPositive =
-                                                  totalGainLoss >= 0;
-                                              return Text(
-                                                '${isPositive ? '+' : '-'}\$${formatValue(totalGainLoss.abs())}',
-                                                textAlign: TextAlign.right,
-                                                style: TextStyle(
-                                                  color: isPositive
-                                                      ? Colors.green
-                                                      : Colors.red,
-                                                  fontWeight: FontWeight.bold,
+                                          return DataRow(
+                                            cells: [
+                                              DataCell(
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    12,
+                                                  ),
+                                                  child: Text(
+                                                    item['assetList'] ?? '-',
+                                                  ),
                                                 ),
-                                              );
-                                            },
-                                          ),
+                                              ),
+                                              DataCell(
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    12,
+                                                  ),
+                                                  child: Text(
+                                                    '${item['totalQtyOrdered'] ?? '-'}',
+                                                  ),
+                                                ),
+                                              ),
+                                              DataCell(
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    12,
+                                                  ),
+                                                  child: Text(
+                                                    _formatDate(
+                                                      item['orderDate'],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              DataCell(
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    12,
+                                                  ),
+                                                  child: Text(
+                                                    '\$${formatValue(pastValue)}',
+                                                    textAlign: TextAlign.right,
+                                                  ),
+                                                ),
+                                              ),
+                                              DataCell(
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    12,
+                                                  ),
+                                                  child: Text(
+                                                    '\$${formatValue(currentValue)}',
+                                                    textAlign: TextAlign.right,
+                                                  ),
+                                                ),
+                                              ),
+                                              DataCell(
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    12,
+                                                  ),
+                                                  child: Text(
+                                                    '${gainLoss >= 0 ? '+' : '-'}\$${formatValue(gainLoss.abs())}',
+                                                    style: TextStyle(
+                                                      color: gainLossColor,
+                                                    ),
+                                                    textAlign: TextAlign.right,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        }).toList(),
+                                      if (productsForPortfolio.isNotEmpty)
+                                        DataRow(
+                                          cells: [
+                                            const DataCell(
+                                              Padding(
+                                                padding: EdgeInsets.all(12),
+                                                child: Text(
+                                                  'Total Portfolio Value',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            const DataCell(Text('')),
+                                            const DataCell(Text('')),
+                                            DataCell(
+                                              Padding(
+                                                padding: const EdgeInsets.all(
+                                                  12,
+                                                ),
+                                                child: Text(
+                                                  '\$${formatValue(productsForPortfolio.fold(0.0, (sum, item) => sum + (item['pastMetalValue'] ?? 0.0)))}',
+                                                  textAlign: TextAlign.right,
+                                                ),
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Padding(
+                                                padding: const EdgeInsets.all(
+                                                  12,
+                                                ),
+                                                child: Text(
+                                                  '\$${formatValue(productsForPortfolio.fold(0.0, (sum, item) => sum + (item['currentMetalValue'] ?? 0.0)))}',
+                                                  textAlign: TextAlign.right,
+                                                ),
+                                              ),
+                                            ),
+                                            DataCell(
+                                              Padding(
+                                                padding: const EdgeInsets.all(
+                                                  12,
+                                                ),
+                                                child: Builder(
+                                                  builder: (context) {
+                                                    final totalGainLoss =
+                                                        productsForPortfolio.fold<
+                                                          double
+                                                        >(
+                                                          0.0,
+                                                          (sum, item) =>
+                                                              sum +
+                                                              ((item['currentMetalValue'] ??
+                                                                      0.0) -
+                                                                  (item['pastMetalValue'] ??
+                                                                      0.0)),
+                                                        );
+                                                    final isPositive =
+                                                        totalGainLoss >= 0;
+                                                    return Text(
+                                                      '${isPositive ? '+' : '-'}\$${formatValue(totalGainLoss.abs())}',
+                                                      textAlign:
+                                                          TextAlign.right,
+                                                      style: TextStyle(
+                                                        color: isPositive
+                                                            ? Colors.green
+                                                            : Colors.red,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
+                                      if (productsForPortfolio.isEmpty)
+                                        const DataRow(
+                                          cells: [
+                                            DataCell(
+                                              Text(
+                                                'No Investments to display.',
+                                              ),
+                                            ),
+                                            DataCell(Text('')),
+                                            DataCell(Text('')),
+                                            DataCell(Text('')),
+                                            DataCell(Text('')),
+                                            DataCell(Text('')),
+                                          ],
+                                        ),
                                     ],
                                   ),
-                                if (productsForPortfolio.isEmpty)
-                                  const DataRow(
-                                    cells: [
-                                      DataCell(
-                                        Text('No Investments to display.'),
-                                      ),
-                                      DataCell(Text('')),
-                                      DataCell(Text('')),
-                                      DataCell(Text('')),
-                                      DataCell(Text('')),
-                                      DataCell(Text('')),
-                                    ],
-                                  ),
-                              ],
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                          const SizedBox(
+                            height: 8,
+                          ), // Add a small space below the table
+                        ],
                       ),
                     ),
                   ],

@@ -62,6 +62,7 @@ class _ExitFormState extends State<ExitForm> {
       "metal": widget.holding.metal,
       "quantity": widget.holding.totalQtyOrdered,
       "weight": widget.holding.weight,
+      "sourceName": widget.holding.sourceName,
     };
 
     final payload = {
@@ -73,9 +74,7 @@ class _ExitFormState extends State<ExitForm> {
       "transactionType": "EXIT",
       "goldSpot": 0,
       "silverSpot": 0,
-      "source": product['isBold'] == true
-          ? "Bold Precious Metals"
-          : "Not Purchased on Bold",
+      "source": "Bold Precious Metals",
       "metal": product['metal'],
       "ouncesPerUnit": product['weight'],
       "productName": product['name'],
@@ -167,7 +166,7 @@ class _ExitFormState extends State<ExitForm> {
           const SizedBox(height: 6),
           TextFormField(
             controller: soldCostController,
-            keyboardType: TextInputType.number,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
               hintText: "Enter sold price",
