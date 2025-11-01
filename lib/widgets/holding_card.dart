@@ -253,7 +253,7 @@ class _HoldingCardState extends State<HoldingCard> {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: _launchUrl,
+                  onPressed: widget.holding.isBold ? _launchUrl : null,
                   icon: const Icon(Icons.arrow_upward),
                   label: const Text("Buy"),
                   style: ElevatedButton.styleFrom(
