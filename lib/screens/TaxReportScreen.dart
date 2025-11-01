@@ -802,9 +802,7 @@ class _TaxReportPageState extends State<TaxReportScreen> {
                   // Back Button
                   TextButton.icon(
                     onPressed: () {
-                      final mainState = context
-                          .findAncestorStateOfType<MainScreenState>();
-                      mainState?.onNavigationTap(0);
+                      Navigator.pop(context);
                     },
                     icon: const Icon(Icons.arrow_back),
                     label: Text(

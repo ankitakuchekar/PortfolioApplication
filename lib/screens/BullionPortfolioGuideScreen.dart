@@ -185,9 +185,7 @@ class BullionPortfolioGuideScreen extends StatelessWidget {
           children: [
             TextButton.icon(
               onPressed: () {
-                final mainState = context
-                    .findAncestorStateOfType<MainScreenState>();
-                mainState?.onNavigationTap(0);
+                Navigator.pop(context);
               },
               icon: const Icon(Icons.arrow_back, color: Colors.black87),
               label: const Text(
