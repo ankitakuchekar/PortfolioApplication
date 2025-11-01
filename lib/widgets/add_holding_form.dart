@@ -758,6 +758,10 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                             Expanded(
                               child: TextFormField(
                                 controller: ouncesController,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 decoration: InputDecoration(
                                   label: RichText(
                                     text: const TextSpan(
@@ -775,7 +779,6 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                     ),
                                   ),
                                 ),
-                                keyboardType: TextInputType.number,
                                 onChanged: (val) {
                                   setState(() {
                                     selectedProduct = {
@@ -965,7 +968,9 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                                   )
                                 : null,
                           ),
-                          keyboardType: TextInputType.number,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
@@ -973,7 +978,9 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                           decoration: const InputDecoration(
                             labelText: 'Premium Cost (per unit)',
                           ),
-                          keyboardType: TextInputType.number,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
                         ),
                       ],
                       const SizedBox(height: 14),
