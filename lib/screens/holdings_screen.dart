@@ -90,6 +90,41 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                           'Ordered products are automatically added to holdings once shipped.',
                           style: TextStyle(fontSize: 15, color: Colors.grey),
                         ),
+                        RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black87,
+                              height: 1.5, // Adjust line height here
+                            ),
+                            children: <TextSpan>[
+                              TextSpan(
+                                text: 'Note: ', // "Note:" in bold
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              TextSpan(
+                                text:
+                                    'Your Bullion Portfolio currently displays only products purchased from Bold Precious Metals on or after ',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.grey,
+                                  height:
+                                      1.5, // Line height for the first row of text
+                                ),
+                              ),
+                              TextSpan(
+                                text: 'January 1, 2023.',
+                                style: TextStyle(
+                                  fontWeight: FontWeight
+                                      .bold, // "January 1, 2023." in bold
+                                ),
+                              ),
+                              TextSpan(
+                                text: '  ', // Add space between two words
+                              ),
+                            ],
+                          ),
+                        ),
                         const SizedBox(height: 16),
                         SizedBox(
                           width: double.infinity,

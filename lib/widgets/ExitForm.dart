@@ -37,12 +37,23 @@ class _ExitFormState extends State<ExitForm> {
     if (quantity <= 0 || soldCost <= 0 || soldDate == null) {
       Fluttertoast.showToast(
         msg: "Please fill all fields correctly.",
+        backgroundColor: Colors.grey,
+        textColor: Colors.black,
+      );
+
+      return;
+    }
+    print("asfsf ${quantity < widget.holding.totalQtyOrdered}");
+
+    if (quantity < widget.holding.totalQtyOrdered) {
+      print("asfsf ${quantity < widget.holding.totalQtyOrdered}");
+      Fluttertoast.showToast(
+        msg: "You cannot Exit more than the available qyantity.",
         backgroundColor: Colors.red,
         textColor: Colors.white,
       );
       return;
     }
-
     final formattedDate =
         '${soldDate!.month.toString().padLeft(2, '0')}/${soldDate!.day.toString().padLeft(2, '0')}/${soldDate!.year}';
 

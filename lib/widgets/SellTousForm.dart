@@ -212,7 +212,6 @@ class _SellFormState extends State<SellForm> {
 
     final authService = AuthService();
     final fetchedUserId = await authService.getUser();
-    print('Holding: ${widget.holding}');
     if (quantityStr.isEmpty ||
         double.tryParse(quantityStr) == null ||
         double.parse(quantityStr) < 1 ||
@@ -222,6 +221,14 @@ class _SellFormState extends State<SellForm> {
         backgroundColor: Colors.red,
         textColor: Colors.white,
         toastLength: Toast.LENGTH_LONG,
+      );
+      return;
+    }
+    if (double.parse(quantityStr) < widget.holding.totalQtyOrdered) {
+      Fluttertoast.showToast(
+        msg: "You cannot Exit more than the available qyantity.",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
       );
       return;
     }
