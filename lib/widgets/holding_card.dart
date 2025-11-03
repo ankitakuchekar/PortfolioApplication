@@ -265,9 +265,11 @@ class _HoldingCardState extends State<HoldingCard> {
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: widget.holding.isBold
-                      ? () => showSellExitPopup(context, widget.holding)
-                      : null,
+                  onPressed: () => showSellExitPopup(
+                    context,
+                    widget.holding,
+                    widget.holding.isBold,
+                  ),
                   icon: const Icon(Icons.arrow_downward),
                   label: const Text("Sell/Exit"),
                   style: ElevatedButton.styleFrom(
@@ -299,7 +301,11 @@ class _HoldingCardState extends State<HoldingCard> {
   }
 }
 
-void showSellExitPopup(BuildContext context, ProductHolding holding) {
+void showSellExitPopup(
+  BuildContext context,
+  ProductHolding holding,
+  bool isBold,
+) {
   showDialog(
     context: context,
     barrierDismissible: true,
@@ -314,7 +320,9 @@ void showSellExitPopup(BuildContext context, ProductHolding holding) {
             maxHeight: MediaQuery.of(context).size.height * 0.95,
           ),
           child: DefaultTabController(
-            length: 2,
+            length: isBold
+                ? 1
+                : 2, // Only one tab if isBold is true, otherwise 2 tabs
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -344,24 +352,22 @@ void showSellExitPopup(BuildContext context, ProductHolding holding) {
                       fontWeight: FontWeight.w200,
                       fontSize: 20,
                     ),
-                    indicatorSize: TabBarIndicatorSize
-                        .tab, // This makes indicator match the tab width
+                    indicatorSize: TabBarIndicatorSize.tab,
                     indicator: BoxDecoration(
                       color: Colors.blue,
-                      borderRadius: BorderRadius.circular(
-                        8,
-                      ), // smooth, but not too round
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    tabs: const [
-                      Tab(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: 8,
-                          ), // control height
-                          child: Text('Sell'),
+                    tabs: [
+                      if (isBold) ...[
+                        // Only show the "Sell" tab when isBold is false
+                        const Tab(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8),
+                            child: Text('Sell'),
+                          ),
                         ),
-                      ),
-                      Tab(
+                      ],
+                      const Tab(
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 8),
                           child: Text('Exit'),
@@ -379,13 +385,14 @@ void showSellExitPopup(BuildContext context, ProductHolding holding) {
                 Expanded(
                   child: TabBarView(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: SellForm(
-                          scrollController: ScrollController(),
-                          holding: holding,
+                      if (isBold) // Only show the "SellForm" when isBold is false
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: SellForm(
+                            scrollController: ScrollController(),
+                            holding: holding,
+                          ),
                         ),
-                      ),
                       Padding(
                         padding: const EdgeInsets.all(16),
                         child: ExitForm(

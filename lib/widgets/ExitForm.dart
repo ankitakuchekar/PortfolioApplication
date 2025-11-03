@@ -76,7 +76,9 @@ class _ExitFormState extends State<ExitForm> {
       "transactionType": "EXIT",
       "goldSpot": 0,
       "silverSpot": 0,
-      "source": "Bold Precious Metals",
+      "source": product['isBold'] == true
+          ? "Bold Precious Metals"
+          : "Not Purchased on Bold",
       "metal": product['metal'],
       "ouncesPerUnit": product['weight'],
       "productName": product['name'],
