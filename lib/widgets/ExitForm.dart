@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:bold_portfolio/models/portfolio_model.dart';
+import 'package:bold_portfolio/providers/portfolio_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:bold_portfolio/services/auth_service.dart'; // Assuming AuthService is here
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 
 class ExitForm extends StatefulWidget {
   final ScrollController scrollController;
@@ -95,6 +97,9 @@ class _ExitFormState extends State<ExitForm> {
       );
 
       if (response.statusCode == 200) {
+        final provider = Provider.of<PortfolioProvider>(context, listen: false);
+        await provider.refreshDataFromAPIs(provider.frequency);
+
         Fluttertoast.showToast(
           msg: "Exit transaction successful!",
           backgroundColor: Colors.green,
