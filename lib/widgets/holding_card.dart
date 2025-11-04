@@ -320,9 +320,7 @@ void showSellExitPopup(
             maxHeight: MediaQuery.of(context).size.height * 0.95,
           ),
           child: DefaultTabController(
-            length: isBold
-                ? 1
-                : 2, // Only one tab if isBold is true, otherwise 2 tabs
+            length: isBold ? 2 : 1, // Adjusting the length based on `isBold`
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -358,15 +356,15 @@ void showSellExitPopup(
                       borderRadius: BorderRadius.circular(8),
                     ),
                     tabs: [
-                      if (isBold) ...[
-                        // Only show the "Sell" tab when isBold is false
+                      // If isBold is false, show "Sell" first
+                      if (isBold)
                         const Tab(
                           child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 8),
                             child: Text('Sell'),
                           ),
                         ),
-                      ],
+                      // Always show "Exit" tab
                       const Tab(
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 8),
@@ -381,11 +379,12 @@ void showSellExitPopup(
 
                 const Divider(height: 1, color: Colors.grey),
 
-                // TabBar View Content
+                // TabBarView Content
                 Expanded(
                   child: TabBarView(
                     children: [
-                      if (isBold) // Only show the "SellForm" when isBold is false
+                      // Only show the "SellForm" when isBold is false
+                      if (isBold)
                         Padding(
                           padding: const EdgeInsets.all(16),
                           child: SellForm(
