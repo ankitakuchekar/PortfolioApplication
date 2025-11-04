@@ -224,7 +224,7 @@ class _SellFormState extends State<SellForm> {
       );
       return;
     }
-    if (double.parse(quantityStr) < widget.holding.totalQtyOrdered) {
+    if (widget.holding.totalQtyOrdered < double.parse(quantityStr)) {
       Fluttertoast.showToast(
         msg: "You cannot Exit more than the available qyantity.",
         backgroundColor: Colors.red,

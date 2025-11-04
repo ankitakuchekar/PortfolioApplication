@@ -72,6 +72,9 @@ class _HoldingCardState extends State<HoldingCard> {
         : gainLossValue > 0
         ? Colors.green
         : Colors.red;
+    String formattedDate = DateFormat(
+      'MM/dd/yyyy',
+    ).format(widget.holding.orderDate);
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -149,10 +152,9 @@ class _HoldingCardState extends State<HoldingCard> {
                           ),
                         ),
                         const SizedBox(height: 4),
+
                         Text(
-                          widget.holding.orderDate.toIso8601String().split(
-                            'T',
-                          )[0],
+                          formattedDate,
                           style: const TextStyle(
                             fontSize: 14,
                             height: 1.4,
