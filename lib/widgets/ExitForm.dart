@@ -44,7 +44,6 @@ class _ExitFormState extends State<ExitForm> {
       return;
     }
     if (widget.holding.totalQtyOrdered < quantity) {
-      print("asfsf ${quantity < widget.holding.totalQtyOrdered}");
       Fluttertoast.showToast(
         msg: "You cannot Exit more than the available qyantity.",
         backgroundColor: Colors.red,
@@ -66,7 +65,6 @@ class _ExitFormState extends State<ExitForm> {
       "userEmail": fetchedUserId?.email ?? '',
       "phoneNumber": fetchedUserId?.mobNo ?? '',
     };
-
     final product = {
       "productId": widget.holding.productId,
       "name": widget.holding.name,
@@ -74,6 +72,7 @@ class _ExitFormState extends State<ExitForm> {
       "quantity": widget.holding.totalQtyOrdered,
       "weight": widget.holding.weight,
       "sourceName": widget.holding.sourceName,
+      "isBold": widget.holding.isBold,
     };
 
     final payload = {
