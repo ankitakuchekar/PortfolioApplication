@@ -312,15 +312,15 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
 
               // Right side: Zoom buttons
               Row(
+                mainAxisAlignment: MainAxisAlignment
+                    .spaceEvenly, // Even spacing between the buttons
                 children: [
                   _buildChartButton(Icons.add, 'Zoom In', () {
                     _zoomPanBehavior.zoomIn();
                   }),
-                  const SizedBox(width: 10),
                   _buildChartButton(Icons.remove, 'Zoom Out', () {
                     _zoomPanBehavior.zoomOut();
                   }),
-                  const SizedBox(width: 10),
                   _buildChartButton(Icons.home, 'Reset Zoom', () {
                     _zoomPanBehavior.reset();
                   }),

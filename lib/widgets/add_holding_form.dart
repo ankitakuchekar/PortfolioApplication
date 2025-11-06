@@ -137,6 +137,11 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
         final data = jsonDecode(response.body);
         List<dynamic> results = data['dataList']['searchProductsByKW'] ?? [];
 
+        // Filter the list for products with "Gold" or "Silver" metal
+        List<dynamic> filteredProducts = results.where((product) {
+          return product['metal'] == 'Gold' || product['metal'] == 'Silver';
+        }).toList();
+
         if (selectedDealer == 'Not Purchased on Bold' &&
             productController.text.trim().isNotEmpty
         //  &&
@@ -146,8 +151,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
         //       productController.text.trim().toLowerCase(),
         // )
         ) {
-          print("insde ");
-          results.insert(0, {
+          filteredProducts.insert(0, {
             'id': 0,
             'name': productController.text.trim(),
             'imagePath': null,
@@ -156,7 +160,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
         print("outdide ");
 
         setState(() {
-          searchResults = results;
+          searchResults = filteredProducts;
           isSearching = false;
         });
       } else {
@@ -492,6 +496,7 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                           selectedDealer = value!;
                           // Reset spot/premium if dealer changes
                           spotPriceController.clear();
+                          productController.clear();
                           premiumCostController.clear();
                         }),
                         decoration: InputDecoration(
@@ -989,45 +994,44 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          ElevatedButton(
-                            onPressed: isLoading
-                                ? null // Disable the button while loading
-                                : () {
-                                    if (_formKey.currentState!.validate()) {
-                                      _addHolding(
-                                        closeOnSuccess: false,
-                                      ); // Add more
-                                    }
-                                  },
-                            child: isLoading
-                                ? CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  ) // Show loading indicator when isLoading is true
-                                : const Text(
-                                    'Save & Add More',
-                                  ), // Show text when not loading
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: isLoading
+                                  ? null
+                                  : () {
+                                      if (_formKey.currentState!.validate()) {
+                                        _addHolding(closeOnSuccess: false);
+                                      }
+                                    },
+                              child: isLoading
+                                  ? CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    )
+                                  : const Text('Save & Add More'),
+                            ),
                           ),
-                          ElevatedButton(
-                            onPressed: isLoading
-                                ? null // Disable the button while loading
-                                : () {
-                                    if (_formKey.currentState!.validate()) {
-                                      _addHolding(
-                                        closeOnSuccess: true,
-                                      ); // Save & Close
-                                    }
-                                  },
-                            child: isLoading
-                                ? CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  ) // Show loading indicator when isLoading is true
-                                : const Text(
-                                    'Save & Close',
-                                  ), // Show text when not loading
+                          SizedBox(
+                            width: 8,
+                          ), // Add some spacing between the buttons
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: isLoading
+                                  ? null
+                                  : () {
+                                      if (_formKey.currentState!.validate()) {
+                                        _addHolding(closeOnSuccess: true);
+                                      }
+                                    },
+                              child: isLoading
+                                  ? CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    )
+                                  : const Text('Save & Close'),
+                            ),
                           ),
                         ],
                       ),

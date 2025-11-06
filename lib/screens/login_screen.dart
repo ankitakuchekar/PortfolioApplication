@@ -816,7 +816,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ).hasMatch(value);
 
                             if (!isValid) {
-                              return 'Password should be minimum 8 characters long, having at least 1 uppercase letter, 1 lowercase letter, 1 digit, and 1 special character.';
+                              return 'Password should be minimum 8 characters long, having\n'
+                                  'at least 1 uppercase letter, 1 lowercase letter, 1 digit, and\n'
+                                  '1 special character.';
                             }
 
                             return null;

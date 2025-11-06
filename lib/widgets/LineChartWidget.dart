@@ -306,32 +306,45 @@ class MetalHoldingsLineChart extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Spacer(),
                 Switch(
                   value: isPredictionView,
                   onChanged: onToggleView,
                   activeThumbColor: Colors.blue,
                 ),
-                const Spacer(),
                 if (!isTotalHoldingsView)
-                  TextButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (_) => PredictionPopup(),
-                      );
-                    },
-                    style: TextButton.styleFrom(
-                      side: const BorderSide(color: Colors.black),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => PredictionPopup(),
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        side: const BorderSide(color: Colors.black),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
                       ),
-                    ),
-                    child: const Text(
-                      'Add Prediction',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w500,
+                      child: Wrap(
+                        alignment: WrapAlignment
+                            .center, // Center the text within the Wrap
+                        children: const [
+                          Text(
+                            'Add',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            'Prediction',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

@@ -157,7 +157,8 @@ class _CommonDrawerState extends State<CommonDrawer> {
         : CustomerData.empty();
 
     final portfolioSettings = customerData.portfolioSettings;
-
+    final holdingData =
+        portfolioProvider.portfolioData?.data[0].productHoldings;
     return Drawer(
       child: Column(
         children: [
@@ -231,7 +232,7 @@ class _CommonDrawerState extends State<CommonDrawer> {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    // Icon(Icons.info_outline, size: 18, color: Colors.grey),
+                    // Icon(Icons.info_outline, size: 18, color: Colors.grey), // Uncomment if needed
                   ],
                 ),
                 isLoadingToggle
@@ -242,11 +243,20 @@ class _CommonDrawerState extends State<CommonDrawer> {
                       )
                     : Switch(
                         value: portfolioSettings.showActualPrice,
-                        onChanged: handleToggle,
+                        onChanged: holdingData!.isEmpty
+                            ? null // Disable the switch when holdingData is null
+                            : handleToggle, // Use the handleToggle function when holdingData is not null
+                        activeColor: Colors.blue, // Color when switch is on
+                        inactiveThumbColor:
+                            Colors.grey, // Color when switch is off
+                        inactiveTrackColor: Colors
+                            .grey
+                            .shade300, // Track color when switch is off
                       ),
               ],
             ),
           ),
+
           const Divider(),
 
           // Menu items
