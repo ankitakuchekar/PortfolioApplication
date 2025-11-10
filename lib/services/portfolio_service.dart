@@ -77,6 +77,24 @@ class PortfolioService {
           ); // Process null arrays gracefully
         }
       } else {
+        if (response.statusCode == 401) {
+          // Handling 401 Unauthorized, potentially re-authenticate
+          final authService = AuthService();
+          final getPass = await authService.getPassword();
+          final getUsername = await authService.getEmail();
+          final AuthService _authService = AuthService();
+
+          await _authService.login(
+            getUsername!,
+            getPass!,
+            false,
+            "",
+            "",
+            "",
+            '1536, 390',
+          );
+        }
+
         throw Exception(
           'Failed to fetch customer portfolio: ${response.statusCode}',
         );

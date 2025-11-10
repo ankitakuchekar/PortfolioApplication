@@ -10,6 +10,8 @@ class AuthService extends ChangeNotifier {
   final String baseUrl = dotenv.env['API_URL']!;
   static const String _tokenKey = 'auth_token';
   static const String _userKey = 'user_data';
+  static const String _passWordKey = 'password_data';
+  static const String _emailKey = 'email_data';
 
   Future<AuthResponse> login(
     String username,
@@ -45,7 +47,10 @@ class AuthService extends ChangeNotifier {
         if (authResponse.success && authResponse.token != null) {
           await _saveToken(authResponse.token!);
           if (authResponse.user != null) {
-            await _saveUser(authResponse.user!);
+            final user = authResponse.user;
+            await _savePassword(password);
+            await _saveEmail(username);
+            await _saveUser(user!);
           }
         }
         return authResponse;
@@ -74,6 +79,26 @@ class AuthService extends ChangeNotifier {
   Future<void> _saveUser(Map<String, dynamic> userData) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userKey, jsonEncode(userData));
+  }
+
+  Future<void> _savePassword(String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_passWordKey, password);
+  }
+
+  Future<String?> getPassword() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_passWordKey);
+  }
+
+  Future<void> _saveEmail(String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_emailKey, password);
+  }
+
+  Future<String?> getEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_emailKey);
   }
 
   Future<String?> getToken() async {
@@ -179,7 +204,6 @@ class AuthService extends ChangeNotifier {
         // ✅ Extract user data and token from `data`
         final userData = responseData['data'];
         final token = userData['token'];
-
         if (userData != null) {
           await _saveUser(userData); // Save user
         }
