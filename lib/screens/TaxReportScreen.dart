@@ -78,7 +78,7 @@ class _TaxReportPageState extends State<TaxReportScreen> {
       });
     } else {
       Fluttertoast.showToast(
-        msg: "Something went wrong",
+        msg: "An error occurred. Please try again later.",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
       );

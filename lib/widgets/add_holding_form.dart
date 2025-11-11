@@ -263,7 +263,11 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      return null;
+      Fluttertoast.showToast(
+        msg: "No internet connection. Cannot add product.",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+      );
     }
   }
 
@@ -306,12 +310,18 @@ class _AddHoldingFormState extends State<AddHoldingForm> {
         });
       } else {
         debugPrint('Spot price API failed to respond properly.');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(' An error occurred. Please try again later.'),
+          ),
+        );
       }
     } catch (e) {
       debugPrint('Error fetching spot price: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to get spot price: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(' An error occurred. Please try again later.')),
+      );
     } finally {
       setState(() => isLoadingSpot = false);
     }

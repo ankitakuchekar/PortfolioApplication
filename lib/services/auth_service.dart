@@ -66,7 +66,7 @@ class AuthService extends ChangeNotifier {
     } catch (e) {
       return AuthResponse(
         success: false,
-        message: 'Network error: ${e.toString()}',
+        message: ' An error occurred. Please try again later.',
       );
     }
   }
@@ -152,7 +152,7 @@ class AuthService extends ChangeNotifier {
     } catch (e) {
       return AuthResponse(
         success: false,
-        message: 'Network error: ${e.toString()}',
+        message: ' An error occurred. Please try again later.',
       );
     }
   }
@@ -224,7 +224,7 @@ class AuthService extends ChangeNotifier {
       notifyListeners();
       return AuthResponse(
         success: false,
-        message: 'Network error: ${e.toString()}',
+        message: ' An error occurred. Please try again later.',
       );
     }
   }
