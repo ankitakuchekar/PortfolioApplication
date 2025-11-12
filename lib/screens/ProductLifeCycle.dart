@@ -540,7 +540,7 @@ class _ProductLifecycleScreenState extends State<ProductLifecycleScreen> {
                                 interactive: true,
                                 radius: const Radius.circular(4),
                                 child: Padding(
-                                  padding: const EdgeInsets.only(bottom: 10.0),
+                                  padding: const EdgeInsets.only(bottom: 50.0),
                                   child: SingleChildScrollView(
                                     scrollDirection: Axis
                                         .horizontal, // Enable horizontal scrolling
