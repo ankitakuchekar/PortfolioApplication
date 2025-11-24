@@ -103,10 +103,21 @@ class _FeedbackPopupState extends State<FeedbackPopup> {
 
             /// Feedback type
             Text(
-              "Select Feedback Type *",
+              "Select Feedback Type ",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
+            Text.rich(
+              TextSpan(
+                text: '*',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.red,
+                ),
+              ),
+            ),
             SizedBox(height: 8),
+
             Wrap(
               spacing: 8,
               runSpacing: 8,
