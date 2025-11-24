@@ -105,8 +105,7 @@ class _HoldingsScreenState extends State<HoldingsScreen> {
                               TextSpan(
                                 text:
                                     'Your Bullion Portfolio currently displays only products purchased from Bold Precious Metals on or after ',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.normal,
+                                style: TextStyle( 
                                   color: Colors.grey,
                                   height:
                                       1.5, // Line height for the first row of text

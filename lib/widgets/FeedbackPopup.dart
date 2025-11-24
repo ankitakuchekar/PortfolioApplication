@@ -88,6 +88,7 @@ class _FeedbackPopupState extends State<FeedbackPopup> {
                   "We Value Your Feedback!",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
+
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Icon(Icons.close),
@@ -103,9 +104,20 @@ class _FeedbackPopupState extends State<FeedbackPopup> {
 
             /// Feedback type
             Text(
-              "Select Feedback Type *",
+              "Select Feedback Type ",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
+            Text.rich(
+              TextSpan(
+                text: '*',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.red,
+                ),
+              ),
+            ),
+
             SizedBox(height: 8),
             Wrap(
               spacing: 8,
