@@ -10,6 +10,7 @@ import 'providers/auth_provider.dart';
 import 'providers/portfolio_provider.dart';
 import 'screens/splash_screen.dart';
 import 'utils/app_theme.dart';
+import 'package:http/http.dart' as http;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Required for async + background service
@@ -72,14 +73,21 @@ void onStart(ServiceInstance service) {
   service.on("stopService").listen((event) {
     service.stopSelf();
   });
+import 'package:http/http.dart' as http;
 
-  // Example: periodic API call every minute
-  Timer.periodic(const Duration(minutes: 1), (timer) async {
-    debugPrint("⏰ Background service running... Fetching API");
+Timer.periodic(const Duration(minutes: 1), (timer) async {
+  debugPrint("⏰ Background service running... Fetching API");
 
-    // TODO: Replace with your real API call using http/dio
-    // Example:
-    // final response = await http.get(Uri.parse(dotenv.env['API_URL']!));
-    // debugPrint("API Response: ${response.body}");
-  });
+  try {
+    final response = await http.get(Uri.parse(dotenv.env['API_URL']!));
+    if (response.statusCode == 200) {
+      debugPrint("API Response: ${response.body}");
+    } else {
+      debugPrint("Failed to fetch data, status code: ${response.statusCode}");
+    }
+  } catch (e) {
+    debugPrint("Error during API call: $e");
+  }
+} 
+  );
 }
