@@ -21,6 +21,9 @@ Future<void> main() async {
       androidConfiguration: AndroidConfiguration(
         onStart: onStart,
         isForegroundMode: true, // persistent notification required on Android
+        initialNotificationTitle: "Service Running",
+        initialNotificationContent: "Background service is active...",
+        foregroundServiceNotificationId: 888,
       ),
       iosConfiguration: IosConfiguration(), // iOS has limited support
     );
@@ -76,9 +79,10 @@ void onStart(ServiceInstance service) {
 
   Timer.periodic(const Duration(minutes: 1), (timer) async {
     debugPrint("⏰ Background service running... Fetching API");
+    final String baseUrl = dotenv.env['API_URL']!;
 
     try {
-      final response = await http.get(Uri.parse(dotenv.env['API_URL']!));
+      final response = await http.get(baseUrl as Uri);
       if (response.statusCode == 200) {
         debugPrint("API Response: ${response.body}");
       } else {
