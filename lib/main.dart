@@ -73,21 +73,19 @@ void onStart(ServiceInstance service) {
   service.on("stopService").listen((event) {
     service.stopSelf();
   });
-import 'package:http/http.dart' as http;
 
-Timer.periodic(const Duration(minutes: 1), (timer) async {
-  debugPrint("⏰ Background service running... Fetching API");
+  Timer.periodic(const Duration(minutes: 1), (timer) async {
+    debugPrint("⏰ Background service running... Fetching API");
 
-  try {
-    final response = await http.get(Uri.parse(dotenv.env['API_URL']!));
-    if (response.statusCode == 200) {
-      debugPrint("API Response: ${response.body}");
-    } else {
-      debugPrint("Failed to fetch data, status code: ${response.statusCode}");
+    try {
+      final response = await http.get(Uri.parse(dotenv.env['API_URL']!));
+      if (response.statusCode == 200) {
+        debugPrint("API Response: ${response.body}");
+      } else {
+        debugPrint("Failed to fetch data, status code: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("Error during API call: $e");
     }
-  } catch (e) {
-    debugPrint("Error during API call: $e");
-  }
-} 
-  );
+  });
 }
