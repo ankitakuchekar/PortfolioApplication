@@ -3,6 +3,7 @@
     <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> <!-- Optional, if you want boot restart logic -->
 
     <application
         android:label="Bold Bullion Portfolio"
@@ -35,8 +36,20 @@
             android:name="id.flutter.flutter_background_service.BackgroundService"
             android:enabled="true"
             android:exported="true"
-            android:foregroundServiceType="dataSync" />
-        
+            android:foregroundServiceType="dataSync"/>
+
+        <!-- Optional: Receiver to handle boot completion (only if you want to restart service on boot) -->
+        <receiver
+            android:name=".BootBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
         <!-- Don't delete the meta-data below. -->
         <meta-data
             android:name="flutterEmbedding"
