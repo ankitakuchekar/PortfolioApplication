@@ -1,7 +1,9 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
+import 'package:bold_portfolio/screens/biometric_login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/portfolio_provider.dart';
 import '../utils/app_colors.dart';
 import 'graphs_screen.dart';
@@ -16,7 +18,7 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => MainScreenState();
 }
 
-class MainScreenState extends State<MainScreen> {
+class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   int _currentIndex = 0;
   late Widget _currentScreen;
 
@@ -26,10 +28,55 @@ class MainScreenState extends State<MainScreen> {
     const HoldingsScreen(),
   ];
 
+  DateTime? _backgroundTime;
+  bool _isBiometricShown = false;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _currentScreen = _screens[_currentIndex];
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // 🔐 Lifecycle handling (GPay-like logic)
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _backgroundTime = DateTime.now();
+    }
+
+    if (state == AppLifecycleState.resumed) {
+      if (_backgroundTime == null) return;
+
+      final difference = DateTime.now().difference(_backgroundTime!);
+
+      if (difference.inMinutes >= 10 && !_isBiometricShown) {
+        _showBiometricLock();
+      }
+    }
+  }
+
+  void _showBiometricLock() {
+    _isBiometricShown = true;
+
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        pageBuilder: (_, __, ___) => BiometricLoginScreen(
+          onSuccess: () {
+            _isBiometricShown = false;
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
+    );
   }
 
   void onNavigationTap(int index) {
@@ -42,16 +89,14 @@ class MainScreenState extends State<MainScreen> {
   DateTime? lastPressed;
 
   Future<bool> _onWillPop() async {
-    // If not on dashboard, go back to dashboard first
     if (_currentIndex != 0) {
       setState(() {
         _currentIndex = 0;
         _currentScreen = _screens[0];
       });
-      return false; // don’t exit yet
+      return false;
     }
 
-    // If already on dashboard, check for double press
     final now = DateTime.now();
     final backButtonHasNotBeenPressedTwice =
         lastPressed == null ||
@@ -62,13 +107,13 @@ class MainScreenState extends State<MainScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Press back again to exit')));
-      return false; // prevent exit first time
+      return false;
     }
+
     SystemNavigator.pop();
-    return true; // exit app on second press
+    return true;
   }
 
-  // ✅ Used to show screens like HoldingDetailScreen
   void navigateToScreen(Widget screen) {
     setState(() {
       _currentScreen = screen;
@@ -93,7 +138,7 @@ class MainScreenState extends State<MainScreen> {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-        body: _currentScreen, // ✅ Show current screen
+        body: _currentScreen,
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
             color: AppColors.primary,

@@ -55,5 +55,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSFaceIDUsageDescription</key>
+<string>User Biometric Authentication</string>
 </dict>
 </plist>

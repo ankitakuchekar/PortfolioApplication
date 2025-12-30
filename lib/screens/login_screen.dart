@@ -1,5 +1,6 @@
 import 'package:bold_portfolio/login-api.dart';
 import 'package:bold_portfolio/screens/ForgotPasswordScreen.dart';
+import 'package:bold_portfolio/services/biometric_auth_service.dart';
 import 'package:bold_portfolio/utils/mobileFormater.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -600,7 +601,25 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                         const SizedBox(height: 24),
-
+                        IconButton(
+                          onPressed: () async {
+                            bool check = await BiometricAuthService()
+                                .authenticateLocalUser();
+                            print("Biometric Auth Result: $check");
+                            if (check) {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (context) => const MainScreen(),
+                                ),
+                              );
+                            }
+                          },
+                          icon: Icon(
+                            Icons.fingerprint,
+                            size: 40,
+                            color: Colors.grey,
+                          ),
+                        ),
                         // GestureDetector(
                         //   onTap: _handleGoogleSignIn,
                         //   child: Container(
