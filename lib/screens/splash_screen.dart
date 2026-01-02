@@ -315,6 +315,7 @@
 //   }
 // }
 
+import 'package:bold_portfolio/screens/pin_generation_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -346,7 +347,7 @@ class _SplashScreenState extends State<SplashScreen> {
       if (mounted) {
         if (authProvider.isAuthenticated) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const MainScreen()),
+            MaterialPageRoute(builder: (context) => PinEntryScreen()),
           );
         } else {
           Navigator.of(context).pushReplacement(

@@ -1,9 +1,11 @@
+import 'package:bold_portfolio/providers/auth_provider.dart';
 import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:bold_portfolio/services/biometric_auth_service.dart'; // Import your BiometricAuthService
+import 'package:bold_portfolio/services/biometric_auth_service.dart';
+import 'package:provider/provider.dart'; // Import your BiometricAuthService
 
 class PinEntryScreen extends StatefulWidget {
   @override
@@ -28,6 +30,9 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
   }
 
   Future<void> submitPin() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await authProvider.checkAuthStatus();
+
     final String baseUrl = dotenv.env['API_URL']!;
 
     String pin = _pinController.text.trim();
@@ -37,34 +42,64 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
     final tokens = await authService.getToken();
     String customerId = fetchedUser?.id ?? '';
     String? token = tokens; // Replace this with actual token
-
-    try {
-      final response = await http.post(
-        Uri.parse(
-          "$baseUrl/Portfolio/UpdateCustomerPortfolioAppPin?customerid=$customerId&Pin=$pin",
-        ),
-        headers: {
-          "Accept": "*/*",
-          "Authorization": "Bearer $token", // Include Bearer token
-        },
-      );
-      print("Response Status: ${response.statusCode}");
-      if (response.statusCode == 200) {
-        print("PIN updated successfully.");
-        // API call was successful, navigate to MainScreen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainScreen()),
+    if (authProvider.isAuthenticated) {
+      try {
+        final response = await http.post(
+          Uri.parse(
+            "$baseUrl/Portfolio/GetCustomerPortfolioAppPin?customerid=$customerId&Pin=$pin",
+          ),
+          headers: {
+            "Accept": "*/*",
+            "Authorization": "Bearer $token", // Include Bearer token
+          },
         );
-      } else {
-        // Handle error (Optional)
-        print("Error: ${response.statusCode}");
-        print("Response: ${response.body}");
-        // You can show an error dialog or message here
+        print("Response Status: ${response.statusCode}");
+        if (response.statusCode == 200) {
+          print("PIN updated successfully.");
+          // API call was successful, navigate to MainScreen
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
+        } else {
+          // Handle error (Optional)
+          print("Error: ${response.statusCode}");
+          print("Response: ${response.body}");
+          // You can show an error dialog or message here
+        }
+      } catch (e) {
+        // Handle network errors or other exceptions
+        print("Error occurred: $e");
+        // Show an error dialog or message
       }
-    } catch (e) {
-      // Handle network errors or other exceptions
-      print("Error occurred: $e");
-      // Show an error dialog or message
+    } else {
+      try {
+        final response = await http.post(
+          Uri.parse(
+            "$baseUrl/Portfolio/UpdateCustomerPortfolioAppPin?customerid=$customerId&Pin=$pin",
+          ),
+          headers: {
+            "Accept": "*/*",
+            "Authorization": "Bearer $token", // Include Bearer token
+          },
+        );
+        print("Response Status: ${response.statusCode}");
+        if (response.statusCode == 200) {
+          print("PIN updated successfully.");
+          // API call was successful, navigate to MainScreen
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
+        } else {
+          // Handle error (Optional)
+          print("Error: ${response.statusCode}");
+          print("Response: ${response.body}");
+          // You can show an error dialog or message here
+        }
+      } catch (e) {
+        // Handle network errors or other exceptions
+        print("Error occurred: $e");
+        // Show an error dialog or message
+      }
     }
   }
 
