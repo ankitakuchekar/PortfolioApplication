@@ -1,6 +1,6 @@
-import 'package:bold_portfolio/login-api.dart';
 import 'package:bold_portfolio/screens/ForgotPasswordScreen.dart';
-import 'package:bold_portfolio/services/biometric_auth_service.dart';
+import 'package:bold_portfolio/screens/pin_generation_screen.dart';
+import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/utils/mobileFormater.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,8 +30,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // reCAPTCHA functionality
   final _firstNameFocusNode = FocusNode();
-  String? _recaptchaToken;
-  // bool _isRecaptchaVerified = false;
 
   bool _obscurePassword = true;
   int _selectedTab = 0; // 0 = login , 1 = register
@@ -139,9 +137,21 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (success && mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
+        final authService = AuthService();
+        final fetchedUser = await authService.getUser();
+        // Check if pinForApp is not null or empty
+        if (fetchedUser?.pinForApp == '' || fetchedUser?.pinForApp == '0') {
+          // Navigate to MainScreen if PinForApp is not null or empty
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => PinEntryScreen()),
+          );
+        } else {
+          print("Fetched User Pin outside: ${fetchedUser?.pinForApp}");
+          // Navigate to PinEntryScreen if PinForApp is null or empty
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
+        }
       } else if (mounted) {
         // Show error toast/snackbar
         final errorMessage =
@@ -157,205 +167,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
-
-  bool _isLoading = false;
-
-  // Future<void> _handleGoogleSignIn() async {
-  //   setState(() {
-  //     _isLoading = true;
-  //   });
-
-  //   final user = await GoogleSignInApi.login();
-  //   setState(() {
-  //     _isLoading = false;
-  //   });
-  //   print("User from google: $user");
-  //   print("email ${user?['email']}");
-
-  //   if (user != null) {
-  //     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-
-  //     final success = await authProvider.login(
-  //       user['email'],
-  //       "",
-  //       true,
-  //       user['googleToken'],
-  //       user['firstName'],
-  //       user['lastName'],
-  //       user['profilePhoto'],
-  //     );
-
-  //     if (success && mounted) {
-  //       Navigator.of(context).pushReplacement(
-  //         MaterialPageRoute(builder: (context) => const MainScreen()),
-  //       );
-  //     } else if (mounted) {
-  //       // Show error toast/snackbar
-  //       final errorMessage =
-  //           authProvider.errorMessage ??
-  //           'Login failed,Username or password is incorrect';
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(
-  //           content: Text(errorMessage),
-  //           backgroundColor: Colors.redAccent,
-  //           behavior: SnackBarBehavior.floating,
-  //         ),
-  //       );
-  //     }
-  //   } else {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         content: Text('Google sign-in failed.'),
-  //         backgroundColor: Colors.red,
-  //       ),
-  //     );
-  //   }
-  // }
-
-  // void _showRecaptcha() {
-  //   showModalBottomSheet(
-  //     context: context,
-  //     isScrollControlled: true,
-  //     backgroundColor: const Color.fromARGB(0, 242, 238, 238),
-  //     builder: (context) => Container(
-  //       height: MediaQuery.of(context).size.height * 0.8,
-  //       decoration: const BoxDecoration(
-  //         color: Color(0xFF1A1E29),
-  //         borderRadius: BorderRadius.only(
-  //           topLeft: Radius.circular(20),
-  //           topRight: Radius.circular(20),
-  //         ),
-  //       ),
-  //       child: Column(
-  //         children: [
-  //           Container(
-  //             padding: const EdgeInsets.all(16),
-  //             child: Row(
-  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //               children: [
-  //                 const Text(
-  //                   'Complete reCAPTCHA',
-  //                   style: TextStyle(
-  //                     color: Colors.white,
-  //                     fontSize: 18,
-  //                     fontWeight: FontWeight.bold,
-  //                   ),
-  //                 ),
-  //                 IconButton(
-  //                   onPressed: () => Navigator.pop(context),
-  //                   icon: const Icon(Icons.close, color: Colors.white),
-  //                 ),
-  //               ],
-  //             ),
-  //           ),
-  //           Expanded(
-  //             child: WebViewWidget(
-  //               controller: WebViewController()
-  //                 ..setJavaScriptMode(JavaScriptMode.unrestricted)
-  //                 ..setNavigationDelegate(
-  //                   NavigationDelegate(
-  //                     onPageFinished: (String url) {
-  //                       // Page loaded
-  //                     },
-  //                   ),
-  //                 )
-  //                 ..addJavaScriptChannel(
-  //                   'RecaptchaChannel',
-  //                   onMessageReceived: (JavaScriptMessage message) {
-  //                     final token = message.message;
-  //                     if (token.isNotEmpty && token != 'null') {
-  //                       setState(() {
-  //                         _recaptchaToken = token;
-  //                         _isRecaptchaVerified = true;
-  //                       });
-  //                       Navigator.pop(context);
-  //                       ScaffoldMessenger.of(context).showSnackBar(
-  //                         const SnackBar(
-  //                           content: Text('reCAPTCHA verified successfully!'),
-  //                           backgroundColor: Colors.green,
-  //                         ),
-  //                       );
-  //                     }
-  //                   },
-  //                 )
-  //                 ..loadHtmlString('''
-  //                   <!DOCTYPE html>
-  //                   <html>
-  //                   <head>
-  //                       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  //                       <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-  //                       <style>
-  //                           body {
-  //                               margin: 0;
-  //                               padding: 20px;
-  //                               background-color: #1A1E29;
-  //                               display: flex;
-  //                               justify-content: center;
-  //                               align-items: center;
-  //                               min-height: 100vh;
-  //                               font-family: Arial, sans-serif;
-  //                           }
-  //                           .recaptcha-container {
-  //                               background: white;
-  //                               padding: 20px;
-  //                               border-radius: 8px;
-  //                               box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  //                           }
-  //                           .loading {
-  //                               color: white;
-  //                               text-align: center;
-  //                               font-size: 16px;
-  //                           }
-  //                       </style>
-  //                   </head>
-  //                   <body>
-  //                       <div class="recaptcha-container">
-  //                           <div class="loading" id="loading">Loading reCAPTCHA...</div>
-  //                           <div class="g-recaptcha"
-  //                                data-sitekey="6Ld321YdAAAAALuFjmWlaC57ilZQQ4Gp1yQeG8e0"
-  //                                data-callback="onRecaptchaSuccess"
-  //                                data-expired-callback="onRecaptchaExpired"
-  //                                data-error-callback="onRecaptchaError">
-  //                           </div>
-  //                       </div>
-
-  //                       <script>
-  //                           function onRecaptchaSuccess(token) {
-  //                               document.getElementById('loading').style.display = 'none';
-  //                               if (window.RecaptchaChannel) {
-  //                                   window.RecaptchaChannel.postMessage(token);
-  //                               }
-  //                           }
-
-  //                           function onRecaptchaExpired() {
-  //                               if (window.RecaptchaChannel) {
-  //                                   window.RecaptchaChannel.postMessage('expired');
-  //                               }
-  //                           }
-
-  //                           function onRecaptchaError() {
-  //                               if (window.RecaptchaChannel) {
-  //                                   window.RecaptchaChannel.postMessage('error');
-  //                               }
-  //                           }
-
-  //                           // Hide loading text when reCAPTCHA loads
-  //                           window.addEventListener('load', function() {
-  //                               setTimeout(function() {
-  //                                   document.getElementById('loading').style.display = 'none';
-  //                               }, 2000);
-  //                           });
-  //                       </script>
-  //                   </body>
-  //                   </html>
-  //                 '''),
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
 
   Future<void> _handleRegister() async {
     if (_formKey.currentState!.validate()) {
@@ -601,25 +412,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                         const SizedBox(height: 24),
-                        IconButton(
-                          onPressed: () async {
-                            bool check = await BiometricAuthService()
-                                .authenticateLocalUser();
-                            print("Biometric Auth Result: $check");
-                            if (check) {
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                  builder: (context) => const MainScreen(),
-                                ),
-                              );
-                            }
-                          },
-                          icon: Icon(
-                            Icons.fingerprint,
-                            size: 40,
-                            color: Colors.grey,
-                          ),
-                        ),
                         // GestureDetector(
                         //   onTap: _handleGoogleSignIn,
                         //   child: Container(

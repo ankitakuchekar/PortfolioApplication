@@ -30,6 +30,8 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  String? _pinForApp;
+
   Future<bool> login(
     String username,
     String password,

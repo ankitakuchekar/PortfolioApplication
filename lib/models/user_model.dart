@@ -5,7 +5,7 @@ class User {
   final String email;
   final String mobNo;
   final String token;
-
+  final String? pinForApp;
   User({
     required this.id,
     required this.lastName,
@@ -13,6 +13,7 @@ class User {
     required this.mobNo,
     required this.email,
     required this.token,
+    required this.pinForApp,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -23,10 +24,17 @@ class User {
       mobNo: json['mobNo']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
       token: json['token']?.toString() ?? '',
+      pinForApp: json['pinForApp']?.toString(),
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'id': id, 'firstName': firstName, 'email': email, 'token': token};
+    return {
+      'id': id,
+      'firstName': firstName,
+      'email': email,
+      'token': token,
+      'pinForApp': pinForApp,
+    };
   }
 }
