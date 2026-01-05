@@ -70,11 +70,6 @@ class _SettingPinScreenComponentState extends State<SettingPinScreenComponent> {
           Uri.parse(
             "$baseUrl/Portfolio/GetCustomerPortfolioAppPin?customerid=$customerId&Pin=$pin",
           ),
-          headers: {
-            "Accept": "*/*",
-            "Authorization":
-                "Bearer ${fetchedUser?.token}", // Include Bearer token
-          },
         );
         print("Response Status: ${response.statusCode}");
         if (response.statusCode == 200) {
