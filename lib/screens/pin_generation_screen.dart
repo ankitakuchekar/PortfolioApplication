@@ -43,6 +43,7 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
     String customerId = fetchedUser?.id ?? '';
     String? token = tokens; // Replace this with actual token
     if (authProvider.isAuthenticated) {
+      print("Response token: ${tokens}");
       try {
         final response = await http.post(
           Uri.parse(
@@ -50,7 +51,7 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
           ),
           headers: {
             "Accept": "*/*",
-            "Authorization": "Bearer $token", // Include Bearer token
+            "Authorization": "Bearer $tokens", // Include Bearer token
           },
         );
         print("Response Status: ${response.statusCode}");
@@ -207,6 +208,18 @@ class _PinEntryScreenState extends State<PinEntryScreen> {
                 Center(
                   child: Text(
                     "Or",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Text(
+                    fetchedUser?.firstName != null
+                        ? "Welcome back, ${fetchedUser!.firstName}! ${fetchedUser.email}"
+                        : "Welcome back!",
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.black54,

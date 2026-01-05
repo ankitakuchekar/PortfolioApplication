@@ -316,6 +316,8 @@
 // }
 
 import 'package:bold_portfolio/screens/pin_generation_screen.dart';
+import 'package:bold_portfolio/screens/setting_pin_screen.dart';
+import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -339,15 +341,20 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _initializeApp() async {
     await Future.delayed(const Duration(seconds: 4));
+    final authService = AuthService();
+    final fetchedUserId = await authService.getUser();
 
     if (mounted) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       await authProvider.checkAuthStatus();
 
       if (mounted) {
-        if (authProvider.isAuthenticated) {
+        if (authProvider.isAuthenticated &&
+            authProvider.user?.pinForApp != null) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => PinEntryScreen()),
+            MaterialPageRoute(
+              builder: (context) => SettingPinScreenComponent(),
+            ),
           );
         } else {
           Navigator.of(context).pushReplacement(
