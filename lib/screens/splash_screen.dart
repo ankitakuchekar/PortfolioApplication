@@ -315,7 +315,7 @@
 //   }
 // }
 
-import 'package:bold_portfolio/screens/pin_generation_screen.dart';
+import 'package:bold_portfolio/screens/enter_pin_screen.dart';
 import 'package:bold_portfolio/screens/setting_pin_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
@@ -349,11 +349,20 @@ class _SplashScreenState extends State<SplashScreen> {
       await authProvider.checkAuthStatus();
 
       if (mounted) {
+        print(
+          'Fetched User ID: ${authProvider.user?.pinForApp}  ${authProvider.user?.pinForApp == '0'} ${(authProvider.user?.pinForApp.toString() ?? '0') == '0'}',
+        );
         if (authProvider.isAuthenticated &&
+            (authProvider.user?.pinForApp == null ||
+                authProvider.user?.pinForApp == '0')) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => MainScreen()),
+          );
+        } else if (authProvider.isAuthenticated &&
             authProvider.user?.pinForApp != null) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => SettingPinScreenComponent(),
+              builder: (context) => NewPinEntryScreen(isFromSettings: false),
             ),
           );
         } else {

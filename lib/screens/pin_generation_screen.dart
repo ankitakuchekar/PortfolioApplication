@@ -7,12 +7,13 @@ import 'package:http/http.dart' as http;
 import 'package:bold_portfolio/services/biometric_auth_service.dart';
 import 'package:provider/provider.dart'; // Import your BiometricAuthService
 
-class PinEntryScreen extends StatefulWidget {
+class PinEntryScreenComponent extends StatefulWidget {
   @override
-  _PinEntryScreenState createState() => _PinEntryScreenState();
+  _PinEntryScreenComponentState createState() =>
+      _PinEntryScreenComponentState();
 }
 
-class _PinEntryScreenState extends State<PinEntryScreen> {
+class _PinEntryScreenComponentState extends State<PinEntryScreenComponent> {
   final _pinController = TextEditingController();
   bool _isPinVisible = false;
 

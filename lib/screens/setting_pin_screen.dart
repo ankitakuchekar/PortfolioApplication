@@ -6,23 +6,16 @@ import 'package:bold_portfolio/providers/auth_provider.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'main_screen.dart'; // Make sure to import your MainScreen
 
-class SettingPinScreen extends StatelessWidget {
+class SettingPinScreen extends StatefulWidget {
+  final bool isSettingPage;
+
+  const SettingPinScreen({super.key, required this.isSettingPage});
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Set/Update App PIN',
-      theme: ThemeData(primarySwatch: Colors.blue),
-    );
-  }
+  _SettingPinScreenState createState() => _SettingPinScreenState();
 }
 
-class SettingPinScreenComponent extends StatefulWidget {
-  @override
-  _SettingPinScreenComponentState createState() =>
-      _SettingPinScreenComponentState();
-}
-
-class _SettingPinScreenComponentState extends State<SettingPinScreenComponent> {
+class _SettingPinScreenState extends State<SettingPinScreen> {
   final List<TextEditingController> _newPinControllers = List.generate(
     4,
     (index) => TextEditingController(),
@@ -64,14 +57,16 @@ class _SettingPinScreenComponentState extends State<SettingPinScreenComponent> {
     final authService = AuthService();
     final fetchedUser = await authService.getUser();
     String customerId = fetchedUser?.id ?? '';
-    if (authProvider.isAuthenticated) {
+    if (authProvider.user?.pinForApp == null) {
       try {
         final response = await http.post(
           Uri.parse(
-            "$baseUrl/Portfolio/GetCustomerPortfolioAppPin?customerid=$customerId&Pin=$pin",
+            "$baseUrl/Portfolio/UpdateCustomerPortfolioAppPin?customerId=$customerId&pin=$pin",
           ),
         );
-        print("Response Status: ${response.statusCode}");
+        print(
+          "Response Status: ${response.statusCode}, $baseUrl/Portfolio/UpdateCustomerPortfolioAppPin?customerId=$customerId&pin=$pin",
+        );
         if (response.statusCode == 200) {
           print("PIN updated successfully.");
           // API call was successful, navigate to MainScreen
@@ -108,7 +103,7 @@ class _SettingPinScreenComponentState extends State<SettingPinScreenComponent> {
         } else {
           // Handle error (Optional)
           print("Error: ${response.statusCode}");
-          print("Response: ${response.body}");
+          print("Response: ${response.body}s");
         }
       } catch (e) {
         print("Error occurred: $e");
@@ -119,142 +114,233 @@ class _SettingPinScreenComponentState extends State<SettingPinScreenComponent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Settings')),
-      resizeToAvoidBottomInset:
-          true, // Ensure resizing when the keyboard appears
-      body: SingleChildScrollView(
-        // Allow scrolling when the keyboard appears
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Set/Update App PIN',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'This PIN is required every time you open the app.',
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 40),
-            Text('New PIN', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Input fields for New PIN
-                ...List.generate(4, (index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: SizedBox(
-                      width: 50,
-                      child: TextFormField(
-                        controller: _newPinControllers[index],
-                        maxLength: 1,
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.center,
-                        obscureText: _obscureNewPin,
-                        decoration: InputDecoration(
-                          counterText: '',
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.blue),
-                          ),
-                        ),
-                        onChanged: (value) =>
-                            _onFieldChanged(index, value, _newPinControllers),
-                      ),
-                    ),
-                  );
-                }),
-                // Eye Icon for New PIN
-                IconButton(
-                  icon: Icon(
-                    _obscureNewPin ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.blue,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _obscureNewPin = !_obscureNewPin;
-                    });
-                  },
-                ),
-              ],
-            ),
-            SizedBox(height: 40),
-            Text('Confirm New PIN', style: TextStyle(fontSize: 18)),
-            SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Input fields for Confirm New PIN
-                ...List.generate(4, (index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: SizedBox(
-                      width: 50,
-                      child: TextFormField(
-                        controller: _confirmPinControllers[index],
-                        maxLength: 1,
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.center,
-                        obscureText: _obscureConfirmPin,
-                        decoration: InputDecoration(
-                          counterText: '',
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.blue),
-                          ),
-                        ),
-                        onChanged: (value) => _onFieldChanged(
-                          index,
-                          value,
-                          _confirmPinControllers,
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-                // Eye Icon for Confirm PIN
-                IconButton(
-                  icon: Icon(
-                    _obscureConfirmPin
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                    color: Colors.blue,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _obscureConfirmPin = !_obscureConfirmPin;
-                    });
-                  },
-                ),
-              ],
-            ),
-            SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: () {
-                // Ensure the PINs match before submitting
-                String newPin = _getPin(_newPinControllers);
-                String confirmPin = _getPin(_confirmPinControllers);
-
-                if (newPin == confirmPin) {
-                  submitPin(); // Call the submitPin function
-                } else {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('PINs do not match')));
-                }
-              },
-              child: Text('Save PIN'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
+      backgroundColor: const Color(0xFFF5F6FA),
+      appBar: AppBar(
+        title: widget.isSettingPage ? const Text('Settings') : null,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: Colors.black,
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => MainScreen()),
+              );
+            },
+            child: const Text(
+              'SKIP',
+              style: TextStyle(
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
               ),
             ),
-          ],
+          ),
+        ],
+      ),
+
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Set / Update App PIN',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'This PIN is required every time you open the app.',
+                    style: TextStyle(fontSize: 14, color: Colors.black54),
+                  ),
+                  const SizedBox(height: 32),
+
+                  _pinSectionWithoutEye(
+                    title: 'New PIN',
+                    controllers: _newPinControllers,
+                    obscure: _obscureNewPin,
+                  ),
+
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      icon: Icon(
+                        _obscureNewPin
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey.shade700,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureNewPin = !_obscureNewPin;
+                        });
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  _pinSectionWithoutEye(
+                    title: 'Confirm New PIN',
+                    controllers: _confirmPinControllers,
+                    obscure: _obscureConfirmPin,
+                  ),
+
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPin
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey.shade700,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmPin = !_obscureConfirmPin;
+                        });
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 36),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final newPin = _getPin(_newPinControllers);
+                        final confirmPin = _getPin(_confirmPinControllers);
+
+                        if (newPin == confirmPin) {
+                          submitPin();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('PINs do not match')),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey.shade700,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                      ),
+                      child: const Text(
+                        'Save PIN',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: Colors.grey.shade300)),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          'OR',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Expanded(child: Divider(color: Colors.grey.shade300)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        // Add biometric auth logic here
+                      },
+                      icon: const Icon(Icons.fingerprint),
+                      label: const Text('Biometric / Face Unlock'),
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        side: BorderSide(color: Colors.grey.shade400),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _pinSectionWithoutEye({
+    required String title,
+    required List<TextEditingController> controllers,
+    required bool obscure,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ...List.generate(4, (index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: SizedBox(
+                  width: 54,
+                  height: 54,
+                  child: TextFormField(
+                    controller: controllers[index],
+                    maxLength: 1,
+                    obscureText: obscure,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      counterText: '',
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onChanged: (value) =>
+                        _onFieldChanged(index, value, controllers),
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
+      ],
     );
   }
 }
