@@ -1,6 +1,4 @@
 import 'package:bold_portfolio/screens/ForgotPasswordScreen.dart';
-import 'package:bold_portfolio/screens/enter_pin_screen.dart';
-import 'package:bold_portfolio/screens/pin_generation_screen.dart';
 import 'package:bold_portfolio/screens/setting_pin_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/utils/mobileFormater.dart';

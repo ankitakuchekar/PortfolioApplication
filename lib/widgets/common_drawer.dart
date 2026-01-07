@@ -2,7 +2,7 @@ import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/screens/BullionPortfolioGuideScreen.dart';
 import 'package:bold_portfolio/screens/PrivacyPolicyScreen.dart';
 import 'package:bold_portfolio/screens/TaxReportScreen.dart';
-import 'package:bold_portfolio/screens/main_screen.dart';
+import 'package:bold_portfolio/screens/setting_pin_screen.dart';
 import 'package:bold_portfolio/services/api_service.dart';
 import 'package:bold_portfolio/widgets/FeedbackPopup.dart';
 import 'package:flutter/material.dart';
@@ -322,6 +322,21 @@ class _CommonDrawerState extends State<CommonDrawer> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => PrivacyPolicyScreen()),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.settings_outlined,
+                    color: Colors.teal,
+                  ),
+                  title: const Text("Settings"),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SettingPinScreen(isSettingPage: true),
+                      ),
                     );
                   },
                 ),

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NewPinEntryScreen extends StatefulWidget {
   final bool isFromSettings;
@@ -19,6 +20,12 @@ class NewPinEntryScreen extends StatefulWidget {
 
 class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
   final TextEditingController _pinController = TextEditingController();
+  bool _showBiometricLogin = false;
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricPreference();
+  }
 
   Future<void> submitPin() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -35,9 +42,7 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
           "$baseUrl/Portfolio/GetCustomerPortfolioAppPin?customerId=$customerId&pin=${_pinController.text}",
         ),
       );
-      print(
-        "Response Status: ${response.statusCode}, $baseUrl/Portfolio/GetCustomerPortfolioAppPin?customerId=$customerId&pin=${_pinController.text}",
-      );
+
       if (response.statusCode == 200) {
         print("PIN verified successfully.");
         // API call was successful, navigate to MainScreen
@@ -52,6 +57,13 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
     } catch (e) {
       print("Error occurred: $e");
     }
+  }
+
+  Future<void> _loadBiometricPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _showBiometricLogin = prefs.getBool('showBioMetricLogin') ?? false;
+    });
   }
 
   @override
@@ -178,18 +190,20 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
                 width: double.infinity,
                 height: 50,
                 child: OutlinedButton.icon(
-                  onPressed: () async {
-                    bool check = await BiometricAuthService()
-                        .authenticateLocalUser();
-                    print("Biometric Auth Result: $check");
-                    if (check) {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => const MainScreen(),
-                        ),
-                      );
-                    }
-                  },
+                  onPressed: _showBiometricLogin
+                      ? () async {
+                          bool check = await BiometricAuthService()
+                              .authenticateLocalUser();
+                          print("Biometric Auth Result: $check");
+                          if (check) {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) => const MainScreen(),
+                              ),
+                            );
+                          }
+                        }
+                      : null,
                   icon: const Icon(Icons.fingerprint),
                   label: const Text('Biometric / Face Unlock'),
                   style: OutlinedButton.styleFrom(

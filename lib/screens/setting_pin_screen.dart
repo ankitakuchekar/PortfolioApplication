@@ -1,9 +1,14 @@
+import 'package:bold_portfolio/services/biometric_auth_service.dart';
+import 'package:bold_portfolio/utils/app_colors.dart';
+import 'package:bold_portfolio/widgets/common_app_bar.dart';
+import 'package:bold_portfolio/widgets/common_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:bold_portfolio/providers/auth_provider.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'main_screen.dart'; // Make sure to import your MainScreen
 
 class SettingPinScreen extends StatefulWidget {
@@ -16,6 +21,19 @@ class SettingPinScreen extends StatefulWidget {
 }
 
 class _SettingPinScreenState extends State<SettingPinScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricPreference();
+  }
+
+  Future<void> _loadBiometricPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _showBiometricLogin = prefs.getBool('showBioMetricLogin') ?? false;
+    });
+  }
+
   final List<TextEditingController> _newPinControllers = List.generate(
     4,
     (index) => TextEditingController(),
@@ -43,6 +61,13 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
   // To join the pin inputs
   String _getPin(List<TextEditingController> controllers) {
     return controllers.map((e) => e.text).join('');
+  }
+
+  bool _showBiometricLogin = false;
+
+  Future<void> _saveBiometricPreference(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('showBioMetricLogin', value);
   }
 
   // Submit PIN function
@@ -113,40 +138,44 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
-      appBar: AppBar(
-        title: widget.isSettingPage ? const Text('Settings') : null,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: Colors.black,
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => MainScreen()),
-              );
-            },
-            child: const Text(
-              'SKIP',
-              style: TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-          ),
-        ],
-      ),
+    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-      resizeToAvoidBottomInset: true,
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: AppColors.background,
+      appBar: widget.isSettingPage
+          ? CommonAppBar(title: 'Settings')
+          : AppBar(
+              title: widget.isSettingPage ? const Text('Settings') : null,
+              backgroundColor: Colors.white,
+              elevation: 0,
+              foregroundColor: Colors.black,
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (_) => MainScreen()),
+                    );
+                  },
+                  child: const Text(
+                    'SKIP',
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+      drawer: widget.isSettingPage ? const CommonDrawer() : null,
       body: SingleChildScrollView(
         physics: const NeverScrollableScrollPhysics(),
         child: SizedBox(
-          height: MediaQuery.of(context).size.height,
+          // height: MediaQuery.of(context).size.height,
           child: Center(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
               margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -165,7 +194,7 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                     'This PIN is required every time you open the app.',
                     style: TextStyle(fontSize: 14, color: Colors.black54),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 22),
 
                   _pinSectionWithoutEye(
                     title: 'New PIN',
@@ -190,7 +219,7 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 14),
 
                   _pinSectionWithoutEye(
                     title: 'Confirm New PIN',
@@ -215,7 +244,7 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 36),
+                  const SizedBox(height: 16),
 
                   SizedBox(
                     width: double.infinity,
@@ -247,45 +276,113 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  widget.isSettingPage
+                      ? const SizedBox(height: 7)
+                      : const SizedBox(height: 24),
 
-                  Row(
-                    children: [
-                      Expanded(child: Divider(color: Colors.grey.shade300)),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          'OR',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.black54,
-                            fontWeight: FontWeight.w600,
+                  widget.isSettingPage
+                      ? SizedBox.shrink()
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: Divider(color: Colors.grey.shade300),
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8),
+                              child: Text(
+                                'OR',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black54,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(color: Colors.grey.shade300),
+                            ),
+                          ],
+                        ),
+
+                  widget.isSettingPage
+                      ? const SizedBox(height: 7)
+                      : const SizedBox(height: 20),
+
+                  widget.isSettingPage
+                      ? SizedBox.shrink()
+                      : SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: OutlinedButton.icon(
+                            onPressed: _showBiometricLogin
+                                ? () async {
+                                    bool check = await BiometricAuthService()
+                                        .authenticateLocalUser();
+                                    print("Biometric Auth Result: $check");
+                                    if (check) {
+                                      Navigator.of(context).pushReplacement(
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const MainScreen(),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                : null,
+                            icon: const Icon(Icons.fingerprint),
+                            label: const Text('Biometric / Face Unlock'),
+                            style: OutlinedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(child: Divider(color: Colors.grey.shade300)),
-                    ],
-                  ),
+
+                  const SizedBox(height: 6),
+
+                  !widget.isSettingPage
+                      ? SizedBox.shrink()
+                      : Divider(color: Colors.grey.shade300),
+                  !widget.isSettingPage
+                      ? SizedBox.shrink()
+                      : const Text(
+                          'Use fingerprint or face recognition to log in faster.',
+                          style: TextStyle(fontSize: 14, color: Colors.black54),
+                        ),
+                  !widget.isSettingPage
+                      ? SizedBox.shrink()
+                      : const SizedBox(height: 12),
+                  !widget.isSettingPage
+                      ? SizedBox.shrink()
+                      : Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Enable Biometric Login',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              Switch(
+                                value: _showBiometricLogin,
+                                onChanged: _showBiometricLogin
+                                    ? (value) {
+                                        setState(() {
+                                          _showBiometricLogin = value;
+                                        });
+                                        _saveBiometricPreference(value);
+                                      }
+                                    : null,
+                              ),
+                            ],
+                          ),
+                        ),
 
                   const SizedBox(height: 20),
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        // Add biometric auth logic here
-                      },
-                      icon: const Icon(Icons.fingerprint),
-                      label: const Text('Biometric / Face Unlock'),
-                      style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        side: BorderSide(color: Colors.grey.shade400),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
