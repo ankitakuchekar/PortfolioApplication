@@ -1,7 +1,10 @@
+import 'package:bold_portfolio/models/user_model.dart';
 import 'package:bold_portfolio/providers/auth_provider.dart';
+import 'package:bold_portfolio/screens/login_screen.dart';
 import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/services/biometric_auth_service.dart';
+import 'package:bold_portfolio/services/pin_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -21,41 +24,47 @@ class NewPinEntryScreen extends StatefulWidget {
 class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
   final TextEditingController _pinController = TextEditingController();
   bool _showBiometricLogin = false;
+  String? emailId;
+  String? firstName;
+  String? userId;
   @override
   void initState() {
     super.initState();
+    _loadEmailId();
     _loadBiometricPreference();
+  }
+
+  Future<void> _loadEmailId() async {
+    final authService = AuthService();
+    final fetchedUser = await authService.getUser();
+    final fechedEMail = await authService.getEmail();
+    setState(() {
+      emailId = fechedEMail;
+      firstName = fetchedUser?.firstName;
+      userId = fetchedUser?.id;
+    });
   }
 
   Future<void> submitPin() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.checkAuthStatus();
 
-    final String baseUrl = dotenv.env['API_URL']!;
-
     final authService = AuthService();
     final fetchedUser = await authService.getUser();
-    String customerId = fetchedUser?.id ?? '';
-    try {
-      final response = await http.get(
-        Uri.parse(
-          "$baseUrl/Portfolio/GetCustomerPortfolioAppPin?customerId=$customerId&pin=${_pinController.text}",
-        ),
-      );
 
-      if (response.statusCode == 200) {
-        print("PIN verified successfully.");
-        // API call was successful, navigate to MainScreen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
-      } else {
-        // Handle error (Optional)
-        print("Error: ${response.statusCode}");
-        print("Response: ${response.body}");
-      }
-    } catch (e) {
-      print("Error occurred: $e");
+    final bool isValid = await PinService.verifyAppPin(
+      customerId: fetchedUser?.id ?? '',
+      pin: _pinController.text.trim(),
+    );
+
+    if (isValid) {
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Invalid PIN')));
     }
   }
 
@@ -84,7 +93,9 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
             children: [
               /// Title
               Text(
-                widget.isFromSettings ? 'Enter your current PIN' : 'Hi, User',
+                widget.isFromSettings
+                    ? 'Enter your current PIN'
+                    : 'Hi, ${firstName ?? 'User'}',
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
@@ -130,7 +141,17 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
               Align(
                 alignment: Alignment.center,
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => LoginScreen(
+                          fetchedUserEmail: emailId ?? '',
+                          isForgotPassClick: true,
+                        ),
+                      ),
+                    );
+                  },
                   child: const Text(
                     'Forgot PIN?',
                     style: TextStyle(

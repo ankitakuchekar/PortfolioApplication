@@ -164,7 +164,9 @@ class _LandingPageState extends State<LandingPage>
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const LoginScreen(),
+                                  builder: (context) => const LoginScreen(
+                                    isForgotPassClick: false,
+                                  ),
                                 ),
                               );
                             },

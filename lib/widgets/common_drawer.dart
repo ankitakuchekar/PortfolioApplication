@@ -126,7 +126,9 @@ class _CommonDrawerState extends State<CommonDrawer> {
 
     if (context.mounted) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        MaterialPageRoute(
+          builder: (context) => const LoginScreen(isForgotPassClick: false),
+        ),
         (route) => false,
       );
     }

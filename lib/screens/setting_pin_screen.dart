@@ -1,4 +1,5 @@
 import 'package:bold_portfolio/services/biometric_auth_service.dart';
+import 'package:bold_portfolio/services/pin_service.dart' show PinService;
 import 'package:bold_portfolio/utils/app_colors.dart';
 import 'package:bold_portfolio/widgets/common_app_bar.dart';
 import 'package:bold_portfolio/widgets/common_drawer.dart';
@@ -70,69 +71,28 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
     await prefs.setBool('showBioMetricLogin', value);
   }
 
-  // Submit PIN function
   Future<void> submitPin() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.checkAuthStatus();
 
-    final String baseUrl = dotenv.env['API_URL']!;
-
-    String pin = _getPin(_newPinControllers).trim();
+    final pin = _getPin(_newPinControllers).trim();
 
     final authService = AuthService();
     final fetchedUser = await authService.getUser();
-    String customerId = fetchedUser?.id ?? '';
-    if (authProvider.user?.pinForApp == null) {
-      try {
-        final response = await http.post(
-          Uri.parse(
-            "$baseUrl/Portfolio/UpdateCustomerPortfolioAppPin?customerId=$customerId&pin=$pin",
-          ),
-        );
-        print(
-          "Response Status: ${response.statusCode}, $baseUrl/Portfolio/UpdateCustomerPortfolioAppPin?customerId=$customerId&pin=$pin",
-        );
-        if (response.statusCode == 200) {
-          print("PIN updated successfully.");
-          // API call was successful, navigate to MainScreen
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const MainScreen()),
-          );
-        } else {
-          // Handle error (Optional)
-          print("Error: ${response.statusCode}");
-          print("Response: ${response.body}");
-        }
-      } catch (e) {
-        print("Error occurred: $e");
-      }
+
+    final bool success = await PinService.updateAppPin(
+      customerId: fetchedUser?.id ?? '',
+      pin: pin,
+    );
+
+    if (success) {
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
     } else {
-      try {
-        final response = await http.post(
-          Uri.parse(
-            "$baseUrl/Portfolio/UpdateCustomerPortfolioAppPin?customerid=$customerId&Pin=$pin",
-          ),
-          headers: {
-            "Accept": "*/*",
-            "Authorization":
-                "Bearer ${fetchedUser?.token}", // Include Bearer token
-          },
-        );
-        print("Response Status: ${response.statusCode} ${fetchedUser?.token}");
-        if (response.statusCode == 200) {
-          print("PIN updated successfully.");
-          // API call was successful, navigate to MainScreen
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const MainScreen()),
-          );
-        } else {
-          // Handle error (Optional)
-          print("Error: ${response.statusCode}");
-          print("Response: ${response.body}s");
-        }
-      } catch (e) {
-        print("Error occurred: $e");
-      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to update PIN')));
     }
   }
 

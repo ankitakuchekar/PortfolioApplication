@@ -10,7 +10,13 @@ import 'main_screen.dart';
 // import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final String? fetchedUserEmail;
+  final bool? isForgotPassClick;
+  const LoginScreen({
+    super.key,
+    this.fetchedUserEmail,
+    required this.isForgotPassClick,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -27,6 +33,15 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _mobileController = TextEditingController();
   final _regPasswordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final fetchedUserEmail = widget.fetchedUserEmail;
+    if (fetchedUserEmail != null) {
+      _usernameController.text = fetchedUserEmail;
+    }
+  }
 
   // reCAPTCHA functionality
   final _firstNameFocusNode = FocusNode();
@@ -123,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return null; // ✅ valid
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleLogin(bool? isForgotPassClick) async {
     if (_formKey.currentState!.validate()) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final success = await authProvider.login(
@@ -140,7 +155,9 @@ class _LoginScreenState extends State<LoginScreen> {
         final authService = AuthService();
         final fetchedUser = await authService.getUser();
         // Check if pinForApp is not null or empty
-        if (fetchedUser?.pinForApp == '' || fetchedUser?.pinForApp == '0') {
+        if (fetchedUser?.pinForApp == '' ||
+            fetchedUser?.pinForApp == '0' ||
+            isForgotPassClick == true) {
           // Navigate to MainScreen if PinForApp is not null or empty
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
@@ -385,7 +402,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: ElevatedButton(
                                   onPressed: authProvider.isLoading
                                       ? null
-                                      : _handleLogin,
+                                      : () => _handleLogin(
+                                          widget.isForgotPassClick,
+                                        ),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.transparent,
                                     shadowColor: Colors.transparent,
@@ -465,38 +484,39 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         // After Login Button
                         const SizedBox(height: 30),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Don't have an account? ",
-                              style: TextStyle(
-                                color: Color(0xFF4B4B4B),
-                                fontSize: 14,
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _selectedTab = 1;
-                                  _formKey.currentState?.reset();
-                                });
-                                Provider.of<AuthProvider>(
-                                  context,
-                                  listen: false,
-                                ).clearError();
-                              },
-                              child: const Text(
-                                "Sign up",
+                        if (widget.isForgotPassClick != true)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                "Don't have an account? ",
                                 style: TextStyle(
-                                  color: Color(0xFF00C566),
-                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF4B4B4B),
                                   fontSize: 14,
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedTab = 1;
+                                    _formKey.currentState?.reset();
+                                  });
+                                  Provider.of<AuthProvider>(
+                                    context,
+                                    listen: false,
+                                  ).clearError();
+                                },
+                                child: const Text(
+                                  "Sign up",
+                                  style: TextStyle(
+                                    color: Color(0xFF00C566),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
 
                       // REGISTER FORM
