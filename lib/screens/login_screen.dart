@@ -12,6 +12,7 @@ import 'main_screen.dart';
 class LoginScreen extends StatefulWidget {
   final String? fetchedUserEmail;
   final bool? isForgotPassClick;
+
   const LoginScreen({
     super.key,
     this.fetchedUserEmail,
@@ -27,6 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  bool _isSameEmail = false;
   // for register
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -335,6 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
                             ),
+
                             prefixIcon: const Icon(
                               Icons.email,
                               color: Colors.black,
@@ -345,7 +348,16 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-
+                          onChanged: (value) {
+                            setState(() {
+                              _isSameEmail =
+                                  widget.fetchedUserEmail != null &&
+                                  value.trim().toLowerCase() ==
+                                      widget.fetchedUserEmail!
+                                          .trim()
+                                          .toLowerCase();
+                            });
+                          },
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter your email';
