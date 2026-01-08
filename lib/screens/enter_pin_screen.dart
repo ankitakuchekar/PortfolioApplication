@@ -176,7 +176,8 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey.shade600,
+                    backgroundColor: Colors.black,
+                    textStyle: const TextStyle(color: Colors.white),
                     disabledBackgroundColor: Colors.grey.shade300,
                     elevation: 0,
                     shape: RoundedRectangleBorder(

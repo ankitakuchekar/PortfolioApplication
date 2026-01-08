@@ -33,7 +33,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _mobileController = TextEditingController();
   final _regPasswordController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
@@ -237,6 +236,37 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      widget.isForgotPassClick == true
+                          ? TextButton.icon(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              icon: const Icon(
+                                Icons.arrow_back,
+                                color: Colors.black87,
+                              ),
+                              label: const Text(
+                                'Back',
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.black87,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 1,
+                                  vertical: 4,
+                                ),
+                                minimumSize: Size
+                                    .zero, // To prevent default min button size
+                                tapTargetSize: MaterialTapTargetSize
+                                    .shrinkWrap, // Compact tap area
+                              ),
+                            )
+                          : Container(),
+
                       const SizedBox(height: 20),
                       Image.network(
                         'https://res.cloudinary.com/bold-pm/image/upload/Graphics/bold-portfolio-app-1.png',

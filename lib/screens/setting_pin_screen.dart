@@ -22,6 +22,8 @@ class SettingPinScreen extends StatefulWidget {
 }
 
 class _SettingPinScreenState extends State<SettingPinScreen> {
+  String? pinForApp = '';
+
   @override
   void initState() {
     super.initState();
@@ -29,6 +31,9 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
   }
 
   Future<void> _loadBiometricPreference() async {
+    final authService = AuthService();
+    final fetchedUser = await authService.getUser();
+    pinForApp = fetchedUser?.pinForApp;
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _showBiometricLogin = prefs.getBool('showBioMetricLogin') ?? false;
@@ -77,6 +82,16 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
 
     final pin = _getPin(_newPinControllers).trim();
 
+    if (!RegExp(r'^\d+$').hasMatch(pin)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('PIN must contain only numbers'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return; // ⛔ Stop execution
+    }
+
     final authService = AuthService();
     final fetchedUser = await authService.getUser();
 
@@ -86,13 +101,23 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
     );
 
     if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('PIN Successfully Updated'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
       Navigator.of(
         context,
       ).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to update PIN')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to update PIN'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -131,6 +156,7 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
       drawer: widget.isSettingPage ? const CommonDrawer() : null,
       body: SingleChildScrollView(
         physics: const NeverScrollableScrollPhysics(),
+
         child: SizedBox(
           // height: MediaQuery.of(context).size.height,
           child: Center(
@@ -145,6 +171,37 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  widget.isSettingPage
+                      ? TextButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.black87,
+                          ),
+                          label: const Text(
+                            'Back',
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.black87,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 1,
+                              vertical: 4,
+                            ),
+                            minimumSize:
+                                Size.zero, // To prevent default min button size
+                            tapTargetSize: MaterialTapTargetSize
+                                .shrinkWrap, // Compact tap area
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+
                   const Text(
                     'Set / Update App PIN',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
@@ -329,7 +386,7 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                               ),
                               Switch(
                                 value: _showBiometricLogin,
-                                onChanged: _showBiometricLogin
+                                onChanged: (pinForApp == '' || pinForApp == '0')
                                     ? (value) {
                                         setState(() {
                                           _showBiometricLogin = value;
