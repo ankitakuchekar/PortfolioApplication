@@ -58,6 +58,12 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
     );
 
     if (isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('PIN Successfully Updated'),
+          backgroundColor: Colors.green,
+        ),
+      );
       Navigator.of(
         context,
       ).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));

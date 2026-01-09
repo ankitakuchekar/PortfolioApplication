@@ -103,7 +103,7 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('PIN Successfully Updated'),
+          content: Text('PIN Successfully Set'),
           backgroundColor: Colors.green,
         ),
       );
