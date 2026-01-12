@@ -158,8 +158,6 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
             ),
       drawer: widget.isSettingPage ? const CommonDrawer() : null,
       body: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
-
         child: SizedBox(
           // height: MediaQuery.of(context).size.height,
           child: Center(
