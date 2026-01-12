@@ -283,7 +283,9 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey.shade700,
+                        backgroundColor: Colors.black,
+                        textStyle: const TextStyle(color: Colors.white),
+                        disabledBackgroundColor: Colors.grey.shade300,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(25),

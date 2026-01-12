@@ -316,8 +316,6 @@
 // }
 
 import 'package:bold_portfolio/screens/enter_pin_screen.dart';
-import 'package:bold_portfolio/screens/setting_pin_screen.dart';
-import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -341,8 +339,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _initializeApp() async {
     await Future.delayed(const Duration(seconds: 4));
-    final authService = AuthService();
-    final fetchedUserId = await authService.getUser();
 
     if (mounted) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);

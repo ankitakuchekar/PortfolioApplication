@@ -190,19 +190,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleRegister() async {
     if (_formKey.currentState!.validate()) {
-      // Check reCAPTCHA verification
-      // if (!_isRecaptchaVerified || _recaptchaToken == null) {
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     const SnackBar(
-      //       content: Text(
-      //         'Please complete reCAPTCHA verification by tapping the security button above',
-      //       ),
-      //       backgroundColor: Colors.red,
-      //     ),
-      //   );
-      //   return;
-      // }
-
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
       final success = await authProvider.register(
@@ -217,7 +204,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (success && mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainScreen()),
+          MaterialPageRoute(
+            builder: (context) => const SettingPinScreen(isSettingPage: false),
+          ),
         );
       }
     }
