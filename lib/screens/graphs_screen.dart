@@ -315,8 +315,8 @@ class _GraphsScreenState extends State<GraphsScreen> {
                     ),
                   ),
                 Container(
-                  height: 400,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  height: 500,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Center(
                     child: selectedTab == 'Candle Chart'
                         ? Column(
@@ -324,10 +324,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
                               if (filterOptions.isNotEmpty)
                                 Container(
                                   color: const Color(0xFF111827),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                    horizontal: 16,
-                                  ),
+
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceEvenly,
@@ -340,18 +337,37 @@ class _GraphsScreenState extends State<GraphsScreen> {
                                           });
                                         },
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: isSelected
-                                              ? Colors.white
-                                              : Colors.black,
+                                          backgroundColor:
+                                              Colors.black, // always black
                                           foregroundColor: isSelected
-                                              ? Colors.black
+                                              ? Colors.amberAccent
                                               : Colors.white,
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 10,
+                                            horizontal: 8,
+                                            vertical: 6,
+                                          ), // smaller padding
+                                          minimumSize: const Size(
+                                            60,
+                                            32,
+                                          ), // smaller fixed size
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                            side: isSelected
+                                                ? const BorderSide(
+                                                    color: Colors.amberAccent,
+                                                  )
+                                                : BorderSide.none,
                                           ),
+                                          elevation: 0,
                                         ),
-                                        child: Text(type),
+                                        child: Text(
+                                          type,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                          ), // smaller font size
+                                        ),
                                       );
                                     }).toList(),
                                   ),

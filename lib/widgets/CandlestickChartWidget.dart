@@ -77,6 +77,7 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
@@ -334,94 +335,99 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
         Expanded(
           child: SfCartesianChart(
             backgroundColor: const Color(0xFF1a1a1a),
-            tooltipBehavior: _tooltipBehavior,
-            zoomPanBehavior: _zoomPanBehavior,
-            crosshairBehavior: _crosshairBehavior,
+            plotAreaBorderWidth: 0,
+
+            tooltipBehavior: TooltipBehavior(
+              enable: true,
+              color: Colors.black87,
+              textStyle: const TextStyle(color: Colors.white),
+            ),
+
+            zoomPanBehavior: ZoomPanBehavior(
+              enablePinching: true,
+              enablePanning: true,
+              zoomMode: ZoomMode.x,
+            ),
+
+            crosshairBehavior: CrosshairBehavior(
+              enable: true,
+              lineType: CrosshairLineType.both,
+              lineColor: Colors.white54,
+              lineWidth: 1,
+            ),
+
+            // ===================== X AXIS =====================
             primaryXAxis: DateTimeAxis(
               intervalType: DateTimeIntervalType.minutes,
-              // interval: 35,
-              dateFormat: DateFormat('hh:mm a'),
+              interval: 40,
+              dateFormat: DateFormat('MMM dd, hh:mm a'),
+              edgeLabelPlacement: EdgeLabelPlacement.shift,
+
+              rangePadding: ChartRangePadding.additional,
+              maximum:
+                  (widget.selectedMetal == 'Gold' ? _goldData : _silverData)
+                      .isNotEmpty
+                  ? (widget.selectedMetal == 'Gold'
+                            ? _goldData.last.x
+                            : _silverData.last.x)
+                        .add(const Duration(minutes: 90))
+                  : null,
+
               majorGridLines: const MajorGridLines(
                 color: Color(0xFF333333),
                 dashArray: [4, 4],
               ),
-              axisLine: const AxisLine(color: Color(0xFF404040)),
               majorTickLines: const MajorTickLines(color: Color(0xFF404040)),
+              axisLine: const AxisLine(color: Color(0xFF404040)),
+
               labelStyle: TextStyle(
                 color: const Color(0xFF8c8c8c),
                 fontSize: MediaQuery.of(context).size.width < 768 ? 10 : 12,
               ),
-              rangePadding: ChartRangePadding.none,
-              maximum: xAxisMaxDate, // manual padding
             ),
+
+            // ===================== Y AXIS =====================
             primaryYAxis: NumericAxis(
-              numberFormat: NumberFormat.currency(
-                symbol: '\$',
-                decimalDigits: 2,
-              ),
+              decimalPlaces: 2,
+              rangePadding: ChartRangePadding.additional,
+
               majorGridLines: const MajorGridLines(
                 color: Color(0xFF333333),
                 dashArray: [4, 4],
               ),
-              axisLine: const AxisLine(color: Color(0xFF404040)),
               majorTickLines: const MajorTickLines(color: Color(0xFF404040)),
+              axisLine: const AxisLine(color: Color(0xFF404040)),
+
               labelStyle: TextStyle(
-                color: const Color(0xFF404040),
+                color: const Color(0xFF8c8c8c),
                 fontSize: MediaQuery.of(context).size.width < 768 ? 10 : 12,
               ),
+
               axisLabelFormatter: (AxisLabelRenderDetails details) {
                 return ChartAxisLabel(
-                  '\$${formatValue(details.value)}',
-                  const TextStyle(
-                    color: Color(0xFF8c8c8c),
-                  ), // customize style as needed
+                  '\$${details.value.toStringAsFixed(2)}',
+                  const TextStyle(color: Color(0xFF8c8c8c)),
                 );
               },
             ),
+
+            // ===================== SERIES =====================
             series: <CartesianSeries>[
-              if (widget.showCombined) ...[
-                CandleSeries<CandleData, DateTime>(
-                  name: 'Gold',
-                  dataSource: _goldData,
-                  xValueMapper: (CandleData data, _) => data.x,
-                  openValueMapper: (CandleData data, _) => data.open,
-                  highValueMapper: (CandleData data, _) => data.high,
-                  lowValueMapper: (CandleData data, _) => data.low,
-                  closeValueMapper: (CandleData data, _) => data.close,
-                  bearColor: const Color(0xFFff3333),
-                  bullColor: const Color(0xFF00cc00),
-                  enableSolidCandles: true,
-                ),
-                // CandleSeries<CandleData, DateTime>(
-                //   name: 'Silver',
-                //   dataSource: _silverData,
-                //   xValueMapper: (CandleData data, _) => data.x,
-                //   openValueMapper: (CandleData data, _) => data.open,
-                //   highValueMapper: (CandleData data, _) => data.high,
-                //   lowValueMapper: (CandleData data, _) => data.low,
-                //   closeValueMapper: (CandleData data, _) => data.close,
-                //   bearColor: const Color(0xFFff3333),
-                //   bullColor: const Color(0xFF00cc00),
-                //   enableSolidCandles: true,
-                // ),
-              ] else ...[
-                CandleSeries<CandleData, DateTime>(
-                  dataSource: widget.selectedMetal == 'Gold'
-                      ? _goldData
-                      : _silverData,
-                  xValueMapper: (CandleData data, _) => data.x,
-                  openValueMapper: (CandleData data, _) => data.open,
-                  highValueMapper: (CandleData data, _) => data.high,
-                  lowValueMapper: (CandleData data, _) => data.low,
-                  closeValueMapper: (CandleData data, _) => data.close,
-                  // bearColor: widget.selectedMetal == 'Gold'
-                  //     ? const Color(0xFFff3333)
-                  //     : Colors.blueGrey.shade300,
-                  bearColor: const Color(0xFFff3333),
-                  bullColor: const Color(0xFF00cc00),
-                  enableSolidCandles: true,
-                ),
-              ],
+              CandleSeries<CandleData, DateTime>(
+                dataSource: widget.selectedMetal == 'Gold'
+                    ? _goldData
+                    : _silverData,
+
+                xValueMapper: (CandleData data, _) => data.x,
+                openValueMapper: (CandleData data, _) => data.open,
+                highValueMapper: (CandleData data, _) => data.high,
+                lowValueMapper: (CandleData data, _) => data.low,
+                closeValueMapper: (CandleData data, _) => data.close,
+
+                bullColor: const Color(0xFF00cc00),
+                bearColor: const Color(0xFFff3333),
+                enableSolidCandles: true,
+              ),
             ],
           ),
         ),
