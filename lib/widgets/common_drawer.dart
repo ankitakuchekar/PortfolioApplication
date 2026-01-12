@@ -158,9 +158,12 @@ class _CommonDrawerState extends State<CommonDrawer> {
         ? portfolioData!.data[0]
         : CustomerData.empty();
 
+    // final portfolioSettings = customerData?.portfolioSettings;
+    // final holdingData =
+    //     portfolioProvider.portfolioData?.data[0].productHoldings;
+
     final portfolioSettings = customerData.portfolioSettings;
-    final holdingData =
-        portfolioProvider.portfolioData?.data[0].productHoldings;
+    final holdingData = customerData.productHoldings;
     return Drawer(
       child: Column(
         children: [
@@ -225,7 +228,6 @@ class _CommonDrawerState extends State<CommonDrawer> {
                 Row(
                   children: [
                     Text(
-                      portfolioSettings.showActualPrice
                           ? "Premium Included"
                           : "Premium Excluded",
                       style: const TextStyle(
@@ -244,8 +246,8 @@ class _CommonDrawerState extends State<CommonDrawer> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : Switch(
-                        value: portfolioSettings.showActualPrice,
-                        onChanged: holdingData!.isEmpty
+                        value: portfolioSettings.showActualPrice ?? false,
+                        onChanged: isLoadingToggle || holdingData!.isEmpty
                             ? null // Disable the switch when holdingData is null
                             : handleToggle, // Use the handleToggle function when holdingData is not null
                         activeColor: Colors.blue, // Color when switch is on

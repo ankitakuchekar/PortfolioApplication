@@ -4,9 +4,7 @@ import 'package:bold_portfolio/utils/app_colors.dart';
 import 'package:bold_portfolio/widgets/common_app_bar.dart';
 import 'package:bold_portfolio/widgets/common_drawer.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:bold_portfolio/providers/auth_provider.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,21 +21,33 @@ class SettingPinScreen extends StatefulWidget {
 
 class _SettingPinScreenState extends State<SettingPinScreen> {
   String? pinForApp = '';
+  bool _showBiometricLogin = false;
+  late String currentUserKey;
 
   @override
   void initState() {
     super.initState();
-    _loadBiometricPreference();
+    initUserBiometric();
   }
 
-  Future<void> _loadBiometricPreference() async {
+  Future<void> initUserBiometric() async {
     final authService = AuthService();
     final fetchedUser = await authService.getUser();
-    pinForApp = fetchedUser?.pinForApp;
+
+    currentUserKey = fetchedUser != null && fetchedUser.id.isNotEmpty
+        ? fetchedUser.id
+        : fetchedUser?.email ?? '';
+
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _showBiometricLogin = prefs.getBool('showBioMetricLogin') ?? false;
-    });
+    _showBiometricLogin =
+        prefs.getBool('biometric_enabled_$currentUserKey') ?? false;
+
+    setState(() {});
+  }
+
+  Future<void> saveBiometricPreference(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('biometric_enabled_$currentUserKey', value);
   }
 
   final List<TextEditingController> _newPinControllers = List.generate(
@@ -67,13 +77,6 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
   // To join the pin inputs
   String _getPin(List<TextEditingController> controllers) {
     return controllers.map((e) => e.text).join('');
-  }
-
-  bool _showBiometricLogin = false;
-
-  Future<void> _saveBiometricPreference(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('showBioMetricLogin', value);
   }
 
   Future<void> submitPin() async {
@@ -387,11 +390,11 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                               Switch(
                                 value: _showBiometricLogin,
                                 onChanged: (pinForApp == '' || pinForApp == '0')
-                                    ? (value) {
+                                    ? (value) async {
                                         setState(() {
                                           _showBiometricLogin = value;
                                         });
-                                        _saveBiometricPreference(value);
+                                        await saveBiometricPreference(value);
                                       }
                                     : null,
                               ),
