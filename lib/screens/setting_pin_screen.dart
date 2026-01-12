@@ -134,6 +134,9 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
       appBar: widget.isSettingPage
           ? CommonAppBar(title: 'Settings')
           : AppBar(
+              automaticallyImplyLeading: false, // 👈 disables auto back arrow
+              leading:
+                  const SizedBox.shrink(), // 👈 removes leading widget space
               title: widget.isSettingPage ? const Text('Settings') : null,
               backgroundColor: Colors.white,
               elevation: 0,
