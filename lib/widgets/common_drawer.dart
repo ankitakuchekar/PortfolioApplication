@@ -228,6 +228,7 @@ class _CommonDrawerState extends State<CommonDrawer> {
                 Row(
                   children: [
                     Text(
+                      portfolioSettings.showActualPrice ?? false
                           ? "Premium Included"
                           : "Premium Excluded",
                       style: const TextStyle(
