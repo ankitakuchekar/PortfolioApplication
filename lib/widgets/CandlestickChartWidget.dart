@@ -30,7 +30,6 @@ class MetalCandleChart extends StatefulWidget {
 }
 
 class _MetalCandleChartState extends State<MetalCandleChart> {
-  // List<CandleData> _groupedData = [];
   late TooltipBehavior _tooltipBehavior;
   late ZoomPanBehavior _zoomPanBehavior;
   late CrosshairBehavior _crosshairBehavior;
@@ -53,6 +52,7 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
       false,
       widget.selectedMetal,
     );
+
     _tooltipBehavior = TooltipBehavior(
       enable: true,
       shouldAlwaysShow: false,
@@ -77,7 +77,6 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
@@ -112,9 +111,7 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
 
     _zoomPanBehavior = ZoomPanBehavior(
       enablePinching: true,
-      enableDoubleTapZooming: true,
       enablePanning: true,
-      enableMouseWheelZooming: true,
       zoomMode: ZoomMode.x,
     );
 
@@ -147,20 +144,6 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
           widget.selectedMetal,
         );
       });
-    }
-  }
-
-  String formatValue(num value) {
-    final absValue = value.abs();
-
-    if (absValue >= 1e9) {
-      return '${(value / 1e9).toStringAsFixed(1)}B';
-    } else if (absValue >= 1e6) {
-      return '${(value / 1e6).toStringAsFixed(1)}M';
-    } else if (absValue >= 1e3) {
-      return '${(value / 1e3).toStringAsFixed(1)}K';
-    } else {
-      return '${value.toStringAsFixed(0)}';
     }
   }
 
@@ -231,9 +214,6 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
       }
     }
     return groupedData;
-    // .length >= 100
-    //     ? groupedData.sublist(groupedData.length - 100)
-    //     : groupedData;
   }
 
   Widget _buildChartButton(
@@ -242,7 +222,7 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
     VoidCallback onPressed,
   ) {
     return SizedBox(
-      width: 28, // Adjust width/height for smaller/larger button
+      width: 28,
       height: 28,
       child: Container(
         decoration: const BoxDecoration(
@@ -250,54 +230,78 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
           shape: BoxShape.circle,
         ),
         child: IconButton(
-          icon: Icon(icon, color: Colors.white, size: 12), // Smaller icon size
+          icon: Icon(icon, color: Colors.white, size: 12),
           tooltip: tooltip,
           onPressed: onPressed,
           padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(), // Remove min constraints
+          constraints: const BoxConstraints(),
         ),
       ),
     );
   }
 
+  String formatValue(num value) {
+    final absValue = value.abs();
+
+    if (absValue >= 1e9) {
+      return '${(value / 1e9).toStringAsFixed(1)}B';
+    } else if (absValue >= 1e6) {
+      return '${(value / 1e6).toStringAsFixed(1)}M';
+    } else if (absValue >= 1e3) {
+      return '${(value / 1e3).toStringAsFixed(1)}K';
+    } else {
+      return '${value.toStringAsFixed(0)}';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    DateTime? rightMost;
+    final dataSource = widget.selectedMetal == 'Gold' ? _goldData : _silverData;
 
-    if (widget.showCombined) {
-      if (_goldData.isNotEmpty && _silverData.isNotEmpty) {
-        rightMost = _goldData.last.x.isAfter(_silverData.last.x)
-            ? _goldData.last.x
-            : _silverData.last.x;
-      } else if (_goldData.isNotEmpty) {
-        rightMost = _goldData.last.x;
-      } else if (_silverData.isNotEmpty) {
-        rightMost = _silverData.last.x;
+    // Determine initial visible range (last 12 candles) with padding
+    const int visibleCandlesCount = 12;
+    DateTime initialMin;
+    DateTime initialMax;
+
+    if (dataSource.isNotEmpty) {
+      final dataLength = dataSource.length;
+
+      if (dataLength > visibleCandlesCount) {
+        initialMin = dataSource[dataLength - visibleCandlesCount].x;
+        initialMax = dataSource.last.x;
+
+        // Add half candle padding to both ends to avoid cutting
+        final candleInterval = dataSource[1].x.difference(dataSource[0].x);
+        initialMin = initialMin.subtract(candleInterval * 1.5);
+        initialMax = initialMax.add(candleInterval * 1.5);
+      } else if (dataLength > 1) {
+        initialMin = dataSource.first.x;
+        initialMax = dataSource.last.x;
+
+        final candleInterval = dataSource[1].x.difference(dataSource[0].x);
+        initialMin = initialMin.subtract(candleInterval * 1.5);
+        initialMax = initialMax.add(candleInterval * 1.5);
+      } else {
+        // Only one candle
+        initialMin = dataSource.first.x.subtract(const Duration(minutes: 5));
+        initialMax = dataSource.first.x.add(const Duration(minutes: 5));
       }
     } else {
-      final data = widget.selectedMetal == 'Gold' ? _goldData : _silverData;
-      if (data.isNotEmpty) rightMost = data.last.x;
+      // No data, fallback to now
+      initialMin = DateTime.now().subtract(const Duration(minutes: 5));
+      initialMax = DateTime.now().add(const Duration(minutes: 5));
     }
 
-    // ✅ fallback to "now" if still null
-    rightMost ??= DateTime.now();
-
-    // add custom padding
-    final DateTime xAxisMaxDate = rightMost.add(const Duration(hours: 3));
-
-    debugPrint('rightMost: $rightMost  xAxisMaxDate: $xAxisMaxDate');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Top Bar: Metal Selector + Title + Zoom Buttons
+        // Top bar
         Container(
-          color: Colors.black, // Background for entire top section
+          color: Colors.black,
           padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Left side: Chart Title
               Text(
                 widget.showCombined
                     ? 'Live Both Holdings'
@@ -310,21 +314,23 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
-              // Right side: Zoom buttons
               Row(
-                mainAxisAlignment: MainAxisAlignment
-                    .spaceEvenly, // Even spacing between the buttons
                 children: [
-                  _buildChartButton(Icons.add, 'Zoom In', () {
-                    _zoomPanBehavior.zoomIn();
-                  }),
-                  _buildChartButton(Icons.remove, 'Zoom Out', () {
-                    _zoomPanBehavior.zoomOut();
-                  }),
-                  _buildChartButton(Icons.home, 'Reset Zoom', () {
-                    _zoomPanBehavior.reset();
-                  }),
+                  _buildChartButton(
+                    Icons.add,
+                    'Zoom In',
+                    () => _zoomPanBehavior.zoomIn(),
+                  ),
+                  _buildChartButton(
+                    Icons.remove,
+                    'Zoom Out',
+                    () => _zoomPanBehavior.zoomOut(),
+                  ),
+                  _buildChartButton(
+                    Icons.home,
+                    'Reset Zoom',
+                    () => _zoomPanBehavior.reset(),
+                  ),
                 ],
               ),
             ],
@@ -336,73 +342,32 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
           child: SfCartesianChart(
             backgroundColor: const Color(0xFF1a1a1a),
             plotAreaBorderWidth: 0,
-
-            tooltipBehavior: TooltipBehavior(
-              enable: true,
-              color: Colors.black87,
-              textStyle: const TextStyle(color: Colors.white),
-            ),
-
-            zoomPanBehavior: ZoomPanBehavior(
-              enablePinching: true,
-              enablePanning: true,
-              zoomMode: ZoomMode.x,
-            ),
-
-            crosshairBehavior: CrosshairBehavior(
-              enable: true,
-              lineType: CrosshairLineType.both,
-              lineColor: Colors.white54,
-              lineWidth: 1,
-            ),
-
-            // ===================== X AXIS =====================
+            tooltipBehavior: _tooltipBehavior,
+            zoomPanBehavior: _zoomPanBehavior,
+            crosshairBehavior: _crosshairBehavior,
             primaryXAxis: DateTimeAxis(
               intervalType: DateTimeIntervalType.minutes,
-              interval: 40,
-              dateFormat: DateFormat('MMM dd, hh:mm a'),
-              edgeLabelPlacement: EdgeLabelPlacement.shift,
-
-              rangePadding: ChartRangePadding.additional,
-              maximum:
-                  (widget.selectedMetal == 'Gold' ? _goldData : _silverData)
-                      .isNotEmpty
-                  ? (widget.selectedMetal == 'Gold'
-                            ? _goldData.last.x
-                            : _silverData.last.x)
-                        .add(const Duration(minutes: 90))
-                  : null,
-
+              dateFormat: DateFormat('hh:mm a'),
+              initialVisibleMinimum: initialMin,
+              initialVisibleMaximum: initialMax,
               majorGridLines: const MajorGridLines(
                 color: Color(0xFF333333),
                 dashArray: [4, 4],
               ),
-              majorTickLines: const MajorTickLines(color: Color(0xFF404040)),
-              axisLine: const AxisLine(color: Color(0xFF404040)),
-
-              labelStyle: TextStyle(
-                color: const Color(0xFF8c8c8c),
-                fontSize: MediaQuery.of(context).size.width < 768 ? 10 : 12,
-              ),
             ),
-
-            // ===================== Y AXIS =====================
             primaryYAxis: NumericAxis(
               decimalPlaces: 2,
               rangePadding: ChartRangePadding.additional,
-
               majorGridLines: const MajorGridLines(
                 color: Color(0xFF333333),
                 dashArray: [4, 4],
               ),
               majorTickLines: const MajorTickLines(color: Color(0xFF404040)),
               axisLine: const AxisLine(color: Color(0xFF404040)),
-
               labelStyle: TextStyle(
                 color: const Color(0xFF8c8c8c),
                 fontSize: MediaQuery.of(context).size.width < 768 ? 10 : 12,
               ),
-
               axisLabelFormatter: (AxisLabelRenderDetails details) {
                 return ChartAxisLabel(
                   '\$${details.value.toStringAsFixed(2)}',
@@ -410,20 +375,14 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
                 );
               },
             ),
-
-            // ===================== SERIES =====================
             series: <CartesianSeries>[
               CandleSeries<CandleData, DateTime>(
-                dataSource: widget.selectedMetal == 'Gold'
-                    ? _goldData
-                    : _silverData,
-
+                dataSource: dataSource,
                 xValueMapper: (CandleData data, _) => data.x,
                 openValueMapper: (CandleData data, _) => data.open,
                 highValueMapper: (CandleData data, _) => data.high,
                 lowValueMapper: (CandleData data, _) => data.low,
                 closeValueMapper: (CandleData data, _) => data.close,
-
                 bullColor: const Color(0xFF00cc00),
                 bearColor: const Color(0xFFff3333),
                 enableSolidCandles: true,
