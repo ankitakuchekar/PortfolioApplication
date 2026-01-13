@@ -342,15 +342,18 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 4));
 
     if (mounted) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await authProvider.checkAuthStatus();
       final authService = AuthService();
       final fetchedUserPin = await authService.getPin();
       print('Fetched User PIN: $fetchedUserPin');
       if (mounted) {
-        if (fetchedUserPin == null || fetchedUserPin == '0') {
+        if (authProvider.isAuthenticated &&
+            (fetchedUserPin == null || fetchedUserPin == '0')) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => MainScreen()),
           );
-        } else if (fetchedUserPin != null) {
+        } else if (authProvider.isAuthenticated && fetchedUserPin != null) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => NewPinEntryScreen(isFromSettings: false),
