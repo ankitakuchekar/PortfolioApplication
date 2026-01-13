@@ -405,7 +405,16 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                             ],
                           ),
                         ),
-
+                  const SizedBox(height: 4),
+                  widget.isSettingPage
+                      ? SizedBox.shrink()
+                      : Padding(
+                          padding: const EdgeInsets.only(left: 12),
+                          child: const Text(
+                            'Note : Please enable biometric authentication or Face Unlock from the settings.',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ),
                   const SizedBox(height: 20),
                 ],
               ),

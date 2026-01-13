@@ -62,7 +62,7 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
     if (isValid) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('PIN Successfully Updated'),
+          content: Text('PIN verified successfully'),
           backgroundColor: Colors.green,
         ),
       );
