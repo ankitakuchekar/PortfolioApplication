@@ -110,7 +110,8 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
           backgroundColor: Colors.green,
         ),
       );
-
+      final authService = AuthService();
+      await authService.savePin(pin);
       Navigator.of(
         context,
       ).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));

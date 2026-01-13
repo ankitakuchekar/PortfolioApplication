@@ -12,7 +12,7 @@ class AuthService extends ChangeNotifier {
   static const String _userKey = 'user_data';
   static const String _passWordKey = 'password_data';
   static const String _emailKey = 'email_data';
-
+  static const String _pinKey = 'app_pin';
   Future<AuthResponse> login(
     String username,
     String password,
@@ -116,6 +116,16 @@ class AuthService extends ChangeNotifier {
     return null;
   }
 
+  Future<void> savePin(String pin) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_pinKey, pin);
+  }
+
+  Future<String?> getPin() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_pinKey);
+  }
+
   Future<bool> isLoggedIn() async {
     final token = await getToken();
     return token != null && token.isNotEmpty;
@@ -125,6 +135,7 @@ class AuthService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_userKey);
+    await prefs.remove(_pinKey);
   }
 
   bool isLoading = false;

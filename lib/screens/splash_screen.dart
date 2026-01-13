@@ -316,6 +316,7 @@
 // }
 
 import 'package:bold_portfolio/screens/enter_pin_screen.dart';
+import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -341,21 +342,15 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 4));
 
     if (mounted) {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      await authProvider.checkAuthStatus();
-
+      final authService = AuthService();
+      final fetchedUserPin = await authService.getPin();
+      print('Fetched User PIN: $fetchedUserPin');
       if (mounted) {
-        print(
-          'Fetched User ID: ${authProvider.user?.pinForApp}  ${authProvider.user?.pinForApp == '0'} ${(authProvider.user?.pinForApp.toString() ?? '0') == '0'}',
-        );
-        if (authProvider.isAuthenticated &&
-            (authProvider.user?.pinForApp == null ||
-                authProvider.user?.pinForApp == '0')) {
+        if (fetchedUserPin == null || fetchedUserPin == '0') {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => MainScreen()),
           );
-        } else if (authProvider.isAuthenticated &&
-            authProvider.user?.pinForApp != null) {
+        } else if (fetchedUserPin != null) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => NewPinEntryScreen(isFromSettings: false),
