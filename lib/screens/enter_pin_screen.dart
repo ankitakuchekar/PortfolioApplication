@@ -27,6 +27,8 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
   String? emailId;
   String? firstName;
   String? userId;
+  late String currentUserKey;
+
   @override
   void initState() {
     super.initState();
@@ -75,10 +77,18 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
   }
 
   Future<void> _loadBiometricPreference() async {
+    final authService = AuthService();
+    final fetchedUser = await authService.getUser();
+
+    currentUserKey = fetchedUser != null && fetchedUser.id.isNotEmpty
+        ? fetchedUser.id
+        : fetchedUser?.email ?? '';
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _showBiometricLogin = prefs.getBool('showBioMetricLogin') ?? false;
+      _showBiometricLogin =
+          prefs.getBool('biometric_enabled_$currentUserKey') ?? false;
     });
+    print('Biometric preference for $currentUserKey: $_showBiometricLogin');
   }
 
   @override
