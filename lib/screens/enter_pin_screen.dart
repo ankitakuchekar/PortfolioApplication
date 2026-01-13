@@ -1,4 +1,3 @@
-import 'package:bold_portfolio/models/user_model.dart';
 import 'package:bold_portfolio/providers/auth_provider.dart';
 import 'package:bold_portfolio/screens/login_screen.dart';
 import 'package:bold_portfolio/screens/main_screen.dart';
@@ -6,8 +5,6 @@ import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/services/biometric_auth_service.dart';
 import 'package:bold_portfolio/services/pin_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,8 +19,36 @@ class NewPinEntryScreen extends StatefulWidget {
 }
 
 class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
-  final TextEditingController _pinController = TextEditingController();
-  bool _showBiometricLogin = false;
+  final List<TextEditingController> _newPinControllers = List.generate(
+    4,
+    (_) => TextEditingController(),
+  );
+
+  bool _obscureNewPin = true;
+  bool _showBiometricLogin = true;
+
+  @override
+  void dispose() {
+    for (var controller in _newPinControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  void _onFieldChanged(
+    int index,
+    String value,
+    List<TextEditingController> controllers,
+  ) {
+    if (value.length == 1 && index < controllers.length - 1) {
+      FocusScope.of(context).nextFocus();
+    }
+    if (value.isEmpty && index > 0) {
+      FocusScope.of(context).previousFocus();
+    }
+    setState(() {}); // To rebuild Submit button or PIN boxes if needed
+  }
+
   String? emailId;
   String? firstName;
   String? userId;
@@ -56,7 +81,7 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
 
     final bool isValid = await PinService.verifyAppPin(
       customerId: fetchedUser?.id ?? '',
-      pin: _pinController.text.trim(),
+      pin: _newPinControllers.map((e) => e.text).join('').trim(),
     );
 
     if (isValid) {
@@ -88,191 +113,270 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
       _showBiometricLogin =
           prefs.getBool('biometric_enabled_$currentUserKey') ?? false;
     });
+    if (_showBiometricLogin) {
+      await BiometricAuthService().authenticateLocalUser();
+    }
     print('Biometric preference for $currentUserKey: $_showBiometricLogin');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA), // ✅ light professional bg
-      body: Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(22),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /// Title
-              Text(
-                widget.isFromSettings
-                    ? 'Enter your current PIN'
-                    : 'Hi, ${firstName ?? 'User'}',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
+      backgroundColor: const Color(0xFFF5F6FA),
+      body: SafeArea(
+        child: Center(
+          // Center vertically and horizontally
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 20),
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.9,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(22),
               ),
-
-              const SizedBox(height: 6),
-
-              /// Subtitle
-              const Text(
-                'Enter your PIN',
-                style: TextStyle(fontSize: 14, color: Colors.black54),
-              ),
-
-              const SizedBox(height: 24),
-
-              /// PIN boxes + hidden input
-              Stack(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: List.generate(4, (index) => _pinBox(index)),
+                  // Logo at the top
+                  Image.network(
+                    'https://res.cloudinary.com/bold-pm/image/upload/Graphics/Icons/bold-logo-icon.webp',
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.contain,
                   ),
 
-                  /// Hidden TextField (real input)
-                  Opacity(
-                    opacity: 0,
-                    child: TextField(
-                      controller: _pinController,
-                      keyboardType: TextInputType.number,
-                      maxLength: 4,
-                      autofocus: true,
-                      onChanged: (_) => setState(() {}),
+                  const SizedBox(height: 20),
+
+                  // Greeting text
+                  Text(
+                    widget.isFromSettings
+                        ? 'Enter your current PIN'
+                        : 'Welcome Back, ${firstName ?? 'User'}',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  // Instruction text
+                  const Text(
+                    'Enter your 4-digit PIN to access your account',
+                    style: TextStyle(fontSize: 14, color: Colors.black54),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  /// PIN Section
+                  _pinSectionWithoutEye(
+                    title: '',
+                    controllers: _newPinControllers,
+                    obscure: _obscureNewPin,
+                  ),
+
+                  /// Eye icon below PIN boxes
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      icon: Icon(
+                        _obscureNewPin
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey.shade700,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureNewPin = !_obscureNewPin;
+                        });
+                      },
                     ),
                   ),
-                ],
-              ),
 
-              const SizedBox(height: 20),
-
-              /// Forgot PIN
-              Align(
-                alignment: Alignment.center,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => LoginScreen(
-                          fetchedUserEmail: emailId ?? '',
-                          isForgotPassClick: true,
+                  /// Forgot PIN
+                  Align(
+                    alignment: Alignment.center,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LoginScreen(
+                              fetchedUserEmail: emailId ?? '',
+                              isForgotPassClick: true,
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'Forgot PIN?',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFFFF9800),
                         ),
                       ),
-                    );
-                  },
-                  child: const Text(
-                    'Forgot PIN?',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFFFF9800),
                     ),
                   ),
-                ),
-              ),
+                  const SizedBox(height: 20),
 
-              const SizedBox(height: 20),
-
-              /// Submit button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _pinController.text.length == 4
-                      ? () {
-                          submitPin();
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    textStyle: const TextStyle(color: Colors.white),
-                    disabledBackgroundColor: Colors.grey.shade300,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
+                  /// Submit button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed:
+                          _newPinControllers.every((c) => c.text.isNotEmpty)
+                          ? submitPin
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        disabledBackgroundColor: Colors.grey.shade300,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                      ),
+                      child: const Text(
+                        'Submit',
+                        style: TextStyle(fontSize: 16),
+                      ),
                     ),
                   ),
-                  child: const Text('Submit', style: TextStyle(fontSize: 16)),
-                ),
-              ),
 
-              const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-              /// OR divider
-              Row(
-                children: [
-                  Expanded(child: Divider(color: Colors.grey.shade300)),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(
-                      'OR',
-                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                  /// OR divider
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: Colors.grey.shade300)),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          'OR',
+                          style: TextStyle(fontSize: 12, color: Colors.black54),
+                        ),
+                      ),
+                      Expanded(child: Divider(color: Colors.grey.shade300)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  /// Biometric
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      onPressed: _showBiometricLogin
+                          ? () async {
+                              bool check = await BiometricAuthService()
+                                  .authenticateLocalUser();
+                              print("Biometric Auth Result: $check");
+                              if (check) {
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (context) => const MainScreen(),
+                                  ),
+                                );
+                              }
+                            }
+                          : null,
+                      icon: const Icon(Icons.fingerprint),
+                      label: Text(
+                        'Biometric / Face Unlock',
+                        style: TextStyle(
+                          color: Colors.grey.shade800, // Dark gray text
+                          fontSize: 16,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        iconColor: Colors.orange,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                      ),
                     ),
                   ),
-                  Expanded(child: Divider(color: Colors.grey.shade300)),
+
+                  const SizedBox(height: 8),
+
+                  /// Biometric Note
+                  const Text(
+                    'Note: Please enable biometric authentication or Face Unlock from the settings.',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
                 ],
               ),
-
-              const SizedBox(height: 18),
-
-              /// Biometric
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: OutlinedButton.icon(
-                  onPressed: _showBiometricLogin
-                      ? () async {
-                          bool check = await BiometricAuthService()
-                              .authenticateLocalUser();
-                          print("Biometric Auth Result: $check");
-                          if (check) {
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (context) => const MainScreen(),
-                              ),
-                            );
-                          }
-                        }
-                      : null,
-                  icon: const Icon(Icons.fingerprint),
-                  label: const Text('Biometric / Face Unlock'),
-                  style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  /// PIN box widget
-  Widget _pinBox(int index) {
-    bool filled = index < _pinController.text.length;
-
-    return Container(
-      width: 54,
-      height: 54,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: filled
-          ? const Icon(Icons.circle, size: 10, color: Colors.black)
-          : null,
+  Widget _pinSectionWithoutEye({
+    required String title,
+    required List<TextEditingController> controllers,
+    required bool obscure,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ...List.generate(4, (index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: SizedBox(
+                  width: 54,
+                  height: 54,
+                  child: TextFormField(
+                    controller: controllers[index],
+                    maxLength: 1,
+                    obscureText: obscure,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w200,
+                    ),
+                    decoration: InputDecoration(
+                      counterText: '',
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                      // Add consistent transparent border to avoid size jump
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(
+                          color: Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      // Focused border with visible color, same width
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: Colors.orange, width: 2),
+                      ),
+                    ),
+                    onChanged: (value) =>
+                        _onFieldChanged(index, value, controllers),
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
+      ],
     );
   }
 }
