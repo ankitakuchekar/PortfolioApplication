@@ -155,6 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (success && mounted) {
         final authService = AuthService();
         final fetchedUser = await authService.getUser();
+        await authService.savePin(fetchedUser?.pinForApp ?? '');
         // Check if pinForApp is not null or empty
         if (fetchedUser?.pinForApp == '' ||
             fetchedUser?.pinForApp == '0' ||
@@ -227,37 +228,36 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      widget.isForgotPassClick == true
-                          ? TextButton.icon(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              icon: const Icon(
-                                Icons.arrow_back,
-                                color: Colors.black87,
-                              ),
-                              label: const Text(
-                                'Back',
-                                style: TextStyle(
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.black87,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 1,
-                                  vertical: 4,
-                                ),
-                                minimumSize: Size
-                                    .zero, // To prevent default min button size
-                                tapTargetSize: MaterialTapTargetSize
-                                    .shrinkWrap, // Compact tap area
-                              ),
-                            )
-                          : Container(),
-
+                      // widget.isForgotPassClick == true
+                      //     ? TextButton.icon(
+                      //         onPressed: () {
+                      //           Navigator.pop(context);
+                      //         },
+                      //         icon: const Icon(
+                      //           Icons.arrow_back,
+                      //           color: Colors.black87,
+                      //         ),
+                      //         label: const Text(
+                      //           'Back',
+                      //           style: TextStyle(
+                      //             color: Colors.black87,
+                      //             fontWeight: FontWeight.w500,
+                      //             fontSize: 16,
+                      //           ),
+                      //         ),
+                      //         style: TextButton.styleFrom(
+                      //           foregroundColor: Colors.black87,
+                      //           padding: const EdgeInsets.symmetric(
+                      //             horizontal: 1,
+                      //             vertical: 4,
+                      //           ),
+                      //           minimumSize: Size
+                      //               .zero, // To prevent default min button size
+                      //           tapTargetSize: MaterialTapTargetSize
+                      //               .shrinkWrap, // Compact tap area
+                      //         ),
+                      //       )
+                      //     : Container(),
                       const SizedBox(height: 20),
                       Image.network(
                         'https://res.cloudinary.com/bold-pm/image/upload/Graphics/bold-portfolio-app-1.png',
@@ -283,7 +283,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        _selectedTab == 0
+                        widget.isForgotPassClick == true
+                            ? 'Verify Your Account'
+                            : _selectedTab == 0
                             ? 'Welcome Back'
                             : 'Register with BOLD',
                         style: const TextStyle(
@@ -294,7 +296,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        _selectedTab == 0
+                        widget.isForgotPassClick == true
+                            ? 'Enter your account password to continue resetting your PIN'
+                            : _selectedTab == 0
                             ? 'Login using your BOLD account to access your bullion portfolio'
                             : 'Create your BOLD account to track your bullion portfolio and enjoy a seamless shopping experience',
                         textAlign: TextAlign.center, // Center each line

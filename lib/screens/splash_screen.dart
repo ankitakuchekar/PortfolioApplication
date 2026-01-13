@@ -351,15 +351,12 @@ class _SplashScreenState extends State<SplashScreen> {
       );
       if (mounted) {
         if (authProvider.isAuthenticated &&
-            ((fetchedUserPin == null || fetchedUserPin == '0') ||
-                (authProvider.user?.pinForApp == null ||
-                    authProvider.user?.pinForApp == '0'))) {
+            ((fetchedUserPin == null || fetchedUserPin == '0'))) {
           print("Navigating to MainScreen");
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => MainScreen()),
           );
-        } else if (authProvider.isAuthenticated &&
-            (fetchedUserPin != null || authProvider.user?.pinForApp != null)) {
+        } else if (authProvider.isAuthenticated && fetchedUserPin != null) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => NewPinEntryScreen(isFromSettings: false),
