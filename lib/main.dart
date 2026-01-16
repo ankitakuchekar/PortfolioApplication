@@ -97,13 +97,16 @@ class _BoldPortfolioAppState extends State<BoldPortfolioApp>
   }
 
   void _lockApp() {
-    // Navigates to PIN screen and clears navigation history
-    navigatorKey.currentState?.pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => const NewPinEntryScreen(isFromSettings: false),
-      ),
-      (route) => false,
-    );
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (authProvider.isAuthenticated) {
+      // Navigates to PIN screen and clears navigation history
+      navigatorKey.currentState?.pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => const NewPinEntryScreen(isFromSettings: false),
+        ),
+        (route) => false,
+      );
+    }
   }
 
   @override
