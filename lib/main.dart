@@ -1,34 +1,38 @@
 import 'dart:async';
-import 'package:bold_portfolio/widgets/timer_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:http/http.dart' as http;
 
+// Providers & Screens
+import 'widgets/timer_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/portfolio_provider.dart';
 import 'screens/splash_screen.dart';
+import 'screens/enter_pin_screen.dart';
 import 'utils/app_theme.dart';
-import 'package:http/http.dart' as http;
+
+// 1. Global Navigator Key to allow locking from background
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Required for async + background service
+  WidgetsFlutterBinding.ensureInitialized();
 
   if (!kIsWeb) {
-    // ✅ Configure background service before runApp
     FlutterBackgroundService().configure(
       androidConfiguration: AndroidConfiguration(
         onStart: onStart,
-        isForegroundMode: true, // persistent notification required on Android
+        isForegroundMode: true,
         initialNotificationTitle: "Service Running",
         initialNotificationContent: "Background service is active...",
         foregroundServiceNotificationId: 888,
       ),
-      iosConfiguration: IosConfiguration(), // iOS has limited support
+      iosConfiguration: IosConfiguration(),
     );
   }
-  // ✅ Load environment variables
+
   const envFile = String.fromEnvironment(
     'ENV_FILE',
     defaultValue: 'assets/env/.env.stagging',
@@ -37,21 +41,70 @@ Future<void> main() async {
   try {
     await dotenv.load(fileName: envFile);
     debugPrint('✅ .env file loaded: $envFile');
-    debugPrint('🔧 API_URL: ${dotenv.env['API_URL']}'); // Debug check
   } catch (e) {
     debugPrint('❌ Failed to load .env file: $e');
   }
 
   runApp(
+    // Wrapping at the very top so TimerProvider is available everywhere
     ChangeNotifierProvider(
-      create: (context) => TimerProvider(), // Provide the TimerProvider
-      child: BoldPortfolioApp(),
+      create: (_) => TimerProvider(),
+      child: const BoldPortfolioApp(),
     ),
   );
 }
 
-class BoldPortfolioApp extends StatelessWidget {
+class BoldPortfolioApp extends StatefulWidget {
   const BoldPortfolioApp({super.key});
+
+  @override
+  State<BoldPortfolioApp> createState() => _BoldPortfolioAppState();
+}
+
+// 2. Add WidgetsBindingObserver to detect when app is closed/opened
+class _BoldPortfolioAppState extends State<BoldPortfolioApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    // Start listening to app lifecycle (background/foreground)
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // 3. Logic to handle background timing
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final timerProvider = Provider.of<TimerProvider>(context, listen: false);
+
+    if (state == AppLifecycleState.paused) {
+      // User minimized the app
+      timerProvider.recordStartTime();
+      debugPrint("📱 App moved to background");
+    } else if (state == AppLifecycleState.resumed) {
+      // User returned to the app
+      debugPrint("📱 App returned to foreground");
+      if (timerProvider.shouldLockApp()) {
+        debugPrint("🔒 5 minutes passed. Locking app.");
+        _lockApp();
+      }
+    }
+  }
+
+  void _lockApp() {
+    // Navigates to PIN screen and clears navigation history
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const NewPinEntryScreen(isFromSettings: false),
+      ),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,25 +113,38 @@ class BoldPortfolioApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => PortfolioProvider()),
       ],
-      child: MaterialApp(
-        title: 'Bold Bullion Portfolio',
-        theme: AppTheme.lightTheme,
-        home: const SplashScreen(),
-        debugShowCheckedModeBanner: false,
+      child: Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (_) {
+          // Keep the existing "In-App" inactivity timer working
+          Provider.of<TimerProvider>(context, listen: false).resetTimersForPin(
+            () {
+              _lockApp();
+            },
+          );
+        },
+        child: MaterialApp(
+          navigatorKey: navigatorKey, // Connect the Global Key
+          title: 'Bold Bullion Portfolio',
+          theme: AppTheme.lightTheme,
+          home: const SplashScreen(),
+          debugShowCheckedModeBanner: false,
+        ),
       ),
     );
   }
 }
 
-/// 🔥 Background service entry point
-void onStart(ServiceInstance service) {
-  // Allows stopping the service
+/// 🔥 Background service entry point (Runs in a separate Isolate)
+@pragma('vm:entry-point')
+void onStart(ServiceInstance service) async {
+  // Re-load dotenv inside isolate if needed for API calls
   service.on("stopService").listen((event) {
     service.stopSelf();
   });
 
   Timer.periodic(const Duration(minutes: 1), (timer) async {
-    debugPrint("⏰ Background service running... Fetching API");
+    debugPrint("⏰ Background service heart-beat");
     final String baseUrl = dotenv.env['API_URL']!;
 
     try {
