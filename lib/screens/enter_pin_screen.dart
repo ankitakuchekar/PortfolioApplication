@@ -59,6 +59,19 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
     super.initState();
     _loadEmailId();
     _loadBiometricPreference();
+    _checkBiometricAvailability();
+  }
+
+  final BiometricAuthService _biometricAuthService = BiometricAuthService();
+  bool _isBiometricAvailable = false;
+
+  // Check biometric availability
+  void _checkBiometricAvailability() async {
+    bool isAvailable = await _biometricAuthService
+        .canAuthenticateWithBiometrics();
+    setState(() {
+      _isBiometricAvailable = isAvailable;
+    });
   }
 
   Future<void> _loadEmailId() async {
@@ -113,10 +126,15 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
       _showBiometricLogin =
           prefs.getBool('biometric_enabled_$currentUserKey') ?? false;
     });
+    bool check = false;
     if (_showBiometricLogin) {
-      await BiometricAuthService().authenticateLocalUser();
+      check = await BiometricAuthService().authenticateLocalUser();
     }
-    print('Biometric preference for $currentUserKey: $_showBiometricLogin');
+    if (check) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+      );
+    }
   }
 
   @override
@@ -270,11 +288,10 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
                     width: double.infinity,
                     height: 50,
                     child: OutlinedButton.icon(
-                      onPressed: _showBiometricLogin
+                      onPressed: _showBiometricLogin && _isBiometricAvailable
                           ? () async {
                               bool check = await BiometricAuthService()
                                   .authenticateLocalUser();
-                              print("Biometric Auth Result: $check");
                               if (check) {
                                 Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
