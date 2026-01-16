@@ -67,7 +67,7 @@ class TimerProvider with ChangeNotifier {
     debugPrint("Minutes passed since background: ${difference.inMinutes}");
 
     // Change '5' to any number of minutes you prefer for testing
-    return difference.inMinutes >= 2;
+    return difference.inMinutes >= 15;
   }
 
   @override
