@@ -37,7 +37,14 @@ class SpotData {
   final double palladiumBid;
   final double palladiumChange;
   final double palladiumChangePercent;
-
+  final double silverlowspot;
+  final double silverhighspot;
+  final double goldlowspot;
+  final double goldhighspot;
+  final double platinumlowspot;
+  final double palladiumhighspot;
+  final double palladiumlowspot;
+  final double platinumhighspot;
   SpotData({
     required this.timestamp,
     required this.spotTime,
@@ -57,6 +64,14 @@ class SpotData {
     required this.palladiumBid,
     required this.palladiumChange,
     required this.palladiumChangePercent,
+    required this.silverlowspot,
+    required this.silverhighspot,
+    required this.goldlowspot,
+    required this.goldhighspot,
+    required this.platinumlowspot,
+    required this.platinumhighspot,
+    required this.palladiumlowspot,
+    required this.palladiumhighspot,
   });
 
   factory SpotData.fromJson(Map<String, dynamic> json) {
@@ -80,6 +95,14 @@ class SpotData {
       palladiumChange: (json['palladiumChange'] as num).toDouble(),
       palladiumChangePercent: (json['palladiumChangePercent'] as num)
           .toDouble(),
+      silverlowspot: (json['silverlowspot'] as num).toDouble(),
+      silverhighspot: (json['silverhighspot'] as num).toDouble(),
+      goldlowspot: (json['goldlowspot'] as num).toDouble(),
+      goldhighspot: (json['goldhighspot'] as num).toDouble(),
+      platinumlowspot: (json['platinumlowspot'] as num).toDouble(),
+      platinumhighspot: (json['platinumhighspot'] as num).toDouble(),
+      palladiumlowspot: (json['palladiumlowspot'] as num).toDouble(),
+      palladiumhighspot: (json['palladiumhighspot'] as num).toDouble(),
     );
   }
 }

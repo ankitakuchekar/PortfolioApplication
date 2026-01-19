@@ -7,7 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'main_screen.dart';
+
 // import 'package:flutter_svg/flutter_svg.dart';
+const snapYellow = Color.fromARGB(255, 227, 171, 3);
 
 class LoginScreen extends StatefulWidget {
   final String? fetchedUserEmail;
@@ -426,8 +428,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
                                     colors: [
-                                      Color(0xFF00C566), // Start color
-                                      Color(0xFF039A5D), // End color
+                                      snapYellow, // Start color
+                                      Color.fromARGB(
+                                        255,
+                                        241,
+                                        182,
+                                        5,
+                                      ), // End color
                                     ],
                                     begin: Alignment.centerLeft,
                                     end: Alignment.centerRight,
@@ -459,7 +466,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           style: TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.white,
+                                            color: Colors.black,
                                           ),
                                         ),
                                 ),
@@ -513,7 +520,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           child: const Text(
                             'Forgot your password?',
-                            style: TextStyle(color: Color(0xFF00C566)),
+
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 223, 168, 4),
+                            ),
                           ),
                         ),
 
@@ -544,7 +554,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: const Text(
                                   "Sign up",
                                   style: TextStyle(
-                                    color: Color(0xFF00C566),
+                                    color: Color.fromARGB(255, 223, 168, 4),
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
                                   ),
@@ -802,10 +812,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
                                     colors: [
-                                      Color(0xFF00C566), // Start color
-                                      Color(
-                                        0xFF007A4D,
-                                      ), // End color (adjust as per design)
+                                      snapYellow, // Start color
+                                      Color.fromARGB(
+                                        255,
+                                        241,
+                                        182,
+                                        5,
+                                      ), // End color
                                     ],
                                     begin: Alignment.centerLeft,
                                     end: Alignment.centerRight,
@@ -836,7 +849,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           style: TextStyle(
                                             fontWeight: FontWeight.w600,
                                             fontSize: 15,
-                                            color: Colors.white,
+                                            color: Colors.black,
                                           ),
                                         ),
                                 ),
@@ -871,7 +884,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: const Text(
                                 "Login",
                                 style: TextStyle(
-                                  color: Color(0xFF00C566),
+                                  color: Color.fromARGB(255, 223, 168, 4),
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
                                 ),
