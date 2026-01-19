@@ -61,7 +61,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
       // The app is in the foreground, check the time difference
       if (_backgroundTime != null) {
         final difference = DateTime.now().difference(_backgroundTime!);
-        if (difference.inMinutes > 2) {
+        if (difference.inMinutes > 15) {
           // Show the pin entry screen if more than 15 minutes have passed
           setState(() {
             currentView = GuestView.pin;
