@@ -35,12 +35,89 @@ class _SpotPriceCardState extends State<SpotPriceCard> {
     });
   }
 
+  // Replace loading spinner with skeleton
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return const Center(child: CircularProgressIndicator());
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1️⃣ Main Spot Price Skeleton
+          Container(
+            padding: const EdgeInsets.all(16),
+            margin: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title skeleton
+                Container(width: 150, height: 24, color: Colors.grey.shade300),
+                const SizedBox(height: 12),
+                // Price skeleton
+                Container(width: 200, height: 32, color: Colors.grey.shade300),
+                const SizedBox(height: 8),
+                Container(width: 120, height: 20, color: Colors.grey.shade300),
+                const SizedBox(height: 16),
+                // Linear progress skeleton
+                Container(
+                  width: double.infinity,
+                  height: 8,
+                  color: Colors.grey.shade300,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 16,
+                      color: Colors.grey.shade300,
+                    ),
+                    Container(
+                      width: 60,
+                      height: 16,
+                      color: Colors.grey.shade300,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // 2️⃣ Gram & Kilo small card skeletons
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Container(
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
     }
 
+    // ---------------- REAL CONTENT ----------------
     // Extract metal data
     late double ounce,
         gram,
@@ -93,7 +170,6 @@ class _SpotPriceCardState extends State<SpotPriceCard> {
     changeGram = changeOunce / 31.1;
     changeKg = changeGram * 1000;
 
-    // Calculate bounded position for progress bar
     final range = (highSpot - lowSpot).abs().clamp(0.001, double.infinity);
     final boundedPosition = (((ounce - lowSpot) / range).clamp(0, 1) as double);
 
@@ -180,16 +256,12 @@ class _SpotPriceCardState extends State<SpotPriceCard> {
 
         const SizedBox(height: 16),
 
-        // 2️⃣ New Column for Small Cards
-        Column(
+        // 2️⃣ Small Cards
+        Row(
           children: [
-            Row(
-              children: [
-                _smallCard("Gram", gram, changeGram),
-                const SizedBox(width: 16),
-                _smallCard("Kilo", kg, changeKg),
-              ],
-            ),
+            _smallCard("Gram", gram, changeGram),
+            const SizedBox(width: 16),
+            _smallCard("Kilo", kg, changeKg),
           ],
         ),
       ],
