@@ -1,4 +1,5 @@
 import 'package:bold_portfolio/providers/auth_provider.dart';
+import 'package:bold_portfolio/screens/guestScreen.dart';
 import 'package:bold_portfolio/screens/login_screen.dart';
 import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
@@ -146,7 +147,6 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
       backgroundColor: const Color(0xFFF5F6FA),
       body: SafeArea(
         child: Center(
-          // Center vertically and horizontally
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 20),
             child: Container(
@@ -157,7 +157,6 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
                 borderRadius: BorderRadius.circular(22),
               ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Logo at the top
@@ -192,14 +191,18 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
                     textAlign: TextAlign.center,
                   ),
 
-                  /// PIN Section
+                  const SizedBox(height: 20),
+
+                  // PIN Section
                   _pinSectionWithoutEye(
                     title: '',
                     controllers: _newPinControllers,
                     obscure: _obscureNewPin,
                   ),
 
-                  /// Eye icon below PIN boxes
+                  const SizedBox(height: 20),
+
+                  // Eye icon below PIN boxes
                   Align(
                     alignment: Alignment.centerRight,
                     child: IconButton(
@@ -217,19 +220,19 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
                     ),
                   ),
 
-                  /// Forgot PIN
+                  const SizedBox(height: 20),
+
+                  // Forgot PIN
                   Align(
                     alignment: Alignment.center,
                     child: TextButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
+                        Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
-                            builder: (context) => LoginScreen(
-                              fetchedUserEmail: emailId ?? '',
-                              isForgotPassClick: true,
-                            ),
+                            builder: (_) =>
+                                const Guestscreen(initialView: GuestView.login),
                           ),
+                          (route) => false,
                         );
                       },
                       child: const Text(
@@ -242,9 +245,10 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 20),
 
-                  /// Submit button
+                  // Submit button
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -269,7 +273,7 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
 
                   const SizedBox(height: 20),
 
-                  /// OR divider
+                  // OR divider
                   Row(
                     children: [
                       Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -286,7 +290,7 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
 
                   const SizedBox(height: 18),
 
-                  /// Biometric
+                  // Biometric
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -327,9 +331,10 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 8),
 
-                  /// Biometric Note
+                  // Biometric Note
                   if (_showBiometricLogin && _isBiometricAvailable)
                     const Text(
                       'Note: Please enable biometric authentication or Face Unlock from the settings.',

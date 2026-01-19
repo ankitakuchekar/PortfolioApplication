@@ -2,6 +2,7 @@ import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/screens/BullionPortfolioGuideScreen.dart';
 import 'package:bold_portfolio/screens/PrivacyPolicyScreen.dart';
 import 'package:bold_portfolio/screens/TaxReportScreen.dart';
+import 'package:bold_portfolio/screens/guestScreen.dart';
 import 'package:bold_portfolio/screens/setting_pin_screen.dart';
 import 'package:bold_portfolio/services/api_service.dart';
 import 'package:bold_portfolio/widgets/FeedbackPopup.dart';
@@ -124,14 +125,15 @@ class _CommonDrawerState extends State<CommonDrawer> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.logout();
 
-    if (context.mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => const LoginScreen(isForgotPassClick: false),
-        ),
-        (route) => false,
-      );
-    }
+    if (!context.mounted) return;
+
+    // Navigate to Guestscreen with Login
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const Guestscreen(initialView: GuestView.login),
+      ),
+      (route) => false,
+    );
   }
 
   String capitalizeFirstLetter(String text) {

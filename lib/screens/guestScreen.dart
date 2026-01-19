@@ -1,14 +1,29 @@
 import 'package:bold_portfolio/screens/spot_priceScreen.dart';
-import 'package:bold_portfolio/screens/login_screen.dart'; // import login screen
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-// Define your colors globally or import from a constants file
-const bgLightYellow = Color.fromARGB(255, 246, 229, 189);
+import 'package:bold_portfolio/providers/auth_provider.dart';
+import 'package:bold_portfolio/screens/enter_pin_screen.dart';
+import 'package:bold_portfolio/screens/login_screen.dart';
+import 'package:bold_portfolio/screens/main_screen.dart';
+import 'package:bold_portfolio/services/auth_service.dart';
+
+// Colors
 const snapYellow = Color.fromARGB(255, 220, 166, 2);
 const darkBlack = Color(0xFF000000);
 
+// ---------------- ENUM FOR VIEW STATE ----------------
+enum GuestView { home, login, pin }
+
 class Guestscreen extends StatefulWidget {
-  const Guestscreen({super.key});
+  final GuestView initialView;
+  final int initialIndex;
+
+  const Guestscreen({
+    super.key,
+    this.initialView = GuestView.home,
+    this.initialIndex = 0,
+  });
 
   @override
   State<Guestscreen> createState() => _GuestscreenState();
@@ -17,6 +32,21 @@ class Guestscreen extends StatefulWidget {
 class _GuestscreenState extends State<Guestscreen> {
   int selectedIndex = 0;
 
+  bool isCheckingPin = false;
+  late GuestView currentView;
+
+  @override
+  void initState() {
+    super.initState();
+    currentView = widget.initialView;
+    if (currentView == GuestView.login || currentView == GuestView.pin) {
+      selectedIndex = 1; // Portfolio tab
+    } else {
+      selectedIndex = widget.initialIndex;
+    }
+  }
+
+  // ---------------- MORE MENU ----------------
   void _showMoreMenu() {
     showModalBottomSheet(
       context: context,
@@ -71,29 +101,35 @@ class _GuestscreenState extends State<Guestscreen> {
     return Divider(color: Colors.white.withOpacity(0.2));
   }
 
+  // ---------------- BUILD ----------------
   @override
   Widget build(BuildContext context) {
-    // Screens for the tabs
-    final List<Widget> screens = [
-      const SpotPriceScreen(), // Home tab shows SpotPriceScreen
-      const LoginScreen(
-        isForgotPassClick: false,
-      ), // Portfolio tab shows LoginScreen
-      const SizedBox(), // More tab is empty, menu shown separately
-    ];
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authService = AuthService();
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: darkBlack,
+        centerTitle: true,
         title: const Text(
           "BOLD Bullion Portfolio",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        centerTitle: true,
       ),
 
-      body: IndexedStack(index: selectedIndex, children: screens),
+      // ---------------- BODY ----------------
+      body: IndexedStack(
+        index: selectedIndex,
+        children: [
+          // HOME TAB
+          const SpotPriceScreen(),
 
+          // PORTFOLIO TAB
+          _buildPortfolioContent(),
+        ],
+      ),
+
+      // ---------------- BOTTOM NAV ----------------
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
         selectedItemColor: snapYellow,
@@ -103,7 +139,15 @@ class _GuestscreenState extends State<Guestscreen> {
             _showMoreMenu();
             return;
           }
-          setState(() => selectedIndex = index);
+
+          if (index == 1) {
+            _handlePortfolioNavigation(authProvider, authService);
+          } else {
+            setState(() {
+              selectedIndex = index;
+              currentView = GuestView.home;
+            });
+          }
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
@@ -115,5 +159,55 @@ class _GuestscreenState extends State<Guestscreen> {
         ],
       ),
     );
+  }
+
+  // ---------------- PORTFOLIO CONTENT ----------------
+  Widget _buildPortfolioContent() {
+    switch (currentView) {
+      case GuestView.login:
+        return const LoginScreen(isForgotPassClick: false);
+      case GuestView.pin:
+        return const NewPinEntryScreen(isFromSettings: false);
+      default:
+        return const Center(
+          child: Text("Access your portfolio", style: TextStyle(fontSize: 16)),
+        );
+    }
+  }
+
+  // ---------------- AUTH / PIN LOGIC ----------------
+  Future<void> _handlePortfolioNavigation(
+    AuthProvider authProvider,
+    AuthService authService,
+  ) async {
+    if (isCheckingPin) return;
+
+    setState(() {
+      isCheckingPin = true;
+    });
+
+    final fetchedUserPin = await authService.getPin();
+
+    if (authProvider.isAuthenticated) {
+      if (fetchedUserPin == null || fetchedUserPin == '0') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const MainScreen()),
+        );
+      } else {
+        setState(() {
+          selectedIndex = 1;
+          currentView = GuestView.pin;
+        });
+      }
+    } else {
+      setState(() {
+        selectedIndex = 1;
+        currentView = GuestView.login;
+      });
+    }
+
+    setState(() {
+      isCheckingPin = false;
+    });
   }
 }

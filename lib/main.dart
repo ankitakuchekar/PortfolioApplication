@@ -78,36 +78,36 @@ class _BoldPortfolioAppState extends State<BoldPortfolioApp>
   }
 
   // 3. Logic to handle background timing
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    final timerProvider = Provider.of<TimerProvider>(context, listen: false);
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   final timerProvider = Provider.of<TimerProvider>(context, listen: false);
 
-    if (state == AppLifecycleState.paused) {
-      // User minimized the app
-      timerProvider.recordStartTime();
-      debugPrint("📱 App moved to background");
-    } else if (state == AppLifecycleState.resumed) {
-      // User returned to the app
-      debugPrint("📱 App returned to foreground");
-      if (timerProvider.shouldLockApp()) {
-        debugPrint("🔒 5 minutes passed. Locking app.");
-        _lockApp();
-      }
-    }
-  }
+  //   if (state == AppLifecycleState.paused) {
+  //     // User minimized the app
+  //     timerProvider.recordStartTime();
+  //     debugPrint("📱 App moved to background");
+  //   } else if (state == AppLifecycleState.resumed) {
+  //     // User returned to the app
+  //     debugPrint("📱 App returned to foreground");
+  //     if (timerProvider.shouldLockApp()) {
+  //       debugPrint("🔒 5 minutes passed. Locking app.");
+  //       _lockApp();
+  //     }
+  //   }
+  // }
 
-  void _lockApp() {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (authProvider.isAuthenticated) {
-      // Navigates to PIN screen and clears navigation history
-      navigatorKey.currentState?.pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (_) => const NewPinEntryScreen(isFromSettings: false),
-        ),
-        (route) => false,
-      );
-    }
-  }
+  // void _lockApp() {
+  //   final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  //   if (authProvider.isAuthenticated) {
+  //     // Navigates to PIN screen and clears navigation history
+  //     navigatorKey.currentState?.pushAndRemoveUntil(
+  //       MaterialPageRoute(
+  //         builder: (_) => const NewPinEntryScreen(isFromSettings: false),
+  //       ),
+  //       (route) => false,
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -118,14 +118,14 @@ class _BoldPortfolioAppState extends State<BoldPortfolioApp>
       ],
       child: Listener(
         behavior: HitTestBehavior.translucent,
-        onPointerDown: (_) {
-          // Keep the existing "In-App" inactivity timer working
-          Provider.of<TimerProvider>(context, listen: false).resetTimersForPin(
-            () {
-              _lockApp();
-            },
-          );
-        },
+        // onPointerDown: (_) {
+        //   // Keep the existing "In-App" inactivity timer working
+        //   Provider.of<TimerProvider>(context, listen: false).resetTimersForPin(
+        //     () {
+        //       _lockApp();
+        //     },
+        //   );
+        // },
         child: MaterialApp(
           navigatorKey: navigatorKey, // Connect the Global Key
           title: 'Bold Bullion Portfolio',
