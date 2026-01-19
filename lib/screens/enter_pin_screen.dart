@@ -108,9 +108,12 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
         context,
       ).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Invalid PIN')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to verify PIN'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -287,7 +290,7 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
                   SizedBox(
                     width: double.infinity,
                     height: 50,
-                    child: OutlinedButton.icon(
+                    child: OutlinedButton(
                       onPressed: _showBiometricLogin && _isBiometricAvailable
                           ? () async {
                               bool check = await BiometricAuthService()
@@ -301,31 +304,38 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
                               }
                             }
                           : null,
-                      icon: const Icon(Icons.fingerprint),
-                      label: Text(
-                        'Biometric / Face Unlock',
-                        style: TextStyle(
-                          color: Colors.grey.shade800, // Dark gray text
-                          fontSize: 16,
-                        ),
-                      ),
                       style: OutlinedButton.styleFrom(
-                        iconColor: Colors.orange,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(25),
                         ),
                       ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.fingerprint, color: Colors.orange),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Biometric / Face Unlock',
+                            style: TextStyle(
+                              color: Colors.grey.shade800,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.face, color: Colors.orange),
+                        ],
+                      ),
                     ),
                   ),
-
                   const SizedBox(height: 8),
 
                   /// Biometric Note
-                  const Text(
-                    'Note: Please enable biometric authentication or Face Unlock from the settings.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  ),
+                  if (_showBiometricLogin && _isBiometricAvailable)
+                    const Text(
+                      'Note: Please enable biometric authentication or Face Unlock from the settings.',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
                 ],
               ),
             ),
