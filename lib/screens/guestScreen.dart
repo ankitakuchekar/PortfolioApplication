@@ -74,38 +74,47 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     }
   }
 
-  // ---------------- MORE MENU ----------------
   void _showMoreMenu() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent, // <-- Keep background transparent
-      isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
+      barrierColor: Colors.transparent, // important
+      backgroundColor: Colors.transparent,
       builder: (_) {
-        return Align(
-          alignment: Alignment.bottomRight,
-          child: Padding(
-            padding: const EdgeInsets.only(
-              bottom: 100,
-              right: 16,
-            ), // smaller offset
-            child: Container(
-              width: 180, // <-- reduced width
-              padding: const EdgeInsets.all(12), // <-- reduced padding
-              decoration: BoxDecoration(
-                color: darkBlack,
-                borderRadius: BorderRadius.circular(16), // smaller corners
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => Navigator.pop(context), // 👈 tap anywhere closes
+          child: Stack(
+            children: [
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 100, right: 16),
+                  child: GestureDetector(
+                    onTap: () {}, // 👈 prevent closing when tapping menu itself
+                    child: Container(
+                      width: 180,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: darkBlack,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _moreItem(Icons.calculate, "Calculator"),
+                          _divider(),
+                          _moreItem(Icons.article, "Blogs"),
+                          _divider(),
+                          _moreItem(Icons.store, "Visit BOLD Store"),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _moreItem(Icons.calculate, "Calculator"),
-                  _divider(),
-                  _moreItem(Icons.article, "Blogs"),
-                  _divider(),
-                  _moreItem(Icons.store, "Visit BOLD Store"),
-                ],
-              ),
-            ),
+            ],
           ),
         );
       },
