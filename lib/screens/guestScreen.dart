@@ -1,14 +1,12 @@
-import 'package:bold_portfolio/screens/spot_priceScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import 'package:bold_portfolio/providers/auth_provider.dart';
+import 'package:bold_portfolio/screens/spot_priceScreen.dart';
 import 'package:bold_portfolio/screens/enter_pin_screen.dart';
 import 'package:bold_portfolio/screens/login_screen.dart';
 import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
+import 'package:bold_portfolio/providers/auth_provider.dart';
 
-// Colors
 const snapYellow = Color.fromARGB(255, 220, 166, 2);
 const darkBlack = Color(0xFF000000);
 
@@ -29,20 +27,50 @@ class Guestscreen extends StatefulWidget {
   State<Guestscreen> createState() => _GuestscreenState();
 }
 
-class _GuestscreenState extends State<Guestscreen> {
+class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
   int selectedIndex = 0;
-
   bool isCheckingPin = false;
   late GuestView currentView;
+  DateTime? _backgroundTime; // To track the time the app was in the background
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     currentView = widget.initialView;
     if (currentView == GuestView.login || currentView == GuestView.pin) {
       selectedIndex = 1; // Portfolio tab
     } else {
       selectedIndex = widget.initialIndex;
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // ---------------- APP LIFECYCLE HANDLER ----------------
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      // The app is in the background, save the current timestamp
+      _backgroundTime = DateTime.now();
+    } else if (state == AppLifecycleState.resumed) {
+      // The app is in the foreground, check the time difference
+      if (_backgroundTime != null) {
+        final difference = DateTime.now().difference(_backgroundTime!);
+        if (difference.inMinutes > 2) {
+          // Show the pin entry screen if more than 15 minutes have passed
+          setState(() {
+            currentView = GuestView.pin;
+            selectedIndex = 1; // Ensure it's showing the "Portfolio" tab
+          });
+        } else {
+          _checkForPinOrLogin();
+        }
+      }
     }
   }
 
@@ -209,5 +237,31 @@ class _GuestscreenState extends State<Guestscreen> {
     setState(() {
       isCheckingPin = false;
     });
+  }
+
+  // Check if the user should see the pin entry or login screen
+  void _checkForPinOrLogin() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authService = AuthService();
+
+    if (authProvider.isAuthenticated) {
+      authService.getPin().then((fetchedUserPin) {
+        if (fetchedUserPin == null || fetchedUserPin == '0') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const MainScreen()),
+          );
+        } else {
+          setState(() {
+            selectedIndex = 1;
+            currentView = GuestView.pin;
+          });
+        }
+      });
+    } else {
+      setState(() {
+        selectedIndex = 1;
+        currentView = GuestView.login;
+      });
+    }
   }
 }
