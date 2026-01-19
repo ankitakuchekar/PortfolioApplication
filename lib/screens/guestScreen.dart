@@ -78,19 +78,22 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
   void _showMoreMenu() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.transparent, // <-- Keep background transparent
+      isScrollControlled: true,
       builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 80),
-          child: Align(
-            alignment: Alignment.bottomRight,
+        return Align(
+          alignment: Alignment.bottomRight,
+          child: Padding(
+            padding: const EdgeInsets.only(
+              bottom: 100,
+              right: 16,
+            ), // smaller offset
             child: Container(
-              width: 240,
-              padding: const EdgeInsets.all(16),
-              margin: const EdgeInsets.only(right: 16),
+              width: 180, // <-- reduced width
+              padding: const EdgeInsets.all(12), // <-- reduced padding
               decoration: BoxDecoration(
                 color: darkBlack,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16), // smaller corners
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -148,42 +151,120 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
       // ---------------- BODY ----------------
       body: IndexedStack(
         index: selectedIndex,
-        children: [
-          // HOME TAB
-          const SpotPriceScreen(),
-
-          // PORTFOLIO TAB
-          _buildPortfolioContent(),
-        ],
+        children: [const SpotPriceScreen(), _buildPortfolioContent()],
       ),
 
-      // ---------------- BOTTOM NAV ----------------
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: selectedIndex,
-        selectedItemColor: snapYellow,
-        unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          if (index == 2) {
-            _showMoreMenu();
-            return;
-          }
+      // ---------------- CUSTOM BOTTOM NAV ----------------
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 80, // reduced height
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              /// Bottom Black Bar
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: 56, // standard bottom bar height
+                  color: darkBlack,
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _bottomItem(icon: Icons.home, label: "Home", index: 0),
 
-          if (index == 1) {
-            _handlePortfolioNavigation(authProvider, authService);
-          } else {
-            setState(() {
-              selectedIndex = index;
-              currentView = GuestView.home;
-            });
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.pie_chart),
-            label: "Portfolio",
+                      const SizedBox(width: 70),
+
+                      _bottomItem(
+                        icon: Icons.more_horiz,
+                        label: "More",
+                        index: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              /// ⭐ Center Portfolio Button
+              Positioned(
+                top: -6,
+                left: 0,
+                right: 0,
+                child: GestureDetector(
+                  onTap: () {
+                    _handlePortfolioNavigation(authProvider, authService);
+                    setState(() => selectedIndex = 1);
+                  },
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: const BoxDecoration(
+                          color: Colors.amber,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(
+                              Icons.pie_chart,
+                              size: 34,
+                              color: Colors.black,
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              "Portfolio",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: "More"),
+        ),
+      ),
+    );
+  }
+
+  Widget _bottomItem({
+    required IconData icon,
+    required String label,
+    required int index,
+  }) {
+    final isSelected = selectedIndex == index;
+
+    return GestureDetector(
+      onTap: () {
+        if (index == 2) {
+          _showMoreMenu();
+          return;
+        }
+        setState(() => selectedIndex = index);
+      },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 22, color: isSelected ? Colors.white : Colors.grey),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: isSelected ? Colors.white : Colors.grey,
+            ),
+          ),
         ],
       ),
     );
