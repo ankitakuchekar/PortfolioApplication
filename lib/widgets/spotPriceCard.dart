@@ -19,11 +19,27 @@ class SpotPriceCard extends StatefulWidget {
 class _SpotPriceCardState extends State<SpotPriceCard> {
   late SpotData spotPrice;
   bool loading = true;
+  late Timer _timer;
 
   @override
   void initState() {
     super.initState();
     _fetchSpotPrice();
+    _startPeriodicRefresh();
+  }
+
+  // Method to start the periodic refresh every 45 seconds
+  void _startPeriodicRefresh() {
+    _timer = Timer.periodic(Duration(seconds: 45), (timer) {
+      _fetchSpotPrice();
+    });
+  }
+
+  @override
+  void dispose() {
+    // Cancel the timer when the widget is disposed to avoid memory leaks
+    _timer.cancel();
+    super.dispose();
   }
 
   Future<void> _fetchSpotPrice() async {
