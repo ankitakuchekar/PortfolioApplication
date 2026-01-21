@@ -1,3 +1,4 @@
+import 'package:bold_portfolio/models/spot_price_model.dart';
 import 'package:bold_portfolio/screens/BlogsListPageScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -33,7 +34,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
   bool isCheckingPin = false;
   late GuestView currentView;
   DateTime? _backgroundTime; // To track the time the app was in the background
-
+  SpotData? parentSpotPrice;
   @override
   void initState() {
     super.initState();
@@ -172,7 +173,18 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
       // ---------------- BODY ----------------
       body: IndexedStack(
         index: selectedIndex,
-        children: [const SpotPriceScreen(), _buildPortfolioContent()],
+        children: [
+          SpotPriceScreen(
+            onLatestSpotPriceChanged: (spotData) {
+              // Handle the updated spot price here if needed
+              print("Latest spot price updated: $spotData");
+              setState(() {
+                parentSpotPrice = spotData;
+              });
+            },
+          ),
+          _buildPortfolioContent(),
+        ],
       ),
 
       // ---------------- CUSTOM BOTTOM NAV ----------------

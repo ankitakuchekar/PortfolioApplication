@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:bold_portfolio/models/spot_price_model.dart';
 import 'package:bold_portfolio/widgets/chartData.dart';
 import 'package:bold_portfolio/widgets/spotPriceCard.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,8 @@ import 'package:http/http.dart' as http;
 const snapYellow = Color.fromARGB(255, 220, 166, 2);
 
 class SpotPriceScreen extends StatefulWidget {
-  const SpotPriceScreen({super.key});
+  final ValueChanged<SpotData> onLatestSpotPriceChanged;
+  const SpotPriceScreen({super.key, required this.onLatestSpotPriceChanged});
 
   @override
   State<SpotPriceScreen> createState() => _SpotPriceScreenState();
@@ -32,7 +34,7 @@ class _SpotPriceScreenState extends State<SpotPriceScreen> {
 
   String _selectedFilterUI = "24H"; // for ChoiceChip UI
   String _selectedRangeAPI = "1D"; // for API
-
+  SpotData? latestSpotPrice;
   List<ChartData> metalInOuncesData = [];
   bool isLoading = false;
   final String spotBaseUrl = dotenv.env['SPOT_API_URL']!;
@@ -90,7 +92,17 @@ class _SpotPriceScreenState extends State<SpotPriceScreen> {
         children: [
           _metalTabs(),
           const SizedBox(height: 16),
-          SpotPriceCard(metal: selectedMetal),
+          SpotPriceCard(
+            metal: selectedMetal,
+            onSpotPriceUpdated: (spotData) {
+              print("Received spot price: $spotData");
+              // Example: store it in parent state
+              setState(() {
+                latestSpotPrice = spotData;
+              });
+              widget.onLatestSpotPriceChanged(spotData);
+            },
+          ),
           const SizedBox(height: 16),
           _timeFilters(),
           const SizedBox(height: 16),

@@ -9,8 +9,13 @@ const snapYellow = Color.fromARGB(255, 220, 166, 2);
 
 class SpotPriceCard extends StatefulWidget {
   final String metal; // "Gold", "Silver", "Platinum", "Palladium"
+  final ValueChanged<SpotData> onSpotPriceUpdated;
 
-  const SpotPriceCard({super.key, required this.metal});
+  const SpotPriceCard({
+    super.key,
+    required this.metal,
+    required this.onSpotPriceUpdated,
+  });
 
   @override
   State<SpotPriceCard> createState() => _SpotPriceCardState();
@@ -49,6 +54,7 @@ class _SpotPriceCardState extends State<SpotPriceCard> {
       spotPrice = data.data;
       loading = false;
     });
+    widget.onSpotPriceUpdated(spotPrice);
   }
 
   // Replace loading spinner with skeleton
