@@ -1,5 +1,7 @@
+import 'package:bold_portfolio/screens/BlogDetailsScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:html/parser.dart' as html; // For stripping HTML tags
 import 'dart:convert';
@@ -15,7 +17,7 @@ class BlogListPage extends StatefulWidget {
 
 class _BlogListPageState extends State<BlogListPage> {
   final String baseUrl = dotenv.env['API_URL']!;
-  String selectedBlogType = 'Blogs'; // ✅ initial
+  String selectedBlogType = 'blogs'; // ✅ initial
   int currentPage = 1;
 
   Future<List<Blog>> fetchBlogsList(int pageNumber, String blogType) async {
@@ -38,7 +40,7 @@ class _BlogListPageState extends State<BlogListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Blogs")),
+      appBar: AppBar(title: const Text("Blogs"), backgroundColor: Colors.black),
       body: Column(
         children: [
           /// 🔘 TOP BUTTONS
@@ -162,6 +164,14 @@ class _BlogListPageState extends State<BlogListPage> {
   }
 }
 
+String formatDate(String date) {
+  try {
+    return DateFormat('MM/dd/yyyy').format(DateTime.parse(date));
+  } catch (_) {
+    return '-';
+  }
+}
+
 class BlogListItem extends StatelessWidget {
   final Blog blog;
 
@@ -174,8 +184,15 @@ class BlogListItem extends StatelessWidget {
       shadowColor: Colors.black26,
       child: InkWell(
         onTap: () {
-          Navigator.pushNamed(context, '/blog/${blog.newsTitleWithHypen}');
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  BlogDetailsPage(title: blog.newsTitleWithHypen),
+            ),
+          );
         },
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -191,7 +208,7 @@ class BlogListItem extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                'Published on ${blog.publishDate}',
+                'Published on ${formatDate(blog.publishDate)}',
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ),
@@ -227,14 +244,18 @@ class BlogListItem extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // link: '/blog/${blog.newsTitleWithHypen}'
-                  BlogShareComponent(title: blog.title),
+                  BlogShareComponent(title: blog.title, showShareText: true),
                   TextButton(
                     onPressed: () {
-                      Navigator.pushNamed(
+                      Navigator.push(
                         context,
-                        '/blog/${blog.newsTitleWithHypen}',
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              BlogDetailsPage(title: blog.newsTitleWithHypen),
+                        ),
                       );
                     },
+
                     child: const Text("Read more"),
                   ),
                 ],
@@ -283,18 +304,19 @@ class BlogListDescription extends StatelessWidget {
 }
 
 class BlogShareComponent extends StatelessWidget {
-  BlogShareComponent({super.key, required this.title});
+  BlogShareComponent({super.key, required this.title, this.showShareText});
   final String title;
   final String redirectionUrl = dotenv.env['URL_Redirection'] ?? '';
+  final bool? showShareText;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 4,
       children: [
-        const Text('Share', style: TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(width: 8),
-
-        /// Facebook
+        if (showShareText == true)
+          const Text('Share', style: TextStyle(fontWeight: FontWeight.bold)),
         IconButton(
           icon: const FaIcon(
             FontAwesomeIcons.facebookF,
@@ -307,8 +329,6 @@ class BlogShareComponent extends StatelessWidget {
             );
           },
         ),
-
-        /// X (Twitter)
         IconButton(
           icon: const FaIcon(
             FontAwesomeIcons.xTwitter,
@@ -321,8 +341,6 @@ class BlogShareComponent extends StatelessWidget {
             );
           },
         ),
-
-        /// LinkedIn
         IconButton(
           icon: const FaIcon(
             FontAwesomeIcons.linkedinIn,
