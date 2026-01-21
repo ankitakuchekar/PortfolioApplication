@@ -1,5 +1,6 @@
 import 'package:bold_portfolio/models/spot_price_model.dart';
 import 'package:bold_portfolio/screens/BlogsListPageScreen.dart';
+import 'package:bold_portfolio/screens/ROICalculator_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:bold_portfolio/screens/spot_priceScreen.dart';
@@ -76,7 +77,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     }
   }
 
-  void _showMoreMenu() {
+  void _showMoreMenu(SpotData? spotPrice) {
     showModalBottomSheet(
       context: context,
       isDismissible: true,
@@ -105,11 +106,11 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _moreItem(Icons.calculate, "Calculator"),
+                          _moreItem(Icons.calculate, "Calculator", spotPrice),
                           _divider(),
-                          _moreItem(Icons.article, "Blogs"),
+                          _moreItem(Icons.article, "Blogs", spotPrice),
                           _divider(),
-                          _moreItem(Icons.store, "Visit BOLD Store"),
+                          _moreItem(Icons.store, "Visit BOLD Store", spotPrice),
                         ],
                       ),
                     ),
@@ -123,7 +124,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _moreItem(IconData icon, String label) {
+  Widget _moreItem(IconData icon, String label, SpotData? spotPrice) {
     return InkWell(
       onTap: () {
         if (label == "Blogs") {
@@ -131,6 +132,13 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
             MaterialPageRoute(
               builder: (context) => BlogListPage(),
               settings: RouteSettings(arguments: {'page': 1}),
+            ),
+          );
+        } else if (label == "Calculator") {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => ROICalculator(spotPrice: spotPrice!),
+              settings: RouteSettings(arguments: {'page': 2}),
             ),
           );
         } else {
@@ -207,7 +215,12 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _bottomItem(icon: Icons.home, label: "Home", index: 0),
+                      _bottomItem(
+                        icon: Icons.home,
+                        label: "Home",
+                        index: 0,
+                        spotPrice: parentSpotPrice,
+                      ),
 
                       const SizedBox(width: 70),
 
@@ -215,6 +228,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
                         icon: Icons.more_horiz,
                         label: "More",
                         index: 2,
+                        spotPrice: parentSpotPrice,
                       ),
                     ],
                   ),
@@ -275,13 +289,14 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     required IconData icon,
     required String label,
     required int index,
+    required spotPrice,
   }) {
     final isSelected = selectedIndex == index;
 
     return GestureDetector(
       onTap: () {
         if (index == 2) {
-          _showMoreMenu();
+          _showMoreMenu(spotPrice);
           return;
         }
         setState(() => selectedIndex = index);
