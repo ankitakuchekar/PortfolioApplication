@@ -1,3 +1,4 @@
+import 'package:bold_portfolio/screens/BlogsListPageScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:bold_portfolio/screens/spot_priceScreen.dart';
@@ -123,7 +124,18 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
 
   Widget _moreItem(IconData icon, String label) {
     return InkWell(
-      onTap: () => Navigator.pop(context),
+      onTap: () {
+        if (label == "Blogs") {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => BlogListPage(),
+              settings: RouteSettings(arguments: {'page': 1}),
+            ),
+          );
+        } else {
+          Navigator.pop(context); // Close the current page for other items
+        }
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Row(
