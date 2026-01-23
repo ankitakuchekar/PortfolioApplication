@@ -261,7 +261,9 @@ class _SpotPriceCardState extends State<SpotPriceCard> {
               const SizedBox(height: 8),
               LinearProgressIndicator(
                 value: boundedPosition,
-                color: snapYellow,
+                color: widget.metal == 'Silver'
+                    ? Colors.grey.shade700
+                    : snapYellow,
                 backgroundColor: Colors.grey.shade300,
               ),
               const SizedBox(height: 8),

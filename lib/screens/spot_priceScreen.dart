@@ -158,9 +158,12 @@ class _SpotPriceScreenState extends State<SpotPriceScreen> {
       spacing: 8,
       children: filters.map((e) {
         return ChoiceChip(
-          label: Text(e),
+          label: Text(e, style: const TextStyle(color: Colors.black)),
           selected: _selectedFilterUI == e,
-          selectedColor: snapYellow,
+          selectedColor: selectedMetal == 'Silver'
+              ? Colors.grey.shade700
+              : snapYellow,
+
           onSelected: (_) {
             setState(() {
               _selectedFilterUI = e; // update UI
