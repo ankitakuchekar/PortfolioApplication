@@ -19,8 +19,9 @@ class _BlogListPageState extends State<BlogListPage> {
   final String baseUrl = dotenv.env['API_URL']!;
   String selectedBlogType = 'blogs'; // ✅ initial
   int currentPage = 1;
+  int totalPages = 0; // 🔥 IMPORTANT
 
-  Future<List<Blog>> fetchBlogsList(int pageNumber, String blogType) async {
+  Future<BlogPageResult> fetchBlogsList(int pageNumber, String blogType) async {
     final url = Uri.parse(
       '$baseUrl/UI/GetBPMBlogs?BlogType=$blogType&page=$pageNumber',
     );
@@ -32,9 +33,16 @@ class _BlogListPageState extends State<BlogListPage> {
     }
 
     final Map<String, dynamic> jsonResponse = json.decode(response.body);
-    final list = jsonResponse['data']['items']['dataList'] as List;
 
-    return list.map((e) => Blog.fromJson(e)).toList();
+    final items = jsonResponse['data']['items'];
+    final List list = items['dataList'];
+    final int totalElements = items['page']['totalElements'] ?? 0;
+
+    totalPages = (totalElements / 12).ceil();
+    return BlogPageResult(
+      blogs: list.map((e) => Blog.fromJson(e)).toList(),
+      totalPages: totalPages,
+    );
   }
 
   @override
@@ -59,43 +67,11 @@ class _BlogListPageState extends State<BlogListPage> {
           ),
 
           /// 🔢 PAGINATION
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left),
-                  onPressed: currentPage > 1
-                      ? () {
-                          setState(() {
-                            currentPage--;
-                          });
-                        }
-                      : null,
-                ),
-                Text(
-                  '$currentPage',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right),
-                  onPressed: () {
-                    setState(() {
-                      currentPage++;
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
+          buildPagination(),
 
           /// 📦 BLOG GRID
           Expanded(
-            child: FutureBuilder<List<Blog>>(
+            child: FutureBuilder<BlogPageResult>(
               future: fetchBlogsList(currentPage, selectedBlogType),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -104,12 +80,16 @@ class _BlogListPageState extends State<BlogListPage> {
 
                 if (snapshot.hasError ||
                     snapshot.data == null ||
-                    snapshot.data!.isEmpty) {
+                    snapshot.data!.blogs.isEmpty) {
                   return const Center(child: Text("No blogs found"));
                 }
 
-                final blogList = snapshot.data!;
+                final result = snapshot.data!;
+                final blogList = result.blogs;
 
+                totalPages = result.totalPages;
+
+                // final blogList = snapshot.data!.blogs;
                 return Column(
                   children: [
                     Expanded(
@@ -134,6 +114,85 @@ class _BlogListPageState extends State<BlogListPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget buildPagination() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        /// ◀ PREVIOUS
+        IconButton(
+          icon: const Icon(Icons.chevron_left),
+          onPressed: currentPage > 1
+              ? () {
+                  setState(() => currentPage--);
+                }
+              : null,
+        ),
+
+        /// PAGE NUMBERS
+        ...List.generate(totalPages, (index) {
+          int page = index + 1;
+
+          // show first, last, current, and neighbors
+          if (page == 1 ||
+              page == totalPages ||
+              (page >= currentPage - 1 && page <= currentPage + 1)) {
+            return _pageButton(page);
+          }
+
+          // show dots
+          if (page == currentPage - 2 || page == currentPage + 2) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 6),
+              child: Text("..."),
+            );
+          }
+
+          return const SizedBox.shrink();
+        }),
+
+        /// ▶ NEXT
+        IconButton(
+          icon: const Icon(Icons.chevron_right),
+          onPressed: currentPage < totalPages
+              ? () {
+                  setState(() => currentPage++);
+                }
+              : null,
+        ),
+      ],
+    );
+  }
+
+  Widget _pageButton(int page) {
+    bool isActive = page == currentPage;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: InkWell(
+        onTap: () {
+          setState(() => currentPage = page);
+        },
+        child: Container(
+          width: 36,
+          height: 36,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.black),
+            color: isActive ? Colors.black : Colors.white,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            page.toString(),
+            style: TextStyle(
+              color: isActive ? Colors.white : Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -356,6 +415,13 @@ class BlogShareComponent extends StatelessWidget {
       ],
     );
   }
+}
+
+class BlogPageResult {
+  final List<Blog> blogs;
+  final int totalPages;
+
+  BlogPageResult({required this.blogs, required this.totalPages});
 }
 
 class Blog {
