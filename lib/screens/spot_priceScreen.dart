@@ -161,7 +161,7 @@ class _SpotPriceScreenState extends State<SpotPriceScreen> {
           label: Text(e, style: const TextStyle(color: Colors.black)),
           selected: _selectedFilterUI == e,
           selectedColor: selectedMetal == 'Silver'
-              ? Colors.grey.shade700
+              ? Colors.grey.shade400
               : snapYellow,
 
           onSelected: (_) {

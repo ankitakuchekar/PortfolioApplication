@@ -9,14 +9,14 @@ class ChartPage extends StatefulWidget {
   final String selectedFilter;
 
   const ChartPage({
-    Key? key,
+    super.key,
     required this.data,
     required this.metal,
     required this.selectedFilter,
-  }) : super(key: key);
+  });
 
   @override
-  _ChartPageState createState() => _ChartPageState();
+  State<ChartPage> createState() => _ChartPageState();
 }
 
 class _ChartPageState extends State<ChartPage> {
@@ -35,45 +35,48 @@ class _ChartPageState extends State<ChartPage> {
     metalTitle =
         "${widget.metal[0].toUpperCase()}${widget.metal.substring(1)} Spot Chart";
   }
+  // -------------------- Helpers --------------------
 
-  bool get _isShortRange {
-    return widget.selectedFilter == "24H" || widget.selectedFilter == "1W";
-  }
+  bool get _isShortRange =>
+      widget.selectedFilter == "24H" || widget.selectedFilter == "1W";
 
-  String spotBaseUrl = dotenv.env['SPOT_API_URL']!;
-
-  double get minY =>
-      chartData.map((e) => e.price).reduce((a, b) => a < b ? a : b) - 1;
-
-  double get maxY =>
-      chartData.map((e) => e.price).reduce((a, b) => a > b ? a : b) + 1;
+  bool get _isSilver => widget.metal == "Silver";
 
   DateTime get _minX => widget.data.first.timestamp;
-
   DateTime get _maxX => widget.data.last.timestamp;
 
-  DateTimeAxis _build24HXAxis() {
-    return DateTimeAxis(
-      minimum: _minX,
-      maximum: _maxX,
+  Color get _borderColor =>
+      _isSilver ? const Color(0xFF9E9E9E) : const Color(0xFFFFC107);
 
-      intervalType: DateTimeIntervalType.hours,
-      interval: 1, // ✅ Gives 4–6 labels
+  LinearGradient get _areaGradient => LinearGradient(
+    colors: _isSilver
+        ? [
+            const Color(0xFFBDBDBD).withOpacity(0.6),
+            const Color(0xFFE0E0E0).withOpacity(0.15),
+          ]
+        : [
+            const Color(0xFFFFC107).withOpacity(0.6),
+            const Color(0xFFFFF3CD).withOpacity(0.15),
+          ],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
 
-      dateFormat: DateFormat('hh:mm a'),
-      majorGridLines: const MajorGridLines(width: 0),
-      axisLine: const AxisLine(width: 0),
-      labelStyle: const TextStyle(fontSize: 12),
-
-      // 🔥 VERY IMPORTANT
-      autoScrollingMode: AutoScrollingMode.end,
-    );
-  }
+  // -------------------- X AXIS --------------------
 
   DateTimeAxis _buildXAxis() {
     switch (widget.selectedFilter) {
       case "24H":
-        return _build24HXAxis();
+        return DateTimeAxis(
+          minimum: _minX,
+          maximum: _maxX,
+          intervalType: DateTimeIntervalType.hours,
+          interval: 1,
+          dateFormat: DateFormat('hh:mm a'),
+          majorGridLines: const MajorGridLines(width: 0),
+          axisLine: const AxisLine(width: 0),
+          labelStyle: const TextStyle(fontSize: 12),
+        );
 
       case "1W":
         return DateTimeAxis(
@@ -105,11 +108,12 @@ class _ChartPageState extends State<ChartPage> {
     }
   }
 
+  // -------------------- Y AXIS --------------------
+
   NumericAxis _buildTightYAxis() {
     final min = widget.data.map((e) => e.price).reduce((a, b) => a < b ? a : b);
     final max = widget.data.map((e) => e.price).reduce((a, b) => a > b ? a : b);
-
-    final padding = (max - min) * 0.15; // 15% padding
+    final padding = (max - min) * 0.15;
 
     return NumericAxis(
       minimum: min - padding,
@@ -140,23 +144,77 @@ class _ChartPageState extends State<ChartPage> {
     );
   }
 
-  Color get _borderColor => widget.metal == "Silver"
-      ? const Color(0xFF9E9E9E)
-      : const Color(0xFFFFC107);
+  String _formatDateTime(DateTime date) {
+    return DateFormat('EEEE, dd MMM • hh:mm a').format(date);
+  }
 
-  LinearGradient get _areaGradient => LinearGradient(
-    colors: widget.metal == "Silver"
-        ? [
-            const Color(0xFFBDBDBD).withOpacity(0.6), // silver
-            const Color.fromARGB(255, 187, 183, 183).withOpacity(0.15),
-          ]
-        : [
-            const Color(0xFFFFC107).withOpacity(0.6), // gold
-            const Color.fromARGB(255, 245, 210, 96).withOpacity(0.15),
-          ],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
+  // -------------------- TRACKBALL --------------------
+  TrackballBehavior get _trackballBehavior => TrackballBehavior(
+    enable: true,
+
+    // 🔥 IMPORTANT: use singleTap
+    activationMode: ActivationMode.singleTap,
+
+    lineType: TrackballLineType.vertical,
+    lineWidth: 1,
+    lineColor: Colors.grey,
+
+    tooltipSettings: const InteractiveTooltip(
+      enable: true,
+      color: Colors.transparent, // builder will handle UI
+    ),
+
+    markerSettings: const TrackballMarkerSettings(
+      markerVisibility: TrackballVisibilityMode.visible,
+      height: 8,
+      width: 8,
+    ),
+    builder: (BuildContext context, TrackballDetails details) {
+      if (details.pointIndex == null) {
+        return const SizedBox.shrink();
+      }
+
+      final data = widget.data[details.pointIndex!];
+
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 🔹 PRICE LABEL
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(6),
+              boxShadow: const [
+                BoxShadow(color: Colors.black26, blurRadius: 6),
+              ],
+            ),
+            child: Text(
+              '${widget.metal.toUpperCase()}  ₹${data.price.toStringAsFixed(2)}',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+          ),
+
+          const SizedBox(height: 2),
+
+          // 🔹 X-AXIS LABEL (DAY + DATE + TIME)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              _formatDateTime(data.timestamp),
+              style: const TextStyle(fontSize: 10, color: Colors.white),
+            ),
+          ),
+        ],
+      );
+    },
   );
+
+  // -------------------- BUILD --------------------
 
   @override
   Widget build(BuildContext context) {
@@ -167,12 +225,14 @@ class _ChartPageState extends State<ChartPage> {
           : chartData.isEmpty
           ? Center(child: Text('No data available'))
           : SfCartesianChart(
+              trackballBehavior: _trackballBehavior,
+
               plotAreaBorderWidth: 0,
+
               primaryXAxis: _buildXAxis(),
               primaryYAxis: _isShortRange
                   ? _buildTightYAxis()
                   : _buildWideYAxis(),
-              tooltipBehavior: TooltipBehavior(enable: true),
 
               series: <CartesianSeries>[
                 AreaSeries<ChartData, DateTime>(
@@ -189,13 +249,14 @@ class _ChartPageState extends State<ChartPage> {
   }
 }
 
+// -------------------- MODEL --------------------
+
 class ChartData {
   final DateTime timestamp;
   final double price;
 
   ChartData({required this.timestamp, required this.price});
 
-  // Add this factory method to parse List<dynamic> from API
   factory ChartData.fromJson(List<dynamic> item) {
     return ChartData(
       timestamp: DateTime.fromMillisecondsSinceEpoch(item[0]),
