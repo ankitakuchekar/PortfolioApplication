@@ -130,13 +130,13 @@ class _ChartPageState extends State<ChartPage> {
     final min = widget.data.map((e) => e.price).reduce((a, b) => a < b ? a : b);
     final max = widget.data.map((e) => e.price).reduce((a, b) => a > b ? a : b);
 
-    final roundedMin = (min / 500).floor() * 500;
-    final roundedMax = (max / 500).ceil() * 500;
+    final range = max - min;
+    final padding = range == 0 ? 1 : range * 0.2; // 20% padding
 
     return NumericAxis(
-      minimum: roundedMin.toDouble(),
-      maximum: roundedMax.toDouble(),
-      interval: 500,
+      minimum: (min - padding).clamp(0, double.infinity),
+      maximum: max + padding,
+      interval: range == 0 ? 1 : range / 4,
       numberFormat: NumberFormat.currency(symbol: '\$'),
       majorGridLines: const MajorGridLines(width: 0),
       axisLine: const AxisLine(width: 0),
