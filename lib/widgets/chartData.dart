@@ -1,3 +1,4 @@
+import 'package:bold_portfolio/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
@@ -7,12 +8,16 @@ class ChartPage extends StatefulWidget {
   final List<ChartData> data;
   final String metal;
   final String selectedFilter;
+  final bool errorOccurred;
+  final VoidCallback? pressedRetry;
 
   const ChartPage({
     super.key,
     required this.data,
     required this.metal,
     required this.selectedFilter,
+    required this.errorOccurred,
+    this.pressedRetry,
   });
 
   @override
@@ -190,7 +195,7 @@ class _ChartPageState extends State<ChartPage> {
               ],
             ),
             child: Text(
-              '${widget.metal.toUpperCase()}  ₹${data.price.toStringAsFixed(2)}',
+              '${widget.metal.toUpperCase()}  ${NumberFormat.currency(symbol: '\$').format(data.price)}',
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
           ),
@@ -222,6 +227,33 @@ class _ChartPageState extends State<ChartPage> {
       appBar: AppBar(title: Text(metalTitle)),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
+          : widget.errorOccurred
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text.rich(
+                    TextSpan(
+                      text: 'Reload Chart', // First part of the message (bold)
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.error, // Set color for error message
+                      ),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        widget.pressedRetry?.call();
+                      });
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            )
           : chartData.isEmpty
           ? Center(child: Text('No data available'))
           : SfCartesianChart(

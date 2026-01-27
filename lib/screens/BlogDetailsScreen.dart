@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:bold_portfolio/screens/BlogsListPageScreen.dart';
+import 'package:bold_portfolio/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -53,7 +54,31 @@ class BlogDetailsPage extends StatelessWidget {
           }
 
           if (snapshot.hasError || !snapshot.hasData) {
-            return const Center(child: Text('Blog not found'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text.rich(
+                    TextSpan(
+                      text:
+                          ' Blog Not Found', // First part of the message (bold)
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.error, // Set color for error message
+                      ),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      fetchBlogDetails(title);
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
           }
 
           final blogData = snapshot.data!;

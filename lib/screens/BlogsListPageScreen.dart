@@ -1,4 +1,5 @@
 import 'package:bold_portfolio/screens/BlogDetailsScreen.dart';
+import 'package:bold_portfolio/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
@@ -66,9 +67,6 @@ class _BlogListPageState extends State<BlogListPage> {
             ),
           ),
 
-          /// 🔢 PAGINATION
-          buildPagination(),
-
           /// 📦 BLOG GRID
           Expanded(
             child: FutureBuilder<BlogPageResult>(
@@ -81,7 +79,34 @@ class _BlogListPageState extends State<BlogListPage> {
                 if (snapshot.hasError ||
                     snapshot.data == null ||
                     snapshot.data!.blogs.isEmpty) {
-                  return const Center(child: Text("No blogs found"));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text.rich(
+                          TextSpan(
+                            text:
+                                'No Blogs Found', // First part of the message (bold)
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors
+                                  .error, // Set color for error message
+                            ),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              fetchBlogsList(currentPage, selectedBlogType);
+                            });
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  );
                 }
 
                 final result = snapshot.data!;
@@ -92,6 +117,8 @@ class _BlogListPageState extends State<BlogListPage> {
                 // final blogList = snapshot.data!.blogs;
                 return Column(
                   children: [
+                    /// 🔢 PAGINATION
+                    buildPagination(),
                     Expanded(
                       child: GridView.builder(
                         padding: const EdgeInsets.all(10),
@@ -260,7 +287,7 @@ class BlogListItem extends StatelessWidget {
               width: double.infinity,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.network(blog.image, fit: BoxFit.cover),
+                child: Image.network(blog.image),
               ),
             ),
 

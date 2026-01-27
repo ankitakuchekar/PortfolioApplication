@@ -1,4 +1,5 @@
 import 'package:bold_portfolio/models/spot_price_model.dart';
+import 'package:bold_portfolio/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:bold_portfolio/services/portfolio_service.dart'; // your API service
 import 'dart:async';
@@ -25,6 +26,7 @@ class _SpotPriceCardState extends State<SpotPriceCard> {
   late SpotData spotPrice;
   bool loading = true;
   late Timer _timer;
+  bool errorOccurred = false;
 
   @override
   void initState() {
@@ -48,13 +50,22 @@ class _SpotPriceCardState extends State<SpotPriceCard> {
   }
 
   Future<void> _fetchSpotPrice() async {
-    final SpotPriceData data = await PortfolioService.fetchSpotPrices();
-    print("Spot Price Data: $data");
-    setState(() {
-      spotPrice = data.data;
-      loading = false;
-    });
-    widget.onSpotPriceUpdated(spotPrice);
+    try {
+      final SpotPriceData data = await PortfolioService.fetchSpotPrices();
+      print("Spot Price Data: $data");
+      setState(() {
+        spotPrice = data.data;
+        loading = false;
+        errorOccurred = false; // Reset error state
+      });
+      widget.onSpotPriceUpdated(spotPrice);
+    } catch (e) {
+      setState(() {
+        loading = false;
+        errorOccurred = true; // Set error state when fetching fails
+      });
+      print("Error fetching spot price: $e");
+    }
   }
 
   // Replace loading spinner with skeleton
@@ -136,6 +147,51 @@ class _SpotPriceCardState extends State<SpotPriceCard> {
             ],
           ),
         ],
+      );
+    }
+
+    if (errorOccurred) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: AppColors.error),
+            const SizedBox(height: 16),
+            Text.rich(
+              TextSpan(
+                text:
+                    'No internet connection', // First part of the message (bold)
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.error, // Set color for error message
+                ),
+                children: [
+                  TextSpan(
+                    text:
+                        '\nPlease check your network connection and try again.',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.normal,
+                      color: AppColors
+                          .error, // Keep the same error color for the second part
+                    ),
+                  ),
+                ],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  loading = true;
+                  errorOccurred = false;
+                });
+                _fetchSpotPrice(); // Retry fetching data
+              },
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
       );
     }
 

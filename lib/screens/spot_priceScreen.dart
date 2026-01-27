@@ -19,6 +19,7 @@ class SpotPriceScreen extends StatefulWidget {
 class _SpotPriceScreenState extends State<SpotPriceScreen> {
   int selectedTab = 0;
   String selectedMetal = "Gold";
+  bool errorOccurred = false;
 
   // ----------- Filter mapping: UI text → API value -----------
   final Map<String, String> filterMap = {
@@ -64,6 +65,7 @@ class _SpotPriceScreenState extends State<SpotPriceScreen> {
         if (jsonData['success'] == true) {
           final chartData = jsonData['data']['chartdata'];
           print("ChartData Length: ${chartData.length}");
+          errorOccurred = false; // Reset error state
 
           setState(() {
             metalInOuncesData = (chartData as List)
@@ -75,9 +77,11 @@ class _SpotPriceScreenState extends State<SpotPriceScreen> {
         }
       } else {
         debugPrint("API Error: ${response.statusCode}");
+        errorOccurred = true; // Set error state when fetching fails
       }
     } catch (e) {
       debugPrint("API Exception: $e");
+      errorOccurred = true; // Set error state when fetching fails
     } finally {
       setState(() => isLoading = false);
     }
@@ -187,6 +191,10 @@ class _SpotPriceScreenState extends State<SpotPriceScreen> {
               data: metalInOuncesData,
               metal: selectedMetal,
               selectedFilter: _selectedFilterUI,
+              errorOccurred: errorOccurred,
+              pressedRetry: () {
+                _fetchMetalData(_selectedRangeAPI);
+              },
             ),
     );
   }

@@ -34,7 +34,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
   int selectedIndex = 0;
   bool isCheckingPin = false;
   late GuestView currentView;
-  DateTime? _backgroundTime; // To track the time the app was in the background
+  DateTime? _backgroundTime;
   SpotData? parentSpotPrice;
   @override
   void initState() {
@@ -63,14 +63,16 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     } else if (state == AppLifecycleState.resumed) {
       // The app is in the foreground, check the time difference
       if (_backgroundTime != null) {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
         final difference = DateTime.now().difference(_backgroundTime!);
-        if (difference.inMinutes > 15) {
-          // Show the pin entry screen if more than 15 minutes have passed
+        if (difference.inMinutes > 15 && authProvider.isAuthenticated) {
+          print("insude ankita1");
           setState(() {
             currentView = GuestView.pin;
             selectedIndex = 1; // Ensure it's showing the "Portfolio" tab
           });
         } else {
+          print("insude ankita2");
           _checkForPinOrLogin();
         }
       }
@@ -299,7 +301,14 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
           _showMoreMenu(spotPrice);
           return;
         }
-        setState(() => selectedIndex = index);
+        setState(() {
+          selectedIndex = index;
+          if (selectedIndex == 0) {
+            currentView = GuestView.home;
+          } else if (selectedIndex == 1) {
+            _checkForPinOrLogin();
+          }
+        });
       },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -385,6 +394,11 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
             currentView = GuestView.pin;
           });
         }
+      });
+    } else if (selectedIndex == 0) {
+      setState(() {
+        selectedIndex = 0;
+        currentView = GuestView.home;
       });
     } else {
       setState(() {
