@@ -5,20 +5,25 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:http/http.dart' as http;
-
-// Providers & Screens
 import 'widgets/timer_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/portfolio_provider.dart';
 import 'screens/splash_screen.dart';
-import 'screens/enter_pin_screen.dart';
 import 'utils/app_theme.dart';
+import 'package:flutter/services.dart'; // Import for orientation locking
 
-// 1. Global Navigator Key to allow locking from background
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Lock the app orientation to portrait mode for both iOS and Android
+  if (!kIsWeb) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
 
   if (!kIsWeb) {
     FlutterBackgroundService().configure(
@@ -67,7 +72,6 @@ class _BoldPortfolioAppState extends State<BoldPortfolioApp>
   @override
   void initState() {
     super.initState();
-    // Start listening to app lifecycle (background/foreground)
     WidgetsBinding.instance.addObserver(this);
   }
 

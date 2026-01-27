@@ -57,5 +57,11 @@
 	</array>
 	<key>NSFaceIDUsageDescription</key>
 <string>User Biometric Authentication</string>
+<key>UISupportedInterfaceOrientations</key>
+<array>
+  <string>UIInterfaceOrientationPortraitUp</string>
+  <string>UIInterfaceOrientationPortraitUpsideDown</string>
+</array>
+
 </dict>
 </plist>
