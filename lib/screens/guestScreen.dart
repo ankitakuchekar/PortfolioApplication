@@ -141,7 +141,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
 
     return InkWell(
       onTap: () {
-        if (label == "Blogs") {
+        if (label == "Blogs/News") {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => BlogListPage(),
