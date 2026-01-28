@@ -3,19 +3,9 @@ import 'package:bold_portfolio/utils/app_colors.dart';
 import 'package:bold_portfolio/widgets/common_app_bar.dart';
 import 'package:bold_portfolio/widgets/common_drawer.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class BullionPortfolioGuideScreen extends StatelessWidget {
   BullionPortfolioGuideScreen({super.key});
-
-  void _launchURL(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
 
   Widget sectionTitle(String title) {
     return Padding(

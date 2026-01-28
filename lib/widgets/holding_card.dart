@@ -48,7 +48,7 @@ class _HoldingCardState extends State<HoldingCard> {
   Widget build(BuildContext context) {
     final String redirectionUrl = dotenv.env['URL_Redirection'] ?? '';
     final _url =
-        '${redirectionUrl}product/${widget.holding.productId}/${Uri.encodeComponent(widget.holding.name)}';
+        '$redirectionUrl/product/${widget.holding.productId}/${Uri.encodeComponent(widget.holding.name)}';
 
     Future<void> _launchUrl() async {
       final Uri uri = Uri.parse(_url);

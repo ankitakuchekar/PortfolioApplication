@@ -11,8 +11,9 @@ import 'package:flutter_html_table/flutter_html_table.dart'; // Import this
 
 class BlogDetailsPage extends StatelessWidget {
   final String title;
+  final String type;
 
-  const BlogDetailsPage({super.key, required this.title});
+  const BlogDetailsPage({super.key, required this.title, required this.type});
 
   String formatDate(String date) {
     try {
@@ -24,19 +25,31 @@ class BlogDetailsPage extends StatelessWidget {
 
   Future<Blog> fetchBlogDetails(String title) async {
     final baseUrl = dotenv.env['API_URL']!;
-    print("title ${title}");
-    final url = Uri.parse('$baseUrl/UI/GetBPMBlogs?title=$title');
+    print("title ${title} $type");
+    final Uri url;
+    if (type == 'Blogs') {
+      url = Uri.parse('$baseUrl/UI/GetBPMBlogs?title=$title');
+    } else {
+      url = Uri.parse('$baseUrl/UI/GetBPMNews?title=$title');
+    }
 
     final response = await http.get(url);
 
     if (response.statusCode != 200) {
       throw Exception('Failed to load blog details');
     }
-    print("url ${url}");
     final jsonResponse = json.decode(response.body);
-    final list = jsonResponse['data']['items']['dataList'] as List;
-    print("list ${list}");
-    return Blog.fromJson(list.first);
+    final list = type == 'Blogs'
+        ? jsonResponse['data']['items']['dataList'] as List
+        : jsonResponse['data']['dataList'] as List;
+    // print("list ${list}");
+    final blogDescription = list.firstWhere(
+      (values) => values['newsTitleWithHypen'] == title,
+      orElse: () => null,
+    );
+    print("blogDescription ${blogDescription}");
+
+    return Blog.fromJson(blogDescription ?? list.first);
   }
 
   @override

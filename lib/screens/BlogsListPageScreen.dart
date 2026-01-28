@@ -23,10 +23,18 @@ class _BlogListPageState extends State<BlogListPage> {
   int totalPages = 0; // 🔥 IMPORTANT
 
   Future<BlogPageResult> fetchBlogsList(int pageNumber, String blogType) async {
-    final url = Uri.parse(
-      '$baseUrl/UI/GetBPMBlogs?BlogType=$blogType&page=$pageNumber',
-    );
-
+    print('Fetching blogs: type=$blogType, page=$pageNumber');
+    final Uri url;
+    if (blogType == 'industryNews') {
+      url = Uri.parse(
+        '$baseUrl/UI/GetBPMNews?newsType=$blogType&page=$pageNumber',
+      );
+    } else {
+      url = Uri.parse(
+        '$baseUrl/UI/GetBPMBlogs?BlogType=$blogType&page=$pageNumber',
+      );
+    }
+    print("url: $url");
     final response = await http.get(url);
 
     if (response.statusCode != 200) {
@@ -35,7 +43,9 @@ class _BlogListPageState extends State<BlogListPage> {
 
     final Map<String, dynamic> jsonResponse = json.decode(response.body);
 
-    final items = jsonResponse['data']['items'];
+    final items = blogType == 'industryNews'
+        ? jsonResponse['data']
+        : jsonResponse['data']['items'];
     final List list = items['dataList'];
     final int totalElements = items['page']['totalElements'] ?? 0;
 
@@ -59,10 +69,12 @@ class _BlogListPageState extends State<BlogListPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _blogTypeButton('Blogs', 'blogs'),
-                const SizedBox(width: 10),
+                const SizedBox(width: 5),
                 _blogTypeButton('Coin Guide', 'coin-guide'),
-                const SizedBox(width: 10),
+                const SizedBox(width: 5),
                 _blogTypeButton('Coin Value', 'coin-value'),
+                const SizedBox(width: 5),
+                _blogTypeButton('News', 'industryNews'),
               ],
             ),
           ),
@@ -229,8 +241,8 @@ class _BlogListPageState extends State<BlogListPage> {
     final isSelected = selectedBlogType == type;
 
     return SizedBox(
-      // width: 100, // ✅ same width for all buttons
-      // height: 54, // optional: consistent height
+      width: 89, // ✅ same width for all buttons
+      height: 54, // optional: consistent height
       child: ElevatedButton(
         onPressed: () {
           setState(() {
@@ -273,8 +285,10 @@ class BlogListItem extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  BlogDetailsPage(title: blog.newsTitleWithHypen),
+              builder: (context) => BlogDetailsPage(
+                title: blog.newsTitleWithHypen,
+                type: blog.type,
+              ),
             ),
           );
         },
@@ -336,8 +350,10 @@ class BlogListItem extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              BlogDetailsPage(title: blog.newsTitleWithHypen),
+                          builder: (context) => BlogDetailsPage(
+                            title: blog.newsTitleWithHypen,
+                            type: blog.type,
+                          ),
                         ),
                       );
                     },
@@ -399,7 +415,7 @@ class BlogShareComponent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
-      spacing: 4,
+      spacing: 3,
       children: [
         if (showShareText == true)
           const Text('Share', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -457,6 +473,7 @@ class Blog {
   final String image;
   final String newsTitleWithHypen;
   final String publishDate;
+  final String type;
 
   Blog({
     required this.title,
@@ -464,6 +481,7 @@ class Blog {
     required this.image,
     required this.newsTitleWithHypen,
     required this.publishDate,
+    required this.type,
   });
 
   factory Blog.fromJson(Map<String, dynamic> json) {
@@ -473,6 +491,7 @@ class Blog {
       image: json['image'] ?? '',
       newsTitleWithHypen: json['newsTitleWithHypen'] ?? '',
       publishDate: json['publishDate'] ?? '',
+      type: json['type'] ?? '',
     );
   }
 }

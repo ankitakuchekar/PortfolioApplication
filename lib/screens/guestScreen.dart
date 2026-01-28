@@ -2,6 +2,7 @@ import 'package:bold_portfolio/models/spot_price_model.dart';
 import 'package:bold_portfolio/screens/BlogsListPageScreen.dart';
 import 'package:bold_portfolio/screens/ROICalculator_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:bold_portfolio/screens/spot_priceScreen.dart';
 import 'package:bold_portfolio/screens/enter_pin_screen.dart';
@@ -9,6 +10,7 @@ import 'package:bold_portfolio/screens/login_screen.dart';
 import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/providers/auth_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 const snapYellow = Color.fromARGB(255, 220, 166, 2);
 const darkBlack = Color(0xFF000000);
@@ -41,6 +43,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     currentView = widget.initialView;
+    print("Initial View: $currentView");
     if (currentView == GuestView.login || currentView == GuestView.pin) {
       selectedIndex = 1; // Portfolio tab
     } else {
@@ -110,7 +113,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
                         children: [
                           _moreItem(Icons.calculate, "Calculator", spotPrice),
                           _divider(),
-                          _moreItem(Icons.article, "Blogs", spotPrice),
+                          _moreItem(Icons.article, "Blogs/News", spotPrice),
                           _divider(),
                           _moreItem(Icons.store, "Visit BOLD Store", spotPrice),
                         ],
@@ -127,6 +130,15 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
   }
 
   Widget _moreItem(IconData icon, String label, SpotData? spotPrice) {
+    final String redirectionUrl = dotenv.env['URL_Redirection'] ?? '';
+
+    Future<void> _launchUrl() async {
+      final Uri uri = Uri.parse(redirectionUrl);
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        throw Exception('Could not launch $redirectionUrl');
+      }
+    }
+
     return InkWell(
       onTap: () {
         if (label == "Blogs") {
@@ -144,7 +156,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
             ),
           );
         } else {
-          Navigator.pop(context); // Close the current page for other items
+          _launchUrl(); // Close the current page for other items
         }
       },
       child: Padding(
@@ -381,8 +393,13 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
   void _checkForPinOrLogin() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final authService = AuthService();
-
-    if (authProvider.isAuthenticated) {
+    print("check for pun ${currentView} ${selectedIndex}");
+    if (selectedIndex == 0) {
+      setState(() {
+        selectedIndex = 0;
+        currentView = GuestView.home;
+      });
+    } else if (authProvider.isAuthenticated) {
       authService.getPin().then((fetchedUserPin) {
         if (fetchedUserPin == null || fetchedUserPin == '0') {
           Navigator.of(context).pushReplacement(
@@ -394,11 +411,6 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
             currentView = GuestView.pin;
           });
         }
-      });
-    } else if (selectedIndex == 0) {
-      setState(() {
-        selectedIndex = 0;
-        currentView = GuestView.home;
       });
     } else {
       setState(() {
