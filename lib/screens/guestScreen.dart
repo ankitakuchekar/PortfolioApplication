@@ -369,9 +369,16 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
       if (fetchedUserPin == null ||
           fetchedUserPin == '0' ||
           fetchedUserPin == '') {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const MainScreen()),
-        );
+        final result = await Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const MainScreen()));
+
+        if (result == 'go_home') {
+          setState(() {
+            selectedIndex = 0;
+            currentView = GuestView.home;
+          });
+        }
       } else {
         setState(() {
           selectedIndex = 1;
@@ -402,9 +409,9 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     } else if (authProvider.isAuthenticated) {
       authService.getPin().then((fetchedUserPin) {
         if (fetchedUserPin == null || fetchedUserPin == '0') {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const MainScreen()),
-          );
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const MainScreen()));
         } else {
           setState(() {
             selectedIndex = 1;
