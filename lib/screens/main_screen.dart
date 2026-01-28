@@ -1,5 +1,6 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
-import 'package:bold_portfolio/screens/biometric_login_screen.dart';
+// import 'package:bold_portfolio/screens/biometric_login_screen.dart';
+import 'package:bold_portfolio/screens/guestScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -19,17 +20,15 @@ class MainScreen extends StatefulWidget {
 }
 
 class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
-  int _currentIndex = 0;
+  int _currentIndex = 1;
   late Widget _currentScreen;
 
   final List<Widget> _screens = [
+    const Guestscreen(),
     const BullionDashboard(),
     const GraphsScreen(),
     const HoldingsScreen(),
   ];
-
-  DateTime? _backgroundTime;
-  bool _isBiometricShown = false;
 
   @override
   void initState() {
@@ -42,40 +41,6 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      _backgroundTime = DateTime.now();
-    }
-
-    if (state == AppLifecycleState.resumed) {
-      if (_backgroundTime == null) return;
-
-      final difference = DateTime.now().difference(_backgroundTime!);
-
-      if (difference.inMinutes >= 10 && !_isBiometricShown) {
-        _showBiometricLock();
-      }
-    }
-  }
-
-  void _showBiometricLock() {
-    _isBiometricShown = true;
-
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        opaque: false,
-        pageBuilder: (_, __, ___) => BiometricLoginScreen(
-          onSuccess: () {
-            _isBiometricShown = false;
-            Navigator.of(context).pop();
-          },
-        ),
-      ),
-    );
   }
 
   void onNavigationTap(int index) {
@@ -138,45 +103,91 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       onWillPop: _onWillPop,
       child: Scaffold(
         body: _currentScreen,
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, -2),
+
+        bottomNavigationBar: _currentIndex == 0
+            ? const SizedBox.shrink()
+            : Stack(
+                children: [
+                  BottomNavigationBar(
+                    currentIndex: _currentIndex,
+                    onTap: onNavigationTap,
+                    type: BottomNavigationBarType.fixed,
+                    backgroundColor: Colors.black,
+                    selectedItemColor: Colors.orangeAccent,
+                    unselectedItemColor: Colors.white54,
+                    items: const [
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.home),
+                        label: 'Home',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.dashboard),
+                        label: 'Dashboard',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.show_chart),
+                        label: 'Graphs',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.inventory_2),
+                        label: 'Holdings',
+                      ),
+                    ],
+                  ),
+
+                  Positioned(
+                    // left: MediaQuery.of(context).size.width / 5 - 3,
+                    left: 80,
+                    top: 1,
+                    bottom: 1,
+                    child: Container(width: 1, color: Colors.white38),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              if (shouldDisableTabs && (index == 1 || index == 2)) return;
-              onNavigationTap(index);
-            },
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: AppColors.black,
-            selectedItemColor: Colors.orangeAccent,
-            unselectedItemColor: Colors.white.withOpacity(0.6),
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.dashboard),
-                label: 'Dashboard',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.show_chart),
-                label: 'Graphs',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.inventory_2),
-                label: 'Holdings',
-              ),
-            ],
-          ),
-        ),
-        drawer: CommonDrawer(onNavigationTap: onNavigationTap),
       ),
     );
   }
 }
+
+
+
+
+
+
+  // DateTime? _backgroundTime;
+  // bool _isBiometricShown = false;
+
+  
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   if (state == AppLifecycleState.paused ||
+  //       state == AppLifecycleState.inactive) {
+  //     _backgroundTime = DateTime.now();
+  //   }
+
+  //   if (state == AppLifecycleState.resumed) {
+  //     if (_backgroundTime == null) return;
+
+  //     final difference = DateTime.now().difference(_backgroundTime!);
+
+  //     if (difference.inMinutes >= 15 && !_isBiometricShown) {
+  //       _showBiometricLock();
+  //     }
+  //   }
+  // }
+
+  // void _showBiometricLock() {
+  //   _isBiometricShown = true;
+
+  //   Navigator.of(context).push(
+  //     PageRouteBuilder(
+  //       opaque: false,
+  //       pageBuilder: (_, __, ___) => BiometricLoginScreen(
+  //         onSuccess: () {
+  //           _isBiometricShown = false;
+  //           Navigator.of(context).pop();
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }

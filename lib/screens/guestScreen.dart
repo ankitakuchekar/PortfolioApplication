@@ -34,7 +34,6 @@ class Guestscreen extends StatefulWidget {
 
 class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
   int selectedIndex = 0;
-  bool isCheckingPin = false;
   late GuestView currentView;
   DateTime? _backgroundTime;
   SpotData? parentSpotPrice;
@@ -358,16 +357,18 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     AuthProvider authProvider,
     AuthService authService,
   ) async {
-    if (isCheckingPin) return;
+    // if (isCheckingPin) return;
 
-    setState(() {
-      isCheckingPin = true;
-    });
+    // setState(() {
+    //   isCheckingPin = true;
+    // });
 
     final fetchedUserPin = await authService.getPin();
 
     if (authProvider.isAuthenticated) {
-      if (fetchedUserPin == null || fetchedUserPin == '0') {
+      if (fetchedUserPin == null ||
+          fetchedUserPin == '0' ||
+          fetchedUserPin == '') {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const MainScreen()),
         );
@@ -383,10 +384,9 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
         currentView = GuestView.login;
       });
     }
-
-    setState(() {
-      isCheckingPin = false;
-    });
+    // setState(() {
+    //   isCheckingPin = false;
+    // });
   }
 
   // Check if the user should see the pin entry or login screen
