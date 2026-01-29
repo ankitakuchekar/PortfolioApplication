@@ -20,6 +20,8 @@ class GraphsScreen extends StatefulWidget {
   State<GraphsScreen> createState() => _GraphsScreenState();
 }
 
+const Color darkYellow = Color(0xFFD4A200); // dark gold/yellow
+
 class _GraphsScreenState extends State<GraphsScreen> {
   String selectedTab = 'Candle Chart'; // Set Candle Chart as the initial tab
   String frequency = '1D'; // Default frequency set to '3M'
@@ -235,44 +237,13 @@ class _GraphsScreenState extends State<GraphsScreen> {
                 const SizedBox(height: 5),
                 // Tab buttons for selection
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Wrap(
-                    spacing: 3,
-                    alignment: WrapAlignment.center,
-                    children: tabOptions.map((label) {
-                      final isSelected = selectedTab == label;
-                      return ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedTab = label;
-                            // if (selectedTab == 'Candle Chart') {
-                            //   frequency = '1D';
-                            // } else {
-                            frequency = '3M';
-                            // }
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isSelected
-                              ? Colors.black
-                              : Colors.white,
-                          foregroundColor: isSelected
-                              ? Colors.white
-                              : Colors.black,
-                          side: const BorderSide(color: Colors.black),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: Text(label),
-                      );
-                    }).toList(),
+                  padding: const EdgeInsets.only(left: 12, bottom: 10),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: _chartSelector(context),
                   ),
                 ),
+
                 if (selectedTab == 'Total Holdings' ||
                     selectedTab == 'Gold Holdings' ||
                     selectedTab == 'Silver Holdings'
@@ -416,6 +387,117 @@ class _GraphsScreenState extends State<GraphsScreen> {
           );
         },
       ),
+    );
+  }
+
+  Widget _chartSelector(BuildContext context) {
+    return InkWell(
+      onTap: () => _openChartSelector(context),
+      borderRadius: BorderRadius.circular(30),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: darkYellow),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.bar_chart, color: darkYellow, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              selectedTab,
+              style: TextStyle(color: darkYellow, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(width: 6),
+            Icon(Icons.keyboard_arrow_down, color: darkYellow),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openChartSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // IMPORTANT
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade400,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'SELECT VIEW',
+                    style: TextStyle(
+                      letterSpacing: 1,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  ...tabOptions.map((option) {
+                    final isSelected = selectedTab == option;
+
+                    return ListTile(
+                      leading: Icon(
+                        option == 'Candle Chart'
+                            ? Icons.bar_chart
+                            : option == 'Asset Allocation'
+                            ? Icons.pie_chart
+                            : Icons.account_balance_wallet,
+                        color: isSelected ? darkYellow : Colors.black54,
+                      ),
+                      title: Text(
+                        option,
+                        style: TextStyle(
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          color: isSelected ? darkYellow : Colors.black,
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? Icon(Icons.check, color: darkYellow)
+                          : null,
+                      tileColor: isSelected
+                          ? darkYellow.withOpacity(0.08)
+                          : null,
+                      onTap: () {
+                        setState(() {
+                          selectedTab = option;
+                          frequency = '3M';
+                        });
+                        Navigator.pop(context);
+                      },
+                    );
+                  }).toList(),
+
+                  const SizedBox(
+                    height: 24,
+                  ), // 👈 EXTRA SPACE FOR ANDROID NAV BAR
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
