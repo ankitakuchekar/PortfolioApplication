@@ -121,7 +121,7 @@ class _SpotPriceScreenState extends State<SpotPriceScreen> {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 247, 235, 209),
+        color: const Color(0xFFE6E6E6), // light cream outer bg
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(children: [_tabButton("Gold", 0), _tabButton("Silver", 1)]),
@@ -129,6 +129,8 @@ class _SpotPriceScreenState extends State<SpotPriceScreen> {
   }
 
   Widget _tabButton(String text, int index) {
+    final bool isSelected = selectedTab == index;
+
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -136,18 +138,25 @@ class _SpotPriceScreenState extends State<SpotPriceScreen> {
             selectedTab = index;
             selectedMetal = text;
           });
-          _fetchMetalData(_selectedRangeAPI); // fetch with current API range
+          _fetchMetalData(_selectedRangeAPI);
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: selectedTab == index ? snapYellow : Colors.transparent,
-            borderRadius: BorderRadius.circular(30),
+            color: isSelected
+                ? const Color(0xFFE0A800) // selected yellow
+                : const Color(0xFFE6E6E6), // greyed-out bg (snap-like)
+            borderRadius: BorderRadius.circular(26),
           ),
           child: Text(
             text,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: isSelected
+                  ? Colors.black
+                  : Colors.grey.shade600, // grey text for unselected
+            ),
           ),
         ),
       ),
