@@ -1,8 +1,10 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
+import 'package:bold_portfolio/screens/CandleChartLandscapeScreen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/widgets/CandlestickChartWidget.dart';
 import 'package:bold_portfolio/widgets/LineChartWidget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http; // For making HTTP requests
@@ -237,10 +239,34 @@ class _GraphsScreenState extends State<GraphsScreen> {
                 const SizedBox(height: 5),
                 // Tab buttons for selection
                 Padding(
-                  padding: const EdgeInsets.only(left: 12, bottom: 10),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: _chartSelector(context),
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _chartSelector(context),
+
+                      // 👇 SHOW ONLY FOR CANDLE CHART
+                      if (selectedTab == 'Candle Chart')
+                        InkWell(
+                          onTap: () => _openCandleChartLandscape(
+                            context,
+                            metalCandleChartData,
+                            metalFilter,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: darkYellow),
+                            ),
+                            child: Icon(
+                              Icons.screen_rotation,
+                              color: darkYellow,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
 
@@ -388,6 +414,30 @@ class _GraphsScreenState extends State<GraphsScreen> {
         },
       ),
     );
+  }
+
+  void _openCandleChartLandscape(
+    BuildContext context,
+    List<MetalCandleChartEntry> candleChartData,
+    String selectedMetal,
+  ) async {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CandleChartLandscapeScreen(
+          candleChartData: candleChartData,
+          selectedMetal: selectedMetal,
+        ),
+      ),
+    );
+
+    // Restore portrait
+    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   }
 
   Widget _chartSelector(BuildContext context) {
