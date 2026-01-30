@@ -185,6 +185,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
       appBar: AppBar(
         backgroundColor: darkBlack,
         centerTitle: true,
+        automaticallyImplyLeading: false, // Prevents back button
         title: const Text(
           "BOLD Bullion Portfolio",
           style: TextStyle(fontWeight: FontWeight.bold),
