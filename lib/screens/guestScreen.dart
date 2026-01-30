@@ -62,19 +62,24 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused) {
       // The app is in the background, save the current timestamp
       _backgroundTime = DateTime.now();
+      print("📱 App moved to background at: $_backgroundTime");
     } else if (state == AppLifecycleState.resumed) {
       // The app is in the foreground, check the time difference
       if (_backgroundTime != null) {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         final difference = DateTime.now().difference(_backgroundTime!);
+
+        // If 15 minutes or more have passed and user is authenticated, lock the app
         if (difference.inMinutes > 15 && authProvider.isAuthenticated) {
-          print("insude ankita1");
+          print(
+            "🔒 More than 15 minutes passed. Locking app and navigating to PIN screen.",
+          );
           setState(() {
             currentView = GuestView.pin;
             selectedIndex = 1; // Ensure it's showing the "Portfolio" tab
           });
         } else {
-          print("insude ankita2");
+          print("📱 App returned to foreground. Checking for PIN or login...");
           _checkForPinOrLogin();
         }
       }
