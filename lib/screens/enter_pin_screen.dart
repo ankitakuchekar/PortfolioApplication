@@ -105,6 +105,7 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
           backgroundColor: Colors.green,
         ),
       );
+      authService.savePinSession(true);
       Navigator.of(
         context,
       ).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));

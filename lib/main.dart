@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -82,23 +83,23 @@ class _BoldPortfolioAppState extends State<BoldPortfolioApp>
   }
 
   // 3. Logic to handle background timing
-  // @override
-  // void didChangeAppLifecycleState(AppLifecycleState state) {
-  //   final timerProvider = Provider.of<TimerProvider>(context, listen: false);
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final timerProvider = Provider.of<TimerProvider>(context, listen: false);
+    final authService = AuthService();
 
-  //   if (state == AppLifecycleState.paused) {
-  //     // User minimized the app
-  //     timerProvider.recordStartTime();
-  //     debugPrint("📱 App moved to background");
-  //   } else if (state == AppLifecycleState.resumed) {
-  //     // User returned to the app
-  //     debugPrint("📱 App returned to foreground");
-  //     if (timerProvider.shouldLockApp()) {
-  //       debugPrint("🔒 5 minutes passed. Locking app.");
-  //       _lockApp();
-  //     }
-  //   }
-  // }
+    if (state == AppLifecycleState.paused) {
+      // User minimized the app
+      timerProvider.recordStartTime();
+      debugPrint("📱 App moved to background ankita");
+    } else if (state == AppLifecycleState.resumed) {
+      // User returned to the app
+      debugPrint("📱 App returned to foreground Ankita");
+    } else {
+      debugPrint("app closed from mobile");
+      authService.removePinSession();
+    }
+  }
 
   // void _lockApp() {
   //   final authProvider = Provider.of<AuthProvider>(context, listen: false);

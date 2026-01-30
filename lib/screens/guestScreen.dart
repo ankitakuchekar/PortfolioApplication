@@ -67,6 +67,8 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
       // The app is in the foreground, check the time difference
       if (_backgroundTime != null) {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final authService = AuthService();
+
         final difference = DateTime.now().difference(_backgroundTime!);
 
         // If 15 minutes or more have passed and user is authenticated, lock the app
@@ -74,6 +76,8 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
           print(
             "🔒 More than 15 minutes passed. Locking app and navigating to PIN screen.",
           );
+          authService.removePinSession();
+
           setState(() {
             currentView = GuestView.pin;
             selectedIndex = 1; // Ensure it's showing the "Portfolio" tab
@@ -376,11 +380,13 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     // });
 
     final fetchedUserPin = await authService.getPin();
+    final isPinSessionStored = await authService.getPinSession() ?? false;
 
     if (authProvider.isAuthenticated) {
       if (fetchedUserPin == null ||
           fetchedUserPin == '0' ||
-          fetchedUserPin == '') {
+          fetchedUserPin == '' ||
+          isPinSessionStored!) {
         final result = await Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => const MainScreen()));

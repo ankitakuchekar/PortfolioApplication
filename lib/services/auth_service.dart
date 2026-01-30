@@ -13,6 +13,8 @@ class AuthService extends ChangeNotifier {
   static const String _passWordKey = 'password_data';
   static const String _emailKey = 'email_data';
   static const String _pinKey = 'app_pin';
+  static const String _isPinSessionKey = 'isPinSessionStored';
+
   Future<AuthResponse> login(
     String username,
     String password,
@@ -124,6 +126,21 @@ class AuthService extends ChangeNotifier {
   Future<String?> getPin() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_pinKey);
+  }
+
+  Future<void> savePinSession(bool isPinStored) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_isPinSessionKey, isPinStored);
+  }
+
+  Future<bool?> getPinSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_isPinSessionKey);
+  }
+
+  Future<bool?> removePinSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_isPinSessionKey);
   }
 
   Future<bool> isLoggedIn() async {
