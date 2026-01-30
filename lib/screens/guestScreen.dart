@@ -347,8 +347,14 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
       case GuestView.pin:
         return const NewPinEntryScreen(isFromSettings: false);
       default:
-        return const Center(
-          child: Text("Access your portfolio", style: TextStyle(fontSize: 16)),
+        return SpotPriceScreen(
+          onLatestSpotPriceChanged: (spotData) {
+            // Handle the updated spot price here if needed
+            print("Latest spot price updated: $spotData");
+            setState(() {
+              parentSpotPrice = spotData;
+            });
+          },
         );
     }
   }
