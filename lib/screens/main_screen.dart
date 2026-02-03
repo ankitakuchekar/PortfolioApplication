@@ -1,13 +1,12 @@
-import 'package:bold_portfolio/models/portfolio_model.dart';
-import 'package:bold_portfolio/screens/guestScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/portfolio_provider.dart';
+import 'guestScreen.dart';
 import 'graphs_screen.dart';
 import 'holdings_screen.dart';
 import 'NewDashBoardUI.dart';
+import '../providers/auth_provider.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -16,8 +15,11 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => MainScreenState();
 }
 
-class MainScreenState extends State<MainScreen> {
+class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   int _currentIndex = 1;
+
+  DateTime? _backgroundTime;
+  bool _pinForced = false;
 
   final List<Widget> _screens = const [
     Guestscreen(),
@@ -25,6 +27,69 @@ class MainScreenState extends State<MainScreen> {
     GraphsScreen(),
     HoldingsScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  bool _wentToBackground = false;
+
+  // ---------------- LIFECYCLE ----------------
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    print("Lifecycle: $state");
+
+    if (state == AppLifecycleState.paused) {
+      _backgroundTime = DateTime.now();
+      _wentToBackground = true;
+      print("App really background at $_backgroundTime");
+    }
+
+    if (state == AppLifecycleState.resumed && _wentToBackground) {
+      print("App resumed after background");
+      _checkIfPinRequired();
+      _wentToBackground = false;
+    }
+  }
+
+  // ---------------- PIN CHECK ----------------
+  void _checkIfPinRequired() {
+    if (_backgroundTime == null || _pinForced) return;
+
+    print("background time: $_backgroundTime");
+
+    final diff = DateTime.now().difference(_backgroundTime!);
+    print("Background duration: ${diff.inMinutes} min");
+
+    if (diff.inMinutes >= 2) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+      if (authProvider.isAuthenticated) {
+        setState(() {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (_) => const Guestscreen(
+                initialView: GuestView.pin,
+                initialIndex: 1,
+              ),
+            ),
+            (_) => false,
+          );
+          _pinForced = true;
+        });
+      }
+    }
+  }
 
   void onNavigationTap(int index) {
     setState(() => _currentIndex = index);
@@ -35,11 +100,11 @@ class MainScreenState extends State<MainScreen> {
     return SafeArea(
       bottom: true,
       child: PopScope(
-        canPop: false, // 👈 REQUIRED for Android back handling
+        canPop: false,
         onPopInvoked: (didPop) {
           if (didPop) return;
 
-          // Graphs or Holdings → Dashboard
+          // Graphs / Holdings → Dashboard
           if (_currentIndex == 2 || _currentIndex == 3) {
             setState(() => _currentIndex = 1);
             return;
@@ -51,7 +116,6 @@ class MainScreenState extends State<MainScreen> {
             return;
           }
 
-          // Home → Exit app
           SystemNavigator.pop();
         },
         child: Scaffold(
@@ -89,6 +153,7 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 }
+
 
 
 

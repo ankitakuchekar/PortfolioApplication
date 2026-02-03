@@ -35,7 +35,6 @@ class Guestscreen extends StatefulWidget {
 class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
   int selectedIndex = 0;
   late GuestView currentView;
-  DateTime? _backgroundTime;
   SpotData? parentSpotPrice;
   @override
   void initState() {
@@ -333,14 +332,6 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
         );
     }
   }
-
-  // @override
-  // void didChangeAppLifecycleState(AppLifecycleState state) {
-  //   super.didChangeAppLifecycleState(state);
-  //   if (state == AppLifecycleState.resumed) {
-  //     _checkForPinOrLogin(); // Re-check for PIN or login when the app resumes
-  //   }
-  // }
 
   void _checkForPinOrLogin() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
