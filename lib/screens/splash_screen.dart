@@ -1,12 +1,9 @@
-import 'package:bold_portfolio/screens/enter_pin_screen.dart';
 import 'package:bold_portfolio/screens/guestScreen.dart';
-import 'package:bold_portfolio/screens/spot_priceScreen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/app_colors.dart';
-import 'landingSplashpage.dart';
 import 'main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -51,7 +48,7 @@ class _SplashScreenState extends State<SplashScreen> {
           //   );
         } else {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => LandingPage()),
+            MaterialPageRoute(builder: (context) => Guestscreen()),
           );
         }
       }
