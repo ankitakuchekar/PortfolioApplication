@@ -38,12 +38,6 @@ class _SplashScreenState extends State<SplashScreen> {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => MainScreen()),
           );
-          // } else if (authProvider.isAuthenticated && fetchedUserPin != null) {
-          //   Navigator.of(context).pushReplacement(
-          //     MaterialPageRoute(
-          //       builder: (context) => NewPinEntryScreen(isFromSettings: false),
-          //     ),
-          //   );
         } else {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => Guestscreen()),

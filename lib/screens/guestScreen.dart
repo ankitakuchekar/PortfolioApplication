@@ -56,40 +56,6 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  // ---------------- APP LIFECYCLE HANDLER ----------------
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      // The app is in the background, save the current timestamp
-      _backgroundTime = DateTime.now();
-      print("📱 App moved to background at: $_backgroundTime");
-    } else if (state == AppLifecycleState.resumed) {
-      // The app is in the foreground, check the time difference
-      if (_backgroundTime != null) {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        final authService = AuthService();
-
-        final difference = DateTime.now().difference(_backgroundTime!);
-
-        // If 15 minutes or more have passed and user is authenticated, lock the app
-        if (difference.inMinutes > 15 && authProvider.isAuthenticated) {
-          print(
-            "🔒 More than 15 minutes passed. Locking app and navigating to PIN screen.",
-          );
-          authService.removePinSession();
-
-          setState(() {
-            currentView = GuestView.pin;
-            selectedIndex = 1; // Ensure it's showing the "Portfolio" tab
-          });
-        } else {
-          print("📱 App returned to foreground. Checking for PIN or login...");
-          _checkForPinOrLogin();
-        }
-      }
-    }
-  }
-
   void _showMoreMenu(SpotData? spotPrice) {
     showModalBottomSheet(
       context: context,
@@ -265,7 +231,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
                 right: 0,
                 child: GestureDetector(
                   onTap: () {
-                    _handlePortfolioNavigation(authProvider, authService);
+                    _checkForPinOrLogin();
                     setState(() => selectedIndex = 1);
                   },
                   child: Column(
@@ -368,79 +334,51 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     }
   }
 
-  // ---------------- AUTH / PIN LOGIC ----------------
-  Future<void> _handlePortfolioNavigation(
-    AuthProvider authProvider,
-    AuthService authService,
-  ) async {
-    // if (isCheckingPin) return;
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   super.didChangeAppLifecycleState(state);
+  //   if (state == AppLifecycleState.resumed) {
+  //     _checkForPinOrLogin(); // Re-check for PIN or login when the app resumes
+  //   }
+  // }
 
-    // setState(() {
-    //   isCheckingPin = true;
-    // });
-
-    final fetchedUserPin = await authService.getPin();
-    final isPinSessionStored = await authService.getPinSession() ?? false;
-
-    if (authProvider.isAuthenticated) {
-      if (fetchedUserPin == null ||
-          fetchedUserPin == '0' ||
-          fetchedUserPin == '' ||
-          isPinSessionStored!) {
-        final result = await Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => const MainScreen()));
-
-        if (result == 'go_home') {
-          setState(() {
-            selectedIndex = 0;
-            currentView = GuestView.home;
-          });
-        }
-      } else {
-        setState(() {
-          selectedIndex = 1;
-          currentView = GuestView.pin;
-        });
-      }
-    } else {
-      setState(() {
-        selectedIndex = 1;
-        currentView = GuestView.login;
-      });
-    }
-    // setState(() {
-    //   isCheckingPin = false;
-    // });
-  }
-
-  // Check if the user should see the pin entry or login screen
   void _checkForPinOrLogin() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final authService = AuthService();
-    print("check for pun ${currentView} ${selectedIndex}");
-    if (selectedIndex == 0) {
-      setState(() {
-        selectedIndex = 0;
-        currentView = GuestView.home;
-      });
-    } else if (authProvider.isAuthenticated) {
+    print(
+      "Checking for PIN... Current view: ${currentView}, selectedIndex: $selectedIndex",
+    );
+
+    if (authProvider.isAuthenticated) {
+      print("User is authenticated, checking PIN...");
       authService.getPin().then((fetchedUserPin) {
+        print("Fetched User PIN: $fetchedUserPin");
         if (fetchedUserPin == null || fetchedUserPin == '0') {
-          Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => const MainScreen()));
+          setState(() {
+            selectedIndex = 1; // Set selectedIndex to 1 for Portfolio
+            currentView =
+                GuestView.login; // Set the current view to PIN entry screen
+            print("Navigating to PIN entry screen...");
+          });
         } else {
           setState(() {
-            selectedIndex = 1;
-            currentView = GuestView.pin;
+            selectedIndex = 1; // Set selectedIndex to 1 for Portfolio
+            currentView = GuestView.pin; // Set the current view to Login screen
+            print("Navigating to Login screen...");
           });
         }
       });
-    } else {
+    } else if (selectedIndex == 0) {
+      print("Selected Index is 0, going to Home...");
       setState(() {
-        selectedIndex = 1;
-        currentView = GuestView.login;
+        selectedIndex = 0;
+        currentView = GuestView.home; // Show Home Screen
+      });
+    } else {
+      print("User is not authenticated, going to login...");
+      setState(() {
+        selectedIndex = 1; // Show Portfolio screen
+        currentView = GuestView.login; // Show login screen
       });
     }
   }
