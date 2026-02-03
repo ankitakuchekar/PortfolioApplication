@@ -32,10 +32,8 @@ class _SplashScreenState extends State<SplashScreen> {
         'Fetched User PIN: $fetchedUserPin ${authProvider.isAuthenticated}',
       );
       if (mounted) {
-        if (authProvider.isAuthenticated
-        // &&
-        // ((fetchedUserPin == null || fetchedUserPin == '0'))
-        ) {
+        if (authProvider.isAuthenticated &&
+            ((fetchedUserPin == null || fetchedUserPin == '0'))) {
           print("Navigating to MainScreen");
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => MainScreen()),
