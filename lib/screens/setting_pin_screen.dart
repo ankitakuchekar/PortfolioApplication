@@ -23,11 +23,26 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
   String? pinForApp = '';
   bool _showBiometricLogin = false;
   late String currentUserKey;
+  late List<FocusNode> _newPinFocusNodes;
+  late List<FocusNode> _confirmPinFocusNodes;
 
   @override
   void initState() {
     super.initState();
     initUserBiometric();
+    _newPinFocusNodes = List.generate(4, (_) => FocusNode());
+    _confirmPinFocusNodes = List.generate(4, (_) => FocusNode());
+  }
+
+  @override
+  void dispose() {
+    for (final f in _newPinFocusNodes) {
+      f.dispose();
+    }
+    for (final f in _confirmPinFocusNodes) {
+      f.dispose();
+    }
+    super.dispose();
   }
 
   Future<void> initUserBiometric() async {
@@ -218,9 +233,15 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                   ),
                   const SizedBox(height: 22),
 
+                  // _pinSectionWithoutEye(
+                  //   title: 'New PIN',
+                  //   controllers: _newPinControllers,
+                  //   obscure: _obscureNewPin,
+                  // ),
                   _pinSectionWithoutEye(
                     title: 'New PIN',
                     controllers: _newPinControllers,
+                    focusNodes: _newPinFocusNodes,
                     obscure: _obscureNewPin,
                   ),
 
@@ -234,9 +255,13 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                         color: Colors.grey.shade700,
                       ),
                       onPressed: () {
+                        final focusedNode = FocusScope.of(context).focusedChild;
+
                         setState(() {
                           _obscureNewPin = !_obscureNewPin;
                         });
+
+                        focusedNode?.requestFocus();
                       },
                     ),
                   ),
@@ -246,6 +271,7 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                   _pinSectionWithoutEye(
                     title: 'Confirm New PIN',
                     controllers: _confirmPinControllers,
+                    focusNodes: _confirmPinFocusNodes,
                     obscure: _obscureConfirmPin,
                   ),
 
@@ -259,13 +285,16 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                         color: Colors.grey.shade700,
                       ),
                       onPressed: () {
+                        final focusedNode = FocusScope.of(context).focusedChild;
+
                         setState(() {
                           _obscureConfirmPin = !_obscureConfirmPin;
                         });
+
+                        focusedNode?.requestFocus();
                       },
                     ),
                   ),
-
                   const SizedBox(height: 16),
 
                   SizedBox(
@@ -428,6 +457,7 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
   Widget _pinSectionWithoutEye({
     required String title,
     required List<TextEditingController> controllers,
+    required List<FocusNode> focusNodes,
     required bool obscure,
   }) {
     return Column(
@@ -449,6 +479,7 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                   height: 54,
                   child: TextFormField(
                     controller: controllers[index],
+                    focusNode: focusNodes[index],
                     maxLength: 1,
                     obscureText: obscure,
                     keyboardType: TextInputType.number,
@@ -462,8 +493,13 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                         borderSide: BorderSide.none,
                       ),
                     ),
-                    onChanged: (value) =>
-                        _onFieldChanged(index, value, controllers),
+                    onChanged: (value) {
+                      _onFieldChanged(index, value, controllers);
+
+                      if (value.isNotEmpty && index < 3) {
+                        focusNodes[index + 1].requestFocus();
+                      }
+                    },
                   ),
                 ),
               );
