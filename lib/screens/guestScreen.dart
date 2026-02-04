@@ -356,10 +356,9 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
         print("Fetched User PIN: $fetchedUserPin");
         if (fetchedUserPin == null || fetchedUserPin == '0') {
           setState(() {
-            selectedIndex = 1; // Set selectedIndex to 1 for Portfolio
-            currentView =
-                GuestView.login; // Set the current view to PIN entry screen
-            print("Navigating to PIN entry screen...");
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const MainScreen()),
+            );
           });
         } else {
           setState(() {

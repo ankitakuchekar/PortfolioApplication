@@ -1,4 +1,5 @@
 import 'package:bold_portfolio/screens/ForgotPasswordScreen.dart';
+import 'package:bold_portfolio/screens/guestScreen.dart';
 import 'package:bold_portfolio/screens/setting_pin_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/utils/mobileFormater.dart';
@@ -38,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     final fetchedUserEmail = widget.fetchedUserEmail;
-    if (fetchedUserEmail != null) {
+    if (fetchedUserEmail != null && widget.isForgotPassClick == true) {
       _usernameController.text = fetchedUserEmail;
     }
   }
@@ -227,37 +228,43 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // widget.isForgotPassClick == true
-                      //     ? TextButton.icon(
-                      //         onPressed: () {
-                      //           Navigator.pop(context);
-                      //         },
-                      //         icon: const Icon(
-                      //           Icons.arrow_back,
-                      //           color: Colors.black87,
-                      //         ),
-                      //         label: const Text(
-                      //           'Back',
-                      //           style: TextStyle(
-                      //             color: Colors.black87,
-                      //             fontWeight: FontWeight.w500,
-                      //             fontSize: 16,
-                      //           ),
-                      //         ),
-                      //         style: TextButton.styleFrom(
-                      //           foregroundColor: Colors.black87,
-                      //           padding: const EdgeInsets.symmetric(
-                      //             horizontal: 1,
-                      //             vertical: 4,
-                      //           ),
-                      //           minimumSize: Size
-                      //               .zero, // To prevent default min button size
-                      //           tapTargetSize: MaterialTapTargetSize
-                      //               .shrinkWrap, // Compact tap area
-                      //         ),
-                      //       )
-                      //     : Container(),
-                      const SizedBox(height: 20),
+                      widget.isForgotPassClick == true
+                          ? Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton.icon(
+                                onPressed: () {
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(
+                                      builder: (_) => const Guestscreen(
+                                        initialView: GuestView.pin,
+                                        isForgotPinClick: false,
+                                      ),
+                                    ),
+                                    (route) => false,
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.arrow_back,
+                                  color: Colors.black87,
+                                ),
+                                label: const Text(
+                                  'Back',
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  minimumSize: Size.zero,
+                                  alignment: Alignment.centerLeft,
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
                       Image.network(
                         'https://res.cloudinary.com/bold-pm/image/upload/Graphics/bold-portfolio-app-1.png',
                         width: 180,
