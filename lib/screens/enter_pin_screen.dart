@@ -338,7 +338,7 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
                   const SizedBox(height: 8),
 
                   // Biometric Note
-                  if (_showBiometricLogin && _isBiometricAvailable)
+                  if (_showBiometricLogin && !_isBiometricAvailable)
                     const Text(
                       'Note: Please enable biometric authentication or Face Unlock from the settings.',
                       style: TextStyle(fontSize: 12, color: Colors.grey),
