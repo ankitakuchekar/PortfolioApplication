@@ -18,9 +18,6 @@ class _ROICalculatorState extends State<ROICalculator> {
   final TextEditingController _priceController = TextEditingController();
   double currentSelectedSpot = 0.0; // Dynamic spot price based on selection
 
-  // Mocking the SpotAsk price (replace with your API data)
-  double spotPriceAsk = 2500.50;
-
   String resultText = "";
   String profitPercentage = "";
   bool resultVisible = false;
@@ -48,7 +45,7 @@ class _ROICalculatorState extends State<ROICalculator> {
       } else {
         currentSelectedSpot = 0.0;
       }
-      selectedMetal = metal;
+      _bullionSpotController.text = currentSelectedSpot.toStringAsFixed(2);
       _validateInputs();
     });
   }
@@ -67,8 +64,8 @@ class _ROICalculatorState extends State<ROICalculator> {
     double buyPrice = double.tryParse(_priceController.text) ?? 0;
 
     if (ounces > 0 && buyPrice > 0) {
-      double totalReturn = ounces * (spotPriceAsk - buyPrice);
-      double percent = (100 * (spotPriceAsk - buyPrice)) / buyPrice;
+      double totalReturn = ounces * (currentSelectedSpot - buyPrice);
+      double percent = (100 * (currentSelectedSpot - buyPrice)) / buyPrice;
 
       setState(() {
         resultVisible = true;
@@ -98,9 +95,12 @@ class _ROICalculatorState extends State<ROICalculator> {
   // Example Purity Data
   final List<Map<String, dynamic>> purities = [
     {"name": "Select Purity", "value": 0.0},
-    {"name": "99.99% (Pure)", "value": 0.9999},
-    {"name": "91.6% (22k)", "value": 0.916},
-    {"name": "75.0% (18k)", "value": 0.75},
+    {"name": ".9999", "value": 0.9999},
+    {"name": ".999", "value": 0.999},
+    {"name": ".9584 (Britannia)", "value": 0.9584},
+    {"name": ".925 (Sterling)", "value": 0.925},
+    {"name": ".900", "value": 0.9},
+    {"name": ".400", "value": 0.4},
   ];
 
   void _calculateBullionWorth() {
@@ -270,18 +270,19 @@ class _ROICalculatorState extends State<ROICalculator> {
 
               const SizedBox(height: 15),
               _buildLabel("Purity"),
-              DropdownButtonFormField<double>(
+
+              DropdownButtonFormField<double?>(
                 value: selPurity,
                 decoration: const InputDecoration(border: OutlineInputBorder()),
-                items: purities
-                    .map(
-                      (p) => DropdownMenuItem(
-                        value: p['value'] as double,
-                        child: Text(p['name']),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (val) => setState(() => selPurity = val ?? 0.0),
+                items: purities.map((p) {
+                  return DropdownMenuItem<double?>(
+                    value: p['value'],
+                    child: Text(p['name']),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  setState(() => selPurity = val!);
+                },
               ),
 
               const SizedBox(height: 20),
