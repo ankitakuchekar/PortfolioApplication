@@ -239,7 +239,7 @@ class _SellFormState extends State<SellForm> {
       "userId": int.parse(fetchedUserId?.id ?? '0'),
       "firstName": fetchedUserId?.firstName,
       "lastName": fetchedUserId?.lastName,
-      "userEmail": fetchedUserId?.email,
+      "userEmail": fetchedUserId?.emailId,
       "phoneNumber": fetchedUserId?.mobNo,
     };
 

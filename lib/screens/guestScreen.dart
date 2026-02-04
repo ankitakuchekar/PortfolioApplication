@@ -21,11 +21,12 @@ enum GuestView { home, login, pin }
 class Guestscreen extends StatefulWidget {
   final GuestView initialView;
   final int initialIndex;
-
+  final bool? isForgotPinClick;
   const Guestscreen({
     super.key,
     this.initialView = GuestView.home,
     this.initialIndex = 0,
+    this.isForgotPinClick,
   });
 
   @override
@@ -41,7 +42,6 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     currentView = widget.initialView;
-    print("Initial View: $currentView");
     if (currentView == GuestView.login || currentView == GuestView.pin) {
       selectedIndex = 1; // Portfolio tab
     } else {
@@ -153,7 +153,6 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final authService = AuthService();
 
     return Scaffold(
       appBar: AppBar(
@@ -179,7 +178,12 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
               });
             },
           ),
-          _buildPortfolioContent(),
+          FutureBuilder<Widget>(
+            future: _buildPortfolioContent(widget.isForgotPinClick),
+            builder: (context, snapshot) {
+              return snapshot.data ?? const SizedBox.shrink();
+            },
+          ),
         ],
       ),
 
@@ -314,10 +318,16 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
   }
 
   // ---------------- PORTFOLIO CONTENT ----------------
-  Widget _buildPortfolioContent() {
+  Future<Widget> _buildPortfolioContent(isForgotPinClick) async {
+    final authService = AuthService();
+    final fetch = await authService.getUser();
+
     switch (currentView) {
       case GuestView.login:
-        return const LoginScreen(isForgotPassClick: false);
+        return LoginScreen(
+          isForgotPassClick: isForgotPinClick,
+          fetchedUserEmail: fetch?.emailId,
+        );
       case GuestView.pin:
         return const NewPinEntryScreen(isFromSettings: false);
       default:

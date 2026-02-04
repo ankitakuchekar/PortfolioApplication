@@ -62,7 +62,7 @@ class _ExitFormState extends State<ExitForm> {
       "userId": int.parse(fetchedUserId?.id ?? '0'),
       "firstName": fetchedUserId?.firstName ?? '',
       "lastName": fetchedUserId?.lastName ?? '',
-      "userEmail": fetchedUserId?.email ?? '',
+      "userEmail": fetchedUserId?.emailId ?? '',
       "phoneNumber": fetchedUserId?.mobNo ?? '',
     };
     final product = {

@@ -125,7 +125,7 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
 
     currentUserKey = fetchedUser != null && fetchedUser.id.isNotEmpty
         ? fetchedUser.id
-        : fetchedUser?.email ?? '';
+        : fetchedUser?.emailId ?? '';
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _showBiometricLogin =
@@ -230,8 +230,10 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
                       onPressed: () {
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
-                            builder: (_) =>
-                                const Guestscreen(initialView: GuestView.login),
+                            builder: (_) => const Guestscreen(
+                              initialView: GuestView.login,
+                              isForgotPinClick: true,
+                            ),
                           ),
                           (route) => false,
                         );

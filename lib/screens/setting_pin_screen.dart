@@ -36,7 +36,7 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
 
     currentUserKey = fetchedUser != null && fetchedUser.id.isNotEmpty
         ? fetchedUser.id
-        : fetchedUser?.email ?? '';
+        : fetchedUser?.emailId ?? '';
 
     final prefs = await SharedPreferences.getInstance();
     _showBiometricLogin =
