@@ -234,7 +234,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
                 right: 0,
                 child: GestureDetector(
                   onTap: () {
-                    _checkForPinOrLogin();
+                    _checkForPinOrLogin(1);
                     setState(() => selectedIndex = 1);
                   },
                   child: Column(
@@ -296,7 +296,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
           if (selectedIndex == 0) {
             currentView = GuestView.home;
           } else if (selectedIndex == 1) {
-            _checkForPinOrLogin();
+            _checkForPinOrLogin(1);
           }
         });
       },
@@ -343,11 +343,11 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     }
   }
 
-  void _checkForPinOrLogin() {
+  void _checkForPinOrLogin(int selectedIndexForGuest) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final authService = AuthService();
     print(
-      "Checking for PIN... Current view: ${currentView}, selectedIndex: $selectedIndex",
+      "Checking for PIN... Current view: ${currentView}, selectedIndex: $selectedIndexForGuest",
     );
 
     if (authProvider.isAuthenticated) {
@@ -356,6 +356,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
         print("Fetched User PIN: $fetchedUserPin");
         if (fetchedUserPin == null || fetchedUserPin == '0') {
           setState(() {
+            selectedIndex = 1;
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const MainScreen()),
             );
@@ -368,7 +369,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
           });
         }
       });
-    } else if (selectedIndex == 0) {
+    } else if (selectedIndexForGuest == 0) {
       print("Selected Index is 0, going to Home...");
       setState(() {
         selectedIndex = 0;
