@@ -1,3 +1,4 @@
+import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -52,7 +53,7 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused) {
       _backgroundTime = DateTime.now();
       _wentToBackground = true;
-      print("App really background at $_backgroundTime");
+      print("App really background at $_backgroundTime $_currentIndex");
     }
 
     if (state == AppLifecycleState.resumed && _wentToBackground) {
@@ -69,24 +70,51 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     print("background time: $_backgroundTime");
 
     final diff = DateTime.now().difference(_backgroundTime!);
-    print("Background duration: ${diff.inMinutes} min");
-
+    print("Background duration:  ${diff.inMinutes} min");
+    print("_currentIndex: $_currentIndex");
     if (diff.inMinutes >= 2) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-
-      if (authProvider.isAuthenticated) {
-        setState(() {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (_) => const Guestscreen(
-                initialView: GuestView.pin,
-                initialIndex: 1,
+      final authService = AuthService();
+      if (_currentIndex == 0) {
+        setState(() => _currentIndex = 0);
+      } else {
+        if (authProvider.isAuthenticated) {
+          authService.getPin().then((fetchedUserPin) {
+            print("Fetched User PIN: $fetchedUserPin");
+            if (fetchedUserPin == null || fetchedUserPin == '0') {
+              setState(() {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => const MainScreen()),
+                );
+              });
+            } else {
+              setState(() {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (_) => const Guestscreen(
+                      initialView: GuestView.pin,
+                      initialIndex: 1,
+                    ),
+                  ),
+                  (_) => false,
+                );
+                _pinForced = true;
+              });
+            }
+          });
+        } else {
+          setState(() {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (_) => const Guestscreen(
+                  initialView: GuestView.login,
+                  initialIndex: 1,
+                ),
               ),
-            ),
-            (_) => false,
-          );
-          _pinForced = true;
-        });
+              (_) => false,
+            );
+          });
+        }
       }
     }
   }
