@@ -228,7 +228,7 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                   ),
                   const SizedBox(height: 6),
                   const Text(
-                    'This PIN is required every time you open the app.',
+                    'This PIN helps secure your investments.\nYou’ll be asked for it when you open the Portfolio section.',
                     style: TextStyle(fontSize: 14, color: Colors.black54),
                   ),
                   const SizedBox(height: 22),
@@ -328,10 +328,18 @@ class _SettingPinScreenState extends State<SettingPinScreen> {
                       ),
                     ),
                   ),
-
+                  widget.isSettingPage
+                      ? SizedBox.shrink()
+                      : Padding(
+                          padding: const EdgeInsets.only(left: 12),
+                          child: const Text(
+                            'Note: You can set or update your App PIN anytime from Settings if you skip for now.',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ),
                   widget.isSettingPage
                       ? const SizedBox(height: 7)
-                      : const SizedBox(height: 24),
+                      : const SizedBox(height: 10),
 
                   widget.isSettingPage
                       ? SizedBox.shrink()
