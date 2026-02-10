@@ -61,6 +61,13 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       _checkIfPinRequired();
       _wentToBackground = false;
     }
+
+    // 🔥 APP KILLED / REMOVED FROM RECENTS
+    if (state == AppLifecycleState.detached) {
+      final AuthService authService = AuthService();
+      print("App detached — resetting update popup flag");
+      authService.setNotNowFlag(false);
+    }
   }
 
   // ---------------- PIN CHECK ----------------

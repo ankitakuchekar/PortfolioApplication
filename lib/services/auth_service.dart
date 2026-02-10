@@ -14,6 +14,17 @@ class AuthService extends ChangeNotifier {
   static const String _emailKey = 'email_data';
   static const String _pinKey = 'app_pin';
   static const String _isPinSessionKey = 'isPinSessionStored';
+  final String notNowKey = 'not_now_clicked';
+
+  Future<void> setNotNowFlag(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(notNowKey, value);
+  }
+
+  Future<bool> getNotNowFlag() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(notNowKey) ?? false; // default false
+  }
 
   Future<AuthResponse> login(
     String username,

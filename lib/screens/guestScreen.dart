@@ -58,6 +58,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
 
   // Initialize app, check for version and navigate
   Future<void> _initializeApp() async {
+    final authService = AuthService();
     // Wait for the app to load
     await Future.delayed(const Duration(seconds: 4));
 
@@ -65,7 +66,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     final appVersion = await _getAppVersion();
     final updateRequired = await _checkForUpdate(appVersion);
     print("App Version: $appVersion, Update Required: $updateRequired");
-    final notNowClicked = await getNotNowFlag();
+    final notNowClicked = await authService.getNotNowFlag();
     print("Not Now Clicked: $notNowClicked");
     if (updateRequired && !notNowClicked) {
       // If update required, show the update dialog
@@ -74,6 +75,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
   }
 
   void showUpdateDialog(BuildContext context) {
+    final authService = AuthService();
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
@@ -132,7 +134,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
                       children: [
                         TextButton(
                           onPressed: () async {
-                            await setNotNowFlag(true);
+                            await authService.setNotNowFlag(true);
                             Navigator.pop(context);
                           },
                           child: const Text("Not Now"),
@@ -432,18 +434,6 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
         ),
       ),
     );
-  }
-
-  final String notNowKey = 'not_now_clicked';
-
-  Future<void> setNotNowFlag(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(notNowKey, value);
-  }
-
-  Future<bool> getNotNowFlag() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(notNowKey) ?? false; // default false
   }
 
   Widget _bottomItem({
