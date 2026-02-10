@@ -1,8 +1,14 @@
+import 'dart:convert';
+import 'dart:ui';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:bold_portfolio/models/spot_price_model.dart';
 import 'package:bold_portfolio/screens/BlogsListPageScreen.dart';
 import 'package:bold_portfolio/screens/ROICalculator_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:bold_portfolio/screens/spot_priceScreen.dart';
 import 'package:bold_portfolio/screens/enter_pin_screen.dart';
@@ -10,7 +16,6 @@ import 'package:bold_portfolio/screens/login_screen.dart';
 import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/providers/auth_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 const snapYellow = Color.fromARGB(255, 220, 166, 2);
 const darkBlack = Color(0xFF000000);
@@ -46,6 +51,151 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
       selectedIndex = 1; // Portfolio tab
     } else {
       selectedIndex = widget.initialIndex;
+    }
+    _initializeApp();
+  }
+
+  // Initialize app, check for version and navigate
+  Future<void> _initializeApp() async {
+    // Wait for the app to load
+    await Future.delayed(const Duration(seconds: 4));
+
+    // Get app version and check for update
+    final appVersion = await _getAppVersion();
+    final updateRequired = await _checkForUpdate(appVersion);
+    print("App Version: $appVersion, Update Required: $updateRequired");
+    if (updateRequired) {
+      // If update required, show the update dialog
+      showUpdateDialog(context);
+    }
+  }
+
+  void showUpdateDialog(BuildContext context) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: "Update",
+      barrierColor: Colors.black.withOpacity(0.25),
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Center(
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFFF4CC),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.phone_android,
+                          size: 28,
+                          color: Color(0xFFFFC107),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Update Available",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "A new version of BOLD Bullion Portfolio app is available. "
+                      "Update now to get the latest features and improvements.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 15, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Not Now"),
+                        ),
+                        const SizedBox(width: 16),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                          ),
+                          onPressed: _openStore,
+                          child: const Text("Update Now"),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _openStore() async {
+    final Uri androidUrl = Uri.parse(
+      "https://play.google.com/store/apps/details?id=com.bold.portfolio",
+    );
+    final Uri iosUrl = Uri.parse(
+      "https://apps.apple.com/in/app/bold-bullion-portfolio/id6754672560",
+    );
+
+    if (Platform.isAndroid) {
+      if (await canLaunchUrl(androidUrl)) {
+        await launchUrl(androidUrl, mode: LaunchMode.externalApplication);
+      }
+    } else if (Platform.isIOS) {
+      if (await canLaunchUrl(iosUrl)) {
+        await launchUrl(iosUrl, mode: LaunchMode.externalApplication);
+      }
+    }
+  }
+
+  // Fetch app version from package_info_plus
+  Future<String> _getAppVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.version; // e.g. "1.3"
+  }
+
+  // Make API call to check for update
+  Future<bool> _checkForUpdate(String version) async {
+    final baseUrl = dotenv.env['API_URL']!;
+
+    final url = Uri.parse('$baseUrl/Portfolio/CheckAppVersion');
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"version": version}),
+    );
+    print("update check response: ${response.statusCode} ${response.body}");
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      // Check if update is required
+      return data['success'] == false && data['data'] == "Update Required";
+    } else {
+      // Handle error (optional)
+      print('Failed to check for updates');
+      return false;
     }
   }
 
@@ -152,7 +302,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
   // ---------------- BUILD ----------------
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    // final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
