@@ -60,7 +60,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
   Future<void> _initializeApp() async {
     final authService = AuthService();
     // Wait for the app to load
-    await Future.delayed(const Duration(seconds: 4));
+    await Future.delayed(const Duration(seconds: 2));
 
     // Get app version and check for update
     final appVersion = await _getAppVersion();
