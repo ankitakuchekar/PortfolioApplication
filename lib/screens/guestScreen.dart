@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:bold_portfolio/models/spot_price_model.dart';
 import 'package:bold_portfolio/screens/BlogsListPageScreen.dart';
@@ -64,7 +65,9 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     final appVersion = await _getAppVersion();
     final updateRequired = await _checkForUpdate(appVersion);
     print("App Version: $appVersion, Update Required: $updateRequired");
-    if (updateRequired) {
+    final notNowClicked = await getNotNowFlag();
+    print("Not Now Clicked: $notNowClicked");
+    if (updateRequired && !notNowClicked) {
       // If update required, show the update dialog
       showUpdateDialog(context);
     }
@@ -128,9 +131,13 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TextButton(
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () async {
+                            await setNotNowFlag(true);
+                            Navigator.pop(context);
+                          },
                           child: const Text("Not Now"),
                         ),
+
                         const SizedBox(width: 16),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
@@ -425,6 +432,18 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
         ),
       ),
     );
+  }
+
+  final String notNowKey = 'not_now_clicked';
+
+  Future<void> setNotNowFlag(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(notNowKey, value);
+  }
+
+  Future<bool> getNotNowFlag() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(notNowKey) ?? false; // default false
   }
 
   Widget _bottomItem({
