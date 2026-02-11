@@ -70,6 +70,7 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
   void _checkBiometricAvailability() async {
     bool isAvailable = await _biometricAuthService
         .canAuthenticateWithBiometrics();
+    print('Biometric Available: $isAvailable');
     setState(() {
       _isBiometricAvailable = isAvailable;
     });
@@ -132,6 +133,7 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
           prefs.getBool('biometric_enabled_$currentUserKey') ?? false;
     });
     bool check = false;
+    print('Biometric Login Enabled: $_showBiometricLogin');
     if (_showBiometricLogin) {
       check = await BiometricAuthService().authenticateLocalUser();
     }
@@ -338,7 +340,7 @@ class _NewPinEntryScreenState extends State<NewPinEntryScreen> {
                   const SizedBox(height: 8),
 
                   // Biometric Note
-                  if (_showBiometricLogin && !_isBiometricAvailable)
+                  if (!_showBiometricLogin && _isBiometricAvailable)
                     const Text(
                       'Note: Please enable biometric authentication or Face Unlock from the settings.',
                       style: TextStyle(fontSize: 12, color: Colors.grey),
