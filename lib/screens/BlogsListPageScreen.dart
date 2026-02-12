@@ -74,7 +74,7 @@ class _BlogListPageState extends State<BlogListPage> {
                 const SizedBox(width: 5),
                 _blogTypeButton('Coin Value', 'coin-value'),
                 const SizedBox(width: 5),
-                _blogTypeButton('News', 'industryNews'),
+                // _blogTypeButton('News', 'industryNews'),
               ],
             ),
           ),

@@ -245,7 +245,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
                         children: [
                           _moreItem(Icons.calculate, "Calculator", spotPrice),
                           _divider(),
-                          _moreItem(Icons.article, "Blogs/News", spotPrice),
+                          _moreItem(Icons.article, "Blogs", spotPrice),
                           _divider(),
                           _moreItem(Icons.store, "Visit BOLD Store", spotPrice),
                         ],
@@ -273,7 +273,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
 
     return InkWell(
       onTap: () {
-        if (label == "Blogs/News") {
+        if (label == "Blogs") {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => BlogListPage(),
