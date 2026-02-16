@@ -79,7 +79,7 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final diff = DateTime.now().difference(_backgroundTime!);
     print("Background duration:  ${diff.inMinutes} min");
     print("_currentIndex: $_currentIndex");
-    if (diff.inMinutes >= 2) {
+    if (diff.inMinutes >= 15) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final authService = AuthService();
       if (_currentIndex == 0) {

@@ -10,7 +10,7 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 
 	<key>CFBundleDisplayName</key>
-	<string>Bold Bullion Portfolio</string>
+	<string>BOLD Bullion Portfolio</string>
 
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
@@ -22,7 +22,7 @@
 	<string>6.0</string>
 
 	<key>CFBundleName</key>
-	<string>Bold Bullion Portfolio</string>
+	<string>BOLD Bullion Portfolio</string>
 
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
