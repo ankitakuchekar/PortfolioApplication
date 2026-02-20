@@ -57,6 +57,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
   }
 
   late final String appVersion;
+  late bool notNowClicked = false;
 
   // Initialize app, check for version and navigate
   Future<void> _initializeApp() async {
@@ -65,10 +66,10 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     await Future.delayed(const Duration(seconds: 2));
 
     // Get app version and check for update
-   appVersion = await _getAppVersion();
+    appVersion = await _getAppVersion();
     final updateRequired = await _checkForUpdate(appVersion);
     print("App Version: $appVersion, Update Required: $updateRequired");
-    final notNowClicked = await authService.getNotNowFlag();
+    notNowClicked = await authService.getNotNowFlag();
     print("Not Now Clicked: $notNowClicked");
     if (updateRequired && !notNowClicked) {
       // If update required, show the update dialog
@@ -321,7 +322,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
         centerTitle: true,
         automaticallyImplyLeading: false, // Prevents back button
         title: Text(
-          "BOLD Bullion Portfolio App ${ appVersion != null ? "v$appVersion" : ""}",
+          "BOLD ${notNowClicked} ${"v$appVersion"}",
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
