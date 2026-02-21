@@ -56,8 +56,6 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     _initializeApp();
   }
 
-  late final String appVersion;
-
   // Initialize app, check for version and navigate
   Future<void> _initializeApp() async {
     final authService = AuthService();
@@ -65,7 +63,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
     await Future.delayed(const Duration(seconds: 2));
 
     // Get app version and check for update
-   appVersion = await _getAppVersion();
+    final appVersion = await _getAppVersion();
     final updateRequired = await _checkForUpdate(appVersion);
     print("App Version: $appVersion, Update Required: $updateRequired");
     final notNowClicked = await authService.getNotNowFlag();
@@ -321,7 +319,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
         centerTitle: true,
         automaticallyImplyLeading: false, // Prevents back button
         title: Text(
-          "BOLD Bullion Portfolio App ${ appVersion != null ? "v$appVersion" : ""}",
+          "BOLD Bullion Portfolio",
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
