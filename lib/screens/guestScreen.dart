@@ -321,7 +321,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
         centerTitle: true,
         automaticallyImplyLeading: false, // Prevents back button
         title: Text(
-          "BOLD Bullion Portfolio App ${ appVersion != null ? "v$appVersion" : ""}",
+          "BOLD Bullion Portfolio",
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
