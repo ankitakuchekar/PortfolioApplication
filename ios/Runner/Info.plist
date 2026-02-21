@@ -2,79 +2,54 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
-
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
-
 	<key>CFBundleDisplayName</key>
 	<string>BOLD Bullion Portfolio</string>
-
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
-
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
-
 	<key>CFBundleName</key>
 	<string>BOLD Bullion Portfolio</string>
-
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
-
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.15</string>
-
+	<string>1.0.16</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
-
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs access to your camera.</string>
-
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs access to your microphone.</string>
-
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to your photo library.</string>
-
 	<key>NSFaceIDUsageDescription</key>
 	<string>User Biometric Authentication</string>
-
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-
 	<key>UIFileSharingEnabled</key>
 	<true/>
-
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
-
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
-
 	<key>UIStatusBarHidden</key>
 	<false/>
-
-	<!-- ✅ iPhone orientations -->
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-
-	<!-- ✅ iPad orientations -->
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -82,6 +57,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-
 </dict>
 </plist>
