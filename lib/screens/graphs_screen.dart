@@ -35,7 +35,16 @@ class _GraphsScreenState extends State<GraphsScreen> {
   // Determine the value of _isPredictionView
   bool _isPredictionView = false;
 
-  final List<String> timePeriods = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'];
+  final List<String> timePeriods = [
+    '1D',
+    '1W',
+    '1M',
+    '3M',
+    '6M',
+    'YTD',
+    '1Y',
+    '5Y',
+  ];
 
   final List<String> tabOptions = [
     'Candle Chart', // Added new tab
