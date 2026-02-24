@@ -158,6 +158,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
       body: Consumer<PortfolioProvider>(
         builder: (context, portfolioProvider, child) {
           final portfolioData = portfolioProvider.portfolioData;
+          final spotPriceData = portfolioProvider.spotPrices?.data;
 
           if (isLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -174,13 +175,23 @@ class _GraphsScreenState extends State<GraphsScreen> {
           final totalInvestment =
               investment.totalGoldInvested + investment.totalSilverInvested;
 
-          final goldPercentage = totalInvestment == 0
-              ? 0
-              : (investment.totalGoldInvested / totalInvestment) * 100;
+          final goldOunces = investment.totalGoldOunces;
+          final silverOunces = investment.totalSilverOunces;
 
-          final silverPercentage = totalInvestment == 0
-              ? 0
-              : (investment.totalSilverInvested / totalInvestment) * 100;
+          final currentGoldPrice = spotPriceData?.goldAsk ?? 0;
+          final currentSilverPrice = spotPriceData?.silverAsk ?? 0;
+
+          final goldValue = goldOunces * currentGoldPrice;
+          final silverValue = silverOunces * currentSilverPrice;
+
+          final totalValue = goldValue + silverValue;
+
+          final goldPercentage = totalValue > 0
+              ? (goldValue / totalValue) * 100
+              : 0;
+          final silverPercentage = totalValue > 0
+              ? (silverValue / totalValue) * 100
+              : 0;
 
           final metalInOuncesData = portfolioData.data[0].metalInOunces;
           final metalCandleChartData = portfolioData.data[0].metalCandleChart;

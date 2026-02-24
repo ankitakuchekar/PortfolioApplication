@@ -345,6 +345,11 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
             tooltipBehavior: _tooltipBehavior,
             zoomPanBehavior: _zoomPanBehavior,
             crosshairBehavior: _crosshairBehavior,
+            onCrosshairPositionChanging: (CrosshairRenderArgs args) {
+              if (args.axis is NumericAxis) {
+                args.text = formatPrice(args.value);
+              }
+            },
             primaryXAxis: DateTimeAxis(
               intervalType: DateTimeIntervalType.minutes,
               dateFormat: DateFormat('hh:mm a'),
@@ -370,7 +375,7 @@ class _MetalCandleChartState extends State<MetalCandleChart> {
               ),
               axisLabelFormatter: (AxisLabelRenderDetails details) {
                 return ChartAxisLabel(
-                  '\$${details.value.toStringAsFixed(2)}',
+                  formatPrice(details.value),
                   const TextStyle(color: Color(0xFF8c8c8c)),
                 );
               },
