@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class TimerProvider with ChangeNotifier {
-  // --- Variables for the 45-second UI countdown ---
+  // --- Variables for the 20-second UI countdown ---
   Timer? _timer;
-  int _remainingSeconds = 45;
+  int _remainingSeconds = 20;
   int get remainingSeconds => _remainingSeconds;
 
   // --- Variables for the Session/PIN Lock ---
@@ -15,7 +15,7 @@ class TimerProvider with ChangeNotifier {
     _startTimer();
   }
 
-  // 1. Logic for the 45-second periodic timer (UI updates)
+  // 1. Logic for the 20-second periodic timer (UI updates)
   void _startTimer() {
     _timer?.cancel(); // Clear existing timer if any
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -34,7 +34,7 @@ class TimerProvider with ChangeNotifier {
   }
 
   void resetTimer() {
-    _remainingSeconds = 45;
+    _remainingSeconds = 20;
     notifyListeners();
   }
 

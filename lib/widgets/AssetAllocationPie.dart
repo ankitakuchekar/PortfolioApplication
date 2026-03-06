@@ -64,7 +64,7 @@ class AssetAllocationPieChart extends StatelessWidget {
               Positioned(
                 bottom: 0,
                 child: Text(
-                  'Gold ${goldPercentage.toStringAsFixed(0)}%',
+                  'Gold ${goldPercentage.toStringAsFixed(2)}%',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -76,7 +76,7 @@ class AssetAllocationPieChart extends StatelessWidget {
               Positioned(
                 top: 0,
                 child: Text(
-                  'Silver ${silverPercentage.toStringAsFixed(0)}%',
+                  'Silver ${silverPercentage.toStringAsFixed(2)}%',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,

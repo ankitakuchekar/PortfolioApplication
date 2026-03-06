@@ -181,26 +181,15 @@ class _GraphsScreenState extends State<GraphsScreen> {
 
           final investment = portfolioData.data[0].investment;
 
-          final totalInvestment =
-              investment.totalGoldInvested + investment.totalSilverInvested;
-
-          final goldOunces = investment.totalGoldOunces;
-          final silverOunces = investment.totalSilverOunces;
-
-          final currentGoldPrice = spotPriceData?.goldAsk ?? 0;
-          final currentSilverPrice = spotPriceData?.silverAsk ?? 0;
-
-          final goldValue = goldOunces * currentGoldPrice;
-          final silverValue = silverOunces * currentSilverPrice;
-
-          final totalValue = goldValue + silverValue;
-
-          final goldPercentage = totalValue > 0
-              ? (goldValue / totalValue) * 100
-              : 0;
-          final silverPercentage = totalValue > 0
-              ? (silverValue / totalValue) * 100
-              : 0;
+          final goldPercentage = investment.totalGoldCurrent;
+          final silverPercentage = (investment.totalSilverCurrent);
+          final totalInvestment = goldPercentage + silverPercentage;
+          final goldValue = double.parse(
+            (((goldPercentage / totalInvestment) * 100).toStringAsFixed(2)),
+          );
+          final silverValue = double.parse(
+            (((silverPercentage / totalInvestment) * 100).toStringAsFixed(2)),
+          );
 
           final metalInOuncesData = portfolioData.data[0].metalInOunces;
           final metalCandleChartData = portfolioData.data[0].metalCandleChart;
@@ -400,8 +389,8 @@ class _GraphsScreenState extends State<GraphsScreen> {
                           )
                         : selectedTab == 'Asset Allocation'
                         ? AssetAllocationPieChart(
-                            goldPercentage: goldPercentage.toDouble(),
-                            silverPercentage: silverPercentage.toDouble(),
+                            goldPercentage: goldValue,
+                            silverPercentage: silverValue,
                           )
                         : (selectedTab == 'Silver Holdings' ||
                               selectedTab == 'Gold Holdings' ||

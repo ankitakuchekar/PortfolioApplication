@@ -35,9 +35,9 @@ class _SpotPriceCardState extends State<SpotPriceCard> {
     _startPeriodicRefresh();
   }
 
-  // Method to start the periodic refresh every 45 seconds
+  // Method to start the periodic refresh every 20 seconds
   void _startPeriodicRefresh() {
-    _timer = Timer.periodic(Duration(seconds: 45), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 20), (timer) {
       _fetchSpotPrice();
     });
   }
