@@ -2,6 +2,7 @@ import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/providers/portfolio_provider.dart';
 import 'package:bold_portfolio/screens/ProductLifeCycle.dart';
 import 'package:bold_portfolio/screens/main_screen.dart';
+import 'package:bold_portfolio/screens/web_store_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/widgets/ExitForm.dart';
 import 'package:bold_portfolio/widgets/SellTousForm.dart';
@@ -50,11 +51,11 @@ class _HoldingCardState extends State<HoldingCard> {
     final _url =
         '$redirectionUrl/product/${widget.holding.productId}/${Uri.encodeComponent(widget.holding.name)}';
 
-    Future<void> _launchUrl() async {
-      final Uri uri = Uri.parse(_url);
-      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        throw Exception('Could not launch $_url');
-      }
+    void _openWebStore() {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const WebStoreScreen()),
+      );
     }
 
     final selectedImage =
@@ -255,7 +256,7 @@ class _HoldingCardState extends State<HoldingCard> {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: widget.holding.isBold ? _launchUrl : null,
+                  onPressed: widget.holding.isBold ? _openWebStore : null,
                   icon: const Icon(Icons.arrow_upward),
                   label: const Text("Buy"),
                   style: ElevatedButton.styleFrom(
