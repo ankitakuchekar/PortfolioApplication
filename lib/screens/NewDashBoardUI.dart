@@ -176,165 +176,185 @@ class _DashboardScreenState extends State<BullionDashboard> {
               ? percentDayProfitLoss.abs()
               : 0;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(2),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildCurrentValueCard(
-                  totalCurrentValue,
-                  difference,
-                  percentDifference,
-                  dayProfitLoss,
-                  percentDayProfitLoss,
-                  totalAcquisitionCost,
-                ),
-
-                // Toggle button (Returns / Current‑Invested)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 8,
+          return RefreshIndicator(
+            onRefresh: () async {
+              // Implement the refresh functionality by reloading data
+              await portfolioProvider.loadPortfolioData();
+              await portfolioProvider.refreshDataFromAPIs(
+                portfolioProvider.frequency,
+              );
+            },
+            color: AppColors.primary,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(
+                top: 1, // Adjust the top padding
+                bottom: 32, // Adjust the bottom padding
+                left: 1,
+                right: 1,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Total Value and Profit Loss Card
+                  _buildCurrentValueCard(
+                    totalCurrentValue,
+                    difference,
+                    percentDifference,
+                    dayProfitLoss,
+                    percentDayProfitLoss,
+                    totalAcquisitionCost,
                   ),
-                  alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        showReturns = !showReturns;
-                      });
-                    },
-                    child: Text(
-                      showReturns ? "Current‑(Investment)" : "Total Return",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black,
-                        decoration: TextDecoration.underline,
+
+                  // Toggle button for showing Returns vs Current Investment
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
+                    alignment: Alignment.centerRight,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          showReturns = !showReturns;
+                        });
+                      },
+                      child: Text(
+                        showReturns ? "Current‑(Investment)" : "Total Return",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black,
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                // Silver Holding
-                if (silverHoldings.isNotEmpty) ...[
-                  _buildHoldingRow(
-                    metal: "Silver",
-                    quantity:
-                        "${formatPrice(investment.totalSilverOunces)} ounces",
-                    currentValue:
-                        "\$${investment.totalSilverCurrent.toStringAsFixed(2)}",
-                    purchaseValue:
-                        "\$${investment.totalSilverInvested.toStringAsFixed(2)}",
-                    showReturns: showReturns,
-                    profit:
-                        investment.totalSilverCurrent -
-                            investment.totalSilverInvested ??
-                        0.00,
-                    profitPct: investment.totalSilverInvested > 0
-                        ? ((investment.totalSilverCurrent -
-                                      investment.totalSilverInvested) /
-                                  investment.totalSilverInvested) *
-                              100
-                        : 0,
-                    holdingData: silverHoldings,
-                    isProfit:
-                        (investment.totalSilverCurrent -
-                            investment.totalSilverInvestment) >
-                        0,
-                    dayProfit: investment.daySilver,
-                    dayPercentProfit: daySilverPercent,
-                    isHoldingDataEmpty: false,
-                  ),
+                  const SizedBox(height: 16),
+
+                  // Silver Holding
+                  if (silverHoldings.isNotEmpty) ...[
+                    _buildHoldingRow(
+                      metal: "Silver",
+                      quantity:
+                          "${formatPrice(investment.totalSilverOunces)} ounces",
+                      currentValue:
+                          "\$${investment.totalSilverCurrent.toStringAsFixed(2)}",
+                      purchaseValue:
+                          "\$${investment.totalSilverInvested.toStringAsFixed(2)}",
+                      showReturns: showReturns,
+                      profit:
+                          investment.totalSilverCurrent -
+                              investment.totalSilverInvested ??
+                          0.00,
+                      profitPct: investment.totalSilverInvested > 0
+                          ? ((investment.totalSilverCurrent -
+                                        investment.totalSilverInvested) /
+                                    investment.totalSilverInvested) *
+                                100
+                          : 0,
+                      holdingData: silverHoldings,
+                      isProfit:
+                          (investment.totalSilverCurrent -
+                              investment.totalSilverInvested) >
+                          0,
+                      dayProfit: investment.daySilver,
+                      dayPercentProfit: daySilverPercent,
+                      isHoldingDataEmpty: false,
+                    ),
+                    const Divider(height: 24),
+                  ],
+
+                  // Gold Holding
+                  if (goldHoldings.isNotEmpty) ...[
+                    _buildHoldingRow(
+                      metal: "Gold",
+                      quantity:
+                          "${formatPrice(investment.totalGoldOunces)} ounces",
+                      currentValue:
+                          "\$${investment.totalGoldCurrent.toStringAsFixed(2)}",
+                      purchaseValue:
+                          "\$${investment.totalGoldInvested.toStringAsFixed(2)}",
+                      showReturns: showReturns,
+                      profit:
+                          investment.totalGoldCurrent -
+                          investment.totalGoldInvested,
+                      profitPct: investment.totalGoldInvested > 0
+                          ? ((investment.totalGoldCurrent -
+                                        investment.totalGoldInvested) /
+                                    investment.totalGoldInvested) *
+                                100
+                          : 0,
+                      holdingData: goldHoldings,
+                      isProfit:
+                          (investment.totalGoldCurrent -
+                              investment.totalGoldInvested) >
+                          0,
+                      dayProfit: investment.dayGold,
+                      dayPercentProfit: dayGoldPercent,
+                      isHoldingDataEmpty: false,
+                    ),
+                    const Divider(height: 24),
+                  ],
+
+                  // If there are no holdings for Silver or Gold
+                  if (silverHoldings.isEmpty) ...[
+                    _buildHoldingRow(
+                      metal: "Silver",
+                      quantity:
+                          "${investment.totalSilverOunces.toStringAsFixed(2) ?? 0.00} ounces",
+                      currentValue:
+                          "\$${investment.totalSilverCurrent.toStringAsFixed(2) ?? 0.00}",
+                      purchaseValue:
+                          "\$${investment.totalSilverInvested.toStringAsFixed(2) ?? 0.00}",
+                      showReturns: showReturns,
+                      profit:
+                          investment.totalSilverCurrent -
+                              investment.totalSilverInvested ??
+                          0.00,
+                      profitPct: investment.totalSilverInvested > 0
+                          ? ((investment.totalSilverCurrent -
+                                        investment.totalSilverInvested) /
+                                    investment.totalSilverInvested) *
+                                100
+                          : 0,
+                      holdingData: [],
+                      isProfit:
+                          (investment.totalSilverCurrent -
+                              investment.totalSilverInvestment) >
+                          0,
+                      dayProfit: investment.daySilver ?? 0.00,
+                      dayPercentProfit: daySilverPercent ?? 0.00,
+                      isHoldingDataEmpty: true,
+                    ),
+                    const Divider(height: 24),
+                  ],
+                  if (goldHoldings.isEmpty) ...[
+                    _buildHoldingRow(
+                      metal: "Gold",
+                      quantity:
+                          "${investment.totalGoldOunces.toStringAsFixed(2) ?? 0.00} ounces",
+                      currentValue:
+                          "\$${investment.totalGoldCurrent.toStringAsFixed(2) ?? 0.00}",
+                      purchaseValue:
+                          "\$${investment.totalGoldInvested.toStringAsFixed(2) ?? 0.00}",
+                      showReturns: showReturns,
+                      profit: 0,
+                      profitPct: 0,
+                      holdingData: [],
+                      isProfit:
+                          (investment.totalGoldCurrent -
+                              investment.totalGoldInvested) >
+                          0,
+                      dayProfit: investment.dayGold ?? 0.00,
+                      dayPercentProfit: dayGoldPercent ?? 0.00,
+                      isHoldingDataEmpty: true,
+                    ),
+                    const Divider(height: 24),
+                  ],
+                  _buildComingSoonRow("Platinum"),
                   const Divider(height: 24),
+                  _buildComingSoonRow("Palladium"),
                 ],
-                // Gold Holding
-                if (goldHoldings.isNotEmpty) ...[
-                  _buildHoldingRow(
-                    metal: "Gold",
-                    quantity:
-                        "${formatPrice(investment.totalGoldOunces)} ounces",
-                    currentValue:
-                        "\$${investment.totalGoldCurrent.toStringAsFixed(2)}",
-                    purchaseValue:
-                        "\$${investment.totalGoldInvested.toStringAsFixed(2)}",
-                    showReturns: showReturns,
-                    profit:
-                        investment.totalGoldCurrent -
-                        investment.totalGoldInvested,
-                    profitPct: investment.totalGoldInvested > 0
-                        ? ((investment.totalGoldCurrent -
-                                      investment.totalGoldInvested) /
-                                  investment.totalGoldInvested) *
-                              100
-                        : 0,
-                    holdingData: goldHoldings,
-                    isProfit:
-                        (investment.totalGoldCurrent -
-                            investment.totalGoldInvested) >
-                        0,
-                    dayProfit: investment.dayGold,
-                    dayPercentProfit: dayGoldPercent,
-                    isHoldingDataEmpty: false,
-                  ),
-                  const Divider(height: 24),
-                ],
-                if (silverHoldings.isEmpty) ...[
-                  _buildHoldingRow(
-                    metal: "Silver",
-                    quantity:
-                        "${investment.totalSilverOunces.toStringAsFixed(2) ?? 0.00} ounces",
-                    currentValue:
-                        "\$${investment.totalSilverCurrent.toStringAsFixed(2) ?? 0.00}",
-                    purchaseValue:
-                        "\$${investment.totalSilverInvested.toStringAsFixed(2) ?? 0.00}",
-                    showReturns: showReturns,
-                    profit:
-                        investment.totalSilverCurrent -
-                            investment.totalSilverInvested ??
-                        0.00,
-                    profitPct: investment.totalSilverInvested > 0
-                        ? ((investment.totalSilverCurrent -
-                                      investment.totalSilverInvested) /
-                                  investment.totalSilverInvested) *
-                              100
-                        : 0,
-                    holdingData: [],
-                    isProfit:
-                        (investment.totalSilverCurrent -
-                            investment.totalSilverInvestment) >
-                        0,
-                    dayProfit: investment.daySilver ?? 0.00,
-                    dayPercentProfit: daySilverPercent ?? 0.00,
-                    isHoldingDataEmpty: true,
-                  ),
-                  const Divider(height: 24),
-                ],
-                if (goldHoldings.isEmpty) ...[
-                  _buildHoldingRow(
-                    metal: "Gold",
-                    quantity:
-                        "${investment.totalGoldOunces.toStringAsFixed(2) ?? 0.00} ounces",
-                    currentValue:
-                        "\$${investment.totalGoldCurrent.toStringAsFixed(2) ?? 0.00}",
-                    purchaseValue:
-                        "\$${investment.totalGoldInvested.toStringAsFixed(2) ?? 0.00}",
-                    showReturns: showReturns,
-                    profit: 0,
-                    profitPct: 0,
-                    holdingData: [],
-                    isProfit:
-                        (investment.totalGoldCurrent -
-                            investment.totalGoldInvested) >
-                        0,
-                    dayProfit: investment.dayGold ?? 0.00,
-                    dayPercentProfit: dayGoldPercent ?? 0.00,
-                    isHoldingDataEmpty: true,
-                  ),
-                  const Divider(height: 24),
-                ],
-                _buildComingSoonRow("Platinum"),
-                const Divider(height: 24),
-                _buildComingSoonRow("Palladium"),
-              ],
+              ),
             ),
           );
         },
