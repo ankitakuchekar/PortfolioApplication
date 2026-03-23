@@ -18,9 +18,12 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     _initializeApp();
+    
   }
+  final AuthService authService = AuthService();
 
   Future<void> _initializeApp() async {
+      await authService.setNotNowFlag(false);
     await Future.delayed(const Duration(seconds: 4));
 
     if (mounted) {

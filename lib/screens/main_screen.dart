@@ -32,9 +32,9 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addObserver(this); 
   }
-
+ 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -62,12 +62,12 @@ class MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       _wentToBackground = false;
     }
 
-    // 🔥 APP KILLED / REMOVED FROM RECENTS
-    if (state == AppLifecycleState.detached) {
-      final AuthService authService = AuthService();
-      print("App detached — resetting update popup flag");
-      authService.setNotNowFlag(false);
-    }
+    // // 🔥 APP KILLED / REMOVED FROM RECENTS
+    // if (state == AppLifecycleState.detached) {
+    //   final AuthService authService = AuthService();
+    //   print("App detached — resetting update popup flag");
+    // authService.setNotNowFlag(false);
+    // }
   }
 
   // ---------------- PIN CHECK ----------------
