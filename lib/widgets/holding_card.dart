@@ -1,7 +1,7 @@
 import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/providers/portfolio_provider.dart';
 import 'package:bold_portfolio/screens/ProductLifeCycle.dart';
-import 'package:bold_portfolio/screens/main_screen.dart';
+import 'package:bold_portfolio/screens/bold_webview_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/widgets/ExitForm.dart';
 import 'package:bold_portfolio/widgets/SellTousForm.dart';
@@ -10,7 +10,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
 class HoldingCard extends StatefulWidget {
@@ -26,12 +25,12 @@ class HoldingCard extends StatefulWidget {
   });
 
   @override
-  _HoldingCardState createState() => _HoldingCardState();
+  State<HoldingCard> createState() => _HoldingCardState();
 }
 
 class _HoldingCardState extends State<HoldingCard> {
   bool showPercentage = false;
-  bool _isLoading = false;
+  bool _isBuyLoading = false; // ✅ renamed to be specific
 
   void toggleDisplay() {
     setState(() {
@@ -44,21 +43,63 @@ class _HoldingCardState extends State<HoldingCard> {
     return format.format(price);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final String redirectionUrl = dotenv.env['URL_Redirection'] ?? '';
-    final _url =
+  // ---------------------------------------------------------------------------
+  // 🛒 Buy button handler — opens in-app WebView with auto-login
+  // ---------------------------------------------------------------------------
+  Future<void> _onBuyPressed() async {
+    final redirectionUrl = dotenv.env['URL_Redirection'] ?? '';
+    final productUrl =
         '$redirectionUrl/product/${widget.holding.productId}/${Uri.encodeComponent(widget.holding.name)}';
 
-    Future<void> _launchUrl() async {
-      final Uri uri = Uri.parse(_url);
-      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        throw Exception('Could not launch $_url');
-      }
-    }
+    // Show loading state on the button
+    setState(() => _isBuyLoading = true);
 
-    final selectedImage =
-        "https://res.cloudinary.com/bold-pm/image/upload/q_auto:good/Graphics/no_img_preview_product.png";
+    try {
+      final authService = AuthService();
+      final token = await authService.getToken();
+      final user = await authService.getUser();
+
+      if (!mounted) return;
+
+      if (token == null || token.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Session expired. Please log in again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // Navigate to in-app WebView, passing token + target URL
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BuyWebViewScreen(
+            url: productUrl,
+            token: token,
+            userEmail: user?.emailId, // used for cookie/JS injection
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Something went wrong: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isBuyLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String formattedDate = DateFormat(
+      'MM/dd/yyyy',
+    ).format(widget.holding.orderDate);
 
     final double gainLossValue =
         widget.holding.currentMetalValue - widget.holding.pastMetalValue;
@@ -72,9 +113,9 @@ class _HoldingCardState extends State<HoldingCard> {
         : gainLossValue > 0
         ? Colors.green
         : Colors.red;
-    String formattedDate = DateFormat(
-      'MM/dd/yyyy',
-    ).format(widget.holding.orderDate);
+
+    const String fallbackImage =
+        'https://res.cloudinary.com/bold-pm/image/upload/q_auto:good/Graphics/no_img_preview_product.png';
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -85,19 +126,18 @@ class _HoldingCardState extends State<HoldingCard> {
       ),
       child: Column(
         children: [
+          // ── Product image + info row ─────────────────────────────────────
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Image.network(
-                widget.holding.productImage.isNotEmpty == true
+                widget.holding.productImage.isNotEmpty
                     ? widget.holding.productImage
-                    : selectedImage,
+                    : fallbackImage,
                 height: 70,
                 width: 70,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.broken_image);
-                },
+                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -125,7 +165,7 @@ class _HoldingCardState extends State<HoldingCard> {
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                           decoration: TextDecoration.underline,
-                          color: Colors.black, // looks like a hyperlink
+                          color: Colors.black,
                         ),
                       ),
                     ),
@@ -134,7 +174,7 @@ class _HoldingCardState extends State<HoldingCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Qty: ${widget.holding.totalQtyOrdered ?? 1}",
+                          'Qty: ${widget.holding.totalQtyOrdered ?? 1}',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
@@ -144,7 +184,7 @@ class _HoldingCardState extends State<HoldingCard> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "Total Weight: ${widget.holding.weight.toStringAsFixed(2)} oz",
+                          'Total Weight: ${widget.holding.weight.toStringAsFixed(2)} oz',
                           style: const TextStyle(
                             fontSize: 14,
                             height: 1.4,
@@ -152,7 +192,6 @@ class _HoldingCardState extends State<HoldingCard> {
                           ),
                         ),
                         const SizedBox(height: 4),
-
                         Text(
                           formattedDate,
                           style: const TextStyle(
@@ -170,11 +209,11 @@ class _HoldingCardState extends State<HoldingCard> {
           ),
           const SizedBox(height: 16),
 
-          // Price details
+          // ── Price details ────────────────────────────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Average Unit Price"),
+              const Text('Average Unit Price'),
               Text(formatPrice(widget.holding.avgPrice)),
             ],
           ),
@@ -183,11 +222,10 @@ class _HoldingCardState extends State<HoldingCard> {
             children: [
               Text(
                 widget.showActualPrice
-                    ? "Actual Purchase Price"
-                    : "Purchase Metal Value",
-                style: TextStyle(color: Colors.black),
+                    ? 'Actual Purchase Price'
+                    : 'Purchase Metal Value',
               ),
-              Text("${formatPrice(widget.holding.pastMetalValue)}"),
+              Text(formatPrice(widget.holding.pastMetalValue)),
             ],
           ),
           Row(
@@ -195,14 +233,14 @@ class _HoldingCardState extends State<HoldingCard> {
             children: [
               Text(
                 widget.showActualPrice
-                    ? "Approx. Current Price"
+                    ? 'Approx. Current Price'
                     : 'Approx. Metal Value',
               ),
-              Text("${formatPrice(widget.holding.currentMetalValue)}"),
+              Text(formatPrice(widget.holding.currentMetalValue)),
             ],
           ),
 
-          // Profit / Loss toggle
+          // ── Profit / Loss toggle ─────────────────────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -211,7 +249,7 @@ class _HoldingCardState extends State<HoldingCard> {
                 child: Row(
                   children: const [
                     Text(
-                      "Profit/Loss ",
+                      'Profit/Loss ',
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
                         decoration: TextDecoration.underline,
@@ -236,8 +274,8 @@ class _HoldingCardState extends State<HoldingCard> {
                     onTap: toggleDisplay,
                     child: Text(
                       showPercentage
-                          ? "${gainLossPercentage.toStringAsFixed(2)}%"
-                          : "${formatPrice(gainLossValue.abs())}",
+                          ? '${gainLossPercentage.toStringAsFixed(2)}%'
+                          : formatPrice(gainLossValue.abs()),
                       style: TextStyle(
                         color: valueColor,
                         fontWeight: FontWeight.bold,
@@ -250,21 +288,33 @@ class _HoldingCardState extends State<HoldingCard> {
           ),
           const SizedBox(height: 16),
 
-          // Action buttons
+          // ── Action buttons ───────────────────────────────────────────────
           Row(
             children: [
+              // Buy button
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: widget.holding.isBold ? _launchUrl : null,
-                  icon: const Icon(Icons.arrow_upward),
-                  label: const Text("Buy"),
+                  icon: _isBuyLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.arrow_upward),
+                  label: Text(_isBuyLoading ? 'Opening…' : 'Buy'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
+                  onPressed: _isBuyLoading ? null : _onBuyPressed, // ✅ clean
                 ),
               ),
               const SizedBox(width: 10),
+
+              // Sell/Exit button
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () => showSellExitPopup(
@@ -273,7 +323,7 @@ class _HoldingCardState extends State<HoldingCard> {
                     widget.holding.isBold,
                   ),
                   icon: const Icon(Icons.arrow_downward),
-                  label: const Text("Sell/Exit"),
+                  label: const Text('Sell/Exit'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -281,6 +331,8 @@ class _HoldingCardState extends State<HoldingCard> {
                 ),
               ),
               const SizedBox(width: 10),
+
+              // Delete button
               Container(
                 height: 44,
                 width: 44,
@@ -303,6 +355,10 @@ class _HoldingCardState extends State<HoldingCard> {
   }
 }
 
+// =============================================================================
+// Sell/Exit popup — unchanged logic, minor style cleanup
+// =============================================================================
+
 void showSellExitPopup(
   BuildContext context,
   ProductHolding holding,
@@ -322,11 +378,10 @@ void showSellExitPopup(
             maxHeight: MediaQuery.of(context).size.height * 0.95,
           ),
           child: DefaultTabController(
-            length: isBold ? 2 : 1, // Adjusting the length based on `isBold`
+            length: isBold ? 2 : 1,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Header Row
                 Align(
                   alignment: Alignment.topRight,
                   child: Padding(
@@ -337,8 +392,6 @@ void showSellExitPopup(
                     ),
                   ),
                 ),
-
-                // TabBar
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 20),
                   decoration: BoxDecoration(
@@ -358,7 +411,6 @@ void showSellExitPopup(
                       borderRadius: BorderRadius.circular(8),
                     ),
                     tabs: [
-                      // If isBold is false, show "Sell" first
                       if (isBold)
                         const Tab(
                           child: Padding(
@@ -366,7 +418,6 @@ void showSellExitPopup(
                             child: Text('Sell'),
                           ),
                         ),
-                      // Always show "Exit" tab
                       const Tab(
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 8),
@@ -376,16 +427,11 @@ void showSellExitPopup(
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 const Divider(height: 1, color: Colors.grey),
-
-                // TabBarView Content
                 Expanded(
                   child: TabBarView(
                     children: [
-                      // Only show the "SellForm" when isBold is false
                       if (isBold)
                         Padding(
                           padding: const EdgeInsets.all(16),
@@ -413,6 +459,10 @@ void showSellExitPopup(
   );
 }
 
+// =============================================================================
+// Delete confirmation + remove product — unchanged logic, mounted guard added
+// =============================================================================
+
 Future<void> _showConfirmationDialog(
   BuildContext context,
   ProductHolding holding,
@@ -421,16 +471,17 @@ Future<void> _showConfirmationDialog(
     context: context,
     builder: (_) => AlertDialog(
       title: const Text(
-        "Are you sure you want to remove this product?",
+        'Are you sure you want to remove this product?',
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
       content: const Text(
-        "This action cannot be undone. This will permanently remove all quantities of the product from your portfolio.",
+        'This action cannot be undone. This will permanently remove all '
+        'quantities of the product from your portfolio.',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text("Cancel"),
+          child: const Text('Cancel'),
         ),
         ElevatedButton(
           onPressed: () => _removeProduct(context, holding),
@@ -438,7 +489,7 @@ Future<void> _showConfirmationDialog(
             backgroundColor: Colors.black,
             foregroundColor: Colors.white,
           ),
-          child: const Text("Remove Position"),
+          child: const Text('Remove Position'),
         ),
       ],
     ),
@@ -453,12 +504,21 @@ Future<void> _removeProduct(
   final url = Uri.parse('$baseUrl/Portfolio/RemovePortfolioProducts');
 
   final authService = AuthService();
-  final fetchedUserId = await authService.getUser();
+  final user = await authService.getUser();
   final token = await authService.getToken();
-  if (token == null) throw Exception('Unauthenticated');
+
+  if (token == null) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Session expired. Please log in again.')),
+      );
+    }
+    return;
+  }
+
   final body = jsonEncode({
-    "customerId": int.parse(fetchedUserId?.id ?? '0'),
-    "productId": holding.productId,
+    'customerId': int.parse(user?.id ?? '0'),
+    'productId': holding.productId,
   });
 
   try {
@@ -471,21 +531,22 @@ Future<void> _removeProduct(
       body: body,
     );
 
+    if (!context.mounted) return;
+    Navigator.of(context).pop();
+
     if (response.statusCode == 200) {
-      Navigator.of(context).pop(); // Close dialog
       final provider = Provider.of<PortfolioProvider>(context, listen: false);
       await provider.refreshDataFromAPIs(provider.frequency);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Product removed successfully')),
       );
-      // if (onDelete != null) onDelete!(); // Refresh parent
     } else {
-      Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to remove: ${response.body}')),
       );
     }
   } catch (e) {
+    if (!context.mounted) return;
     Navigator.of(context).pop();
     ScaffoldMessenger.of(
       context,
