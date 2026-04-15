@@ -30,7 +30,7 @@ class HoldingCard extends StatefulWidget {
 
 class _HoldingCardState extends State<HoldingCard> {
   bool showPercentage = false;
-  bool _isBuyLoading = false; // ✅ renamed to be specific
+  bool _isBuyLoading = false;
 
   void toggleDisplay() {
     setState(() {
@@ -309,7 +309,9 @@ class _HoldingCardState extends State<HoldingCard> {
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  onPressed: _isBuyLoading ? null : _onBuyPressed, // ✅ clean
+                  onPressed: (!widget.holding.isBold)
+                      ? null
+                      : _onBuyPressed, // ✅ clean
                 ),
               ),
               const SizedBox(width: 10),

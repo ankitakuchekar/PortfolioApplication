@@ -2,17 +2,20 @@ import 'package:bold_portfolio/models/portfolio_model.dart';
 import 'package:bold_portfolio/screens/BullionPortfolioGuideScreen.dart';
 import 'package:bold_portfolio/screens/PrivacyPolicyScreen.dart';
 import 'package:bold_portfolio/screens/TaxReportScreen.dart';
+import 'package:bold_portfolio/screens/bold_webview_screen.dart';
 import 'package:bold_portfolio/screens/guestScreen.dart';
 import 'package:bold_portfolio/screens/setting_pin_screen.dart';
 import 'package:bold_portfolio/services/api_service.dart';
 import 'package:bold_portfolio/widgets/FeedbackPopup.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/portfolio_provider.dart';
 import '../utils/app_colors.dart';
 import '../screens/login_screen.dart';
 import '../services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CommonDrawer extends StatefulWidget {
   final Function(int)? onNavigationTap;
@@ -31,11 +34,15 @@ class _CommonDrawerState extends State<CommonDrawer> {
   String? firstName;
   String? lastName;
 
+  bool showBoldWebsiteBadge = true;
+  bool _isBuyLoading = false;
+
   @override
   void initState() {
     super.initState();
     _loadToken();
     _loadUserId();
+    _loadBadgeState();
 
     // Load portfolio data after build
     // WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -44,6 +51,20 @@ class _CommonDrawerState extends State<CommonDrawer> {
     //     listen: false,
     //   ).loadPortfolioData();
     // });
+  }
+
+ // Load badge state from shared preferences
+  _loadBadgeState() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      showBoldWebsiteBadge = prefs.getBool('showBoldWebsiteBadge') ?? true; // Default to true
+    });
+  }
+
+  // Save badge state to shared preferences
+  _saveBadgeState(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('showBoldWebsiteBadge', value);
   }
 
   Future<void> _loadToken() async {
@@ -147,6 +168,56 @@ class _CommonDrawerState extends State<CommonDrawer> {
               : '';
         })
         .join(' ');
+  }
+
+  Future<void> _onBuyPressed() async {
+    final redirectionUrl = dotenv.env['URL_Redirection'] ?? '';
+      final productUrl = redirectionUrl.isNotEmpty 
+      ? '$redirectionUrl/' 
+      : 'https://www.bullionupdates.com/';
+
+    // Show loading state on the button
+    setState(() => _isBuyLoading = true);
+
+    try {
+      final authService = AuthService();
+      final token = await authService.getToken();
+      final user = await authService.getUser();
+
+      if (!mounted) return;
+
+      if (token == null || token.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Session expired. Please log in again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // Navigate to in-app WebView, passing token + target URL
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BuyWebViewScreen(
+            url: productUrl,
+            token: token,
+            userEmail: user?.emailId, // used for cookie/JS injection
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Something went wrong: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isBuyLoading = false);
+    }
   }
 
   @override
@@ -348,6 +419,46 @@ class _CommonDrawerState extends State<CommonDrawer> {
                   },
                 ),
                 const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.public, color: Colors.blueGrey),
+                  title: Row(
+                    children: [
+                      const Text("Visit Bold Website"),
+                      const SizedBox(width: 8),
+
+                      // NEW badge
+                      if (showBoldWebsiteBadge)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.orange,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Text(
+                            "NEW",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  onTap: () async {
+        // Remove badge after click and save the state
+        setState(() {
+          showBoldWebsiteBadge = false;
+        });
+        await _saveBadgeState(false); // Save state to cookies (shared preferences)
+        _onBuyPressed();
+      },
+                ),
+                const Divider(),
+
                 ListTile(
                   leading: const Icon(Icons.logout, color: Colors.red),
                   title: const Text(
