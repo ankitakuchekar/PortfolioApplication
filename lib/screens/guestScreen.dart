@@ -17,6 +17,7 @@ import 'package:bold_portfolio/screens/login_screen.dart';
 import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/providers/auth_provider.dart';
+import 'package:bold_portfolio/screens/bold_webview_screen.dart';
 
 const snapYellow = Color.fromARGB(255, 220, 166, 2);
 const darkBlack = Color(0xFF000000);
@@ -263,13 +264,56 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
 
   Widget _moreItem(IconData icon, String label, SpotData? spotPrice) {
     final String redirectionUrl = dotenv.env['URL_Redirection'] ?? '';
+bool _isBuyLoading = false;
+     Future<void> _onBuyPressed() async {
+    final redirectionUrl = dotenv.env['URL_Redirection'] ?? '';
+      final productUrl = redirectionUrl.isNotEmpty 
+      ? '$redirectionUrl/' 
+      : 'https://www.bullionupdates.com/';
 
-    Future<void> _launchUrl() async {
-      final Uri uri = Uri.parse(redirectionUrl);
-      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        throw Exception('Could not launch $redirectionUrl');
+    // Show loading state on the button
+    setState(() => _isBuyLoading = true);
+
+    try {
+      final authService = AuthService();
+      final token = await authService.getToken();
+      final user = await authService.getUser();
+
+      if (!mounted) return;
+
+      if (token == null || token.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Session expired. Please log in again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
       }
+
+      // Navigate to in-app WebView, passing token + target URL
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BuyWebViewScreen(
+            url: productUrl,
+            token: token,
+            userEmail: user?.emailId, // used for cookie/JS injection
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Something went wrong: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isBuyLoading = false);
     }
+  }
 
     return InkWell(
       onTap: () {
@@ -288,7 +332,7 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
             ),
           );
         } else {
-          _launchUrl(); // Close the current page for other items
+          _onBuyPressed(); // Close the current page for other items
         }
       },
       child: Padding(

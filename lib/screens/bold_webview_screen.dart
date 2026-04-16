@@ -93,7 +93,7 @@ class _BuyWebViewScreenState extends State<BuyWebViewScreen> {
 
   // ---------------------------------------------------------------------------
   // Platform-aware WebView settings
-  // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------InAppWebViewSettings------
   InAppWebViewSettings get _webViewSettings => InAppWebViewSettings(
     javaScriptEnabled: true,
     domStorageEnabled: true,
@@ -121,17 +121,26 @@ class _BuyWebViewScreenState extends State<BuyWebViewScreen> {
     // ── Android specific ────────────────────────────────────────────────
     // useHybridComposition improves rendering on Android 10+
     useHybridComposition: true,
+
+  // ✅ Add these to fix the bottom overlap
+  supportZoom: false,
+  builtInZoomControls: false,
   );
 
   // ---------------------------------------------------------------------------
   // Build
   // ---------------------------------------------------------------------------
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
-      body: Stack(
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.white,
+    appBar: _buildAppBar(),
+    // ✅ Add this
+    extendBody: false,
+    extendBodyBehindAppBar: false,
+    body: SafeArea(
+      bottom: true,
+      child: Stack(
         children: [
           _hasError ? _buildErrorView() : _buildWebView(),
           if (_loadingProgress < 1.0)
@@ -148,8 +157,9 @@ class _BuyWebViewScreenState extends State<BuyWebViewScreen> {
             ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
@@ -182,12 +192,19 @@ class _BuyWebViewScreenState extends State<BuyWebViewScreen> {
   }
 
   Widget _buildWebView() {
-    return InAppWebView(
-      initialUrlRequest: URLRequest(url: WebUri(_autoLoginUrl)),
+  return SafeArea(
+    bottom: true, // ✅ pushes content above Android nav bar
+    child: InAppWebView(
+      initialUrlRequest: URLRequest(
+        url: WebUri(_autoLoginUrl),
+        headers: {
+          'x-flutter-app': 'true',
+          'x-client-type': 'mobile',
+        },
+      ),
       initialSettings: _webViewSettings,
       onWebViewCreated: (controller) async {
         _webViewController = controller;
-        // Inject cookie before first request fires — critical on iOS
         await _injectTokenCookie();
       },
       onLoadStart: (controller, url) {
@@ -236,8 +253,9 @@ class _BuyWebViewScreenState extends State<BuyWebViewScreen> {
         debugPrint('[BuyWebView] External URL blocked: $uri');
         return NavigationActionPolicy.CANCEL;
       },
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildErrorView() {
     return Center(
