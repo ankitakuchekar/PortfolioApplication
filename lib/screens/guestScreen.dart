@@ -264,56 +264,63 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
 
   Widget _moreItem(IconData icon, String label, SpotData? spotPrice) {
     final String redirectionUrl = dotenv.env['URL_Redirection'] ?? '';
-bool _isBuyLoading = false;
-     Future<void> _onBuyPressed() async {
-    final redirectionUrl = dotenv.env['URL_Redirection'] ?? '';
-      final productUrl = redirectionUrl.isNotEmpty 
-      ? '$redirectionUrl/' 
-      : 'https://www.bullionupdates.com/';
+    bool _isBuyLoading = false;
+    Future<void> _onBuyPressed() async {
+      final redirectionUrl = dotenv.env['URL_Redirection'] ?? '';
+      final productUrl = redirectionUrl.isNotEmpty
+          ? '$redirectionUrl/'
+          : 'https://www.bullionupdates.com/';
 
-    // Show loading state on the button
-    setState(() => _isBuyLoading = true);
+      // Show loading state on the button
+      setState(() => _isBuyLoading = true);
 
-    try {
-      final authService = AuthService();
-      final token = await authService.getToken();
-      final user = await authService.getUser();
+      try {
+        final authService = AuthService();
+        final token = await authService.getToken();
+        final user = await authService.getUser();
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      if (token == null || token.isEmpty) {
+        if (token == null || token.isEmpty) {
+          // No token, navigate to WebView without token and go back to home afterward
+          await Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BuyWebViewScreen(
+                url: productUrl,
+                token: '', // No token is passed
+                userEmail: null, // No user info available
+              ),
+            ),
+            (route) =>
+                false, // This will clear all previous routes (go to home page)
+          );
+          return;
+        }
+
+        // Navigate to in-app WebView, passing token + target URL
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => BuyWebViewScreen(
+              url: productUrl,
+              token: token,
+              userEmail: user?.emailId, // used for cookie/JS injection
+            ),
+          ),
+        );
+      } catch (e) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Session expired. Please log in again.'),
+          SnackBar(
+            content: Text('Something went wrong: $e'),
             backgroundColor: Colors.red,
           ),
         );
-        return;
+      } finally {
+        if (mounted) setState(() => _isBuyLoading = false);
       }
-
-      // Navigate to in-app WebView, passing token + target URL
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => BuyWebViewScreen(
-            url: productUrl,
-            token: token,
-            userEmail: user?.emailId, // used for cookie/JS injection
-          ),
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Something went wrong: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isBuyLoading = false);
     }
-  }
 
     return InkWell(
       onTap: () {
