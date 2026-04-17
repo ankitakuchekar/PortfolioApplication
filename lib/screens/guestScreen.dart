@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ui';
 import 'dart:io';
+import 'package:bold_portfolio/screens/bold_webview_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -17,7 +18,7 @@ import 'package:bold_portfolio/screens/login_screen.dart';
 import 'package:bold_portfolio/screens/main_screen.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 import 'package:bold_portfolio/providers/auth_provider.dart';
-import 'package:bold_portfolio/screens/bold_webview_screen.dart';
+import 'package:bold_portfolio/screens/guest_web_view_screen.dart';
 
 const snapYellow = Color.fromARGB(255, 220, 166, 2);
 const darkBlack = Color(0xFF000000);
@@ -271,7 +272,6 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
           ? '$redirectionUrl/'
           : 'https://www.bullionupdates.com/';
 
-      // Show loading state on the button
       setState(() => _isBuyLoading = true);
 
       try {
@@ -280,35 +280,24 @@ class _GuestscreenState extends State<Guestscreen> with WidgetsBindingObserver {
         final user = await authService.getUser();
 
         if (!mounted) return;
-
-        if (token == null || token.isEmpty) {
-          // No token, navigate to WebView without token and go back to home afterward
-          await Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BuyWebViewScreen(
-                url: productUrl,
-                token: '', // No token is passed
-                userEmail: null, // No user info available
-              ),
-            ),
-            (route) =>
-                false, // This will clear all previous routes (go to home page)
-          );
-          return;
-        }
-
-        // Navigate to in-app WebView, passing token + target URL
+        debugPrint("token for app: $token");
+        // ✅ Guest user — use the separate clean WebView
         await Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (_) => BuyWebViewScreen(
-              url: productUrl,
-              token: token,
-              userEmail: user?.emailId, // used for cookie/JS injection
-            ),
-          ),
+          MaterialPageRoute(builder: (_) => const GuestWebViewScreen()),
         );
+
+        // // Logged-in user — use authenticated WebView
+        // await Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (_) => BuyWebViewScreen(
+        //       url: productUrl,
+        //       token: token,
+        //       userEmail: user?.emailId,
+        //     ),
+        //   ),
+        // );
       } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(

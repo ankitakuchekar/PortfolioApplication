@@ -257,11 +257,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
                       // 👇 SHOW ONLY FOR CANDLE CHART
                       if (selectedTab == 'Candle Chart')
                         InkWell(
-                          onTap: () => _openCandleChartLandscape(
-                            context,
-                            metalCandleChartData,
-                            metalFilter,
-                          ),
+                          onTap: () => _openCandleChartLandscape(context),
                           child: Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
@@ -425,11 +421,7 @@ class _GraphsScreenState extends State<GraphsScreen> {
     );
   }
 
-  void _openCandleChartLandscape(
-    BuildContext context,
-    List<MetalCandleChartEntry> candleChartData,
-    String selectedMetal,
-  ) async {
+  void _openCandleChartLandscape(BuildContext context) async {
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
@@ -438,14 +430,18 @@ class _GraphsScreenState extends State<GraphsScreen> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => CandleChartLandscapeScreen(
-          candleChartData: candleChartData,
-          selectedMetal: selectedMetal,
+        builder: (_) => ChangeNotifierProvider.value(
+          value: Provider.of<PortfolioProvider>(
+            context,
+            listen: false,
+          ), // ✅ forward live provider
+          child: CandleChartLandscapeScreen(
+            initialMetal: metalFilter, // ✅ only pass the filter selection
+          ),
         ),
       ),
     );
 
-    // Restore portrait
     await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   }
 

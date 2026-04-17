@@ -4,11 +4,6 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:bold_portfolio/services/auth_service.dart';
 
-/// In-app browser — works on both Android and iOS.
-///
-/// Opens /auto-login?token=JWT&redirect=/product/... on your Next.js site.
-/// The Next.js page validates the token server-side, dispatches Redux signIn,
-/// and redirects the user to the product page fully logged in.
 class BuyWebViewScreen extends StatefulWidget {
   final String url;
   final String token;
@@ -30,11 +25,13 @@ class _BuyWebViewScreenState extends State<BuyWebViewScreen> {
   double _loadingProgress = 0;
   bool _hasError = false;
   String _pageTitle = 'bullionupdates.com';
+  bool _canGoBack = false; // ✅ CHANGE 1: new field
 
-  // ---------------------------------------------------------------------------
-  // Auto-login URL
-  // ---------------------------------------------------------------------------
+  // ✅ AFTER
   String get _autoLoginUrl {
+    // Guest user — no token, just open the URL directly, skip auto-login
+    if (widget.token.isEmpty) return widget.url;
+
     final productUri = Uri.tryParse(widget.url);
     final redirect = productUri != null
         ? '${productUri.path}${productUri.query.isNotEmpty ? '?${productUri.query}' : ''}'
@@ -46,9 +43,6 @@ class _BuyWebViewScreenState extends State<BuyWebViewScreen> {
         .toString();
   }
 
-  // ---------------------------------------------------------------------------
-  // Domain helpers
-  // ---------------------------------------------------------------------------
   String get _cookieDomain =>
       dotenv.env['WEBVIEW_COOKIE_DOMAIN'] ?? 'bullionupdates.com';
 
@@ -65,11 +59,6 @@ class _BuyWebViewScreenState extends State<BuyWebViewScreen> {
     return hosts.toList();
   }
 
-  // ---------------------------------------------------------------------------
-  // Cookie injection
-  // iOS: sharedCookiesEnabled:true shares these with WKWebView cookie store.
-  // Android: CookieManager writes to the standard WebView cookie store.
-  // ---------------------------------------------------------------------------
   Future<void> _injectTokenCookie() async {
     final cookieManager = CookieManager.instance();
     final domains = <String>{
@@ -88,12 +77,8 @@ class _BuyWebViewScreenState extends State<BuyWebViewScreen> {
         sameSite: HTTPCookieSameSitePolicy.LAX,
       );
     }
-    debugPrint('[BuyWebView] Auth cookie set on: $domains');
   }
 
-  // ---------------------------------------------------------------------------
-  // Platform-aware WebView settings
-  // ---------------------------------------------------------------------InAppWebViewSettings------
   InAppWebViewSettings get _webViewSettings => InAppWebViewSettings(
     javaScriptEnabled: true,
     domStorageEnabled: true,
@@ -103,69 +88,73 @@ class _BuyWebViewScreenState extends State<BuyWebViewScreen> {
     allowsInlineMediaPlayback: true,
     cacheMode: CacheMode.LOAD_DEFAULT,
     userAgent: 'BoldPortfolioApp/1.0 Flutter',
-
-    // ── iOS specific ────────────────────────────────────────────────────
-    // sharedCookiesEnabled: cookies set via CookieManager are visible
-    // to WKWebView — without this iOS ignores injected cookies entirely.
     sharedCookiesEnabled: true,
-
-    // Allow navigation across domains (auto-login → product page redirect)
     limitsNavigationsToAppBoundDomains: false,
-
-    // Native swipe-back gesture on iOS
     allowsBackForwardNavigationGestures: !kIsWeb,
-
-    // Disable Apple Pay to avoid conflicts with the payment sheet
     applePayAPIEnabled: false,
-
-    // ── Android specific ────────────────────────────────────────────────
-    // useHybridComposition improves rendering on Android 10+
     useHybridComposition: true,
-
-  // ✅ Add these to fix the bottom overlap
-  supportZoom: false,
-  builtInZoomControls: false,
+    supportZoom: false,
+    builtInZoomControls: false,
   );
 
-  // ---------------------------------------------------------------------------
-  // Build
-  // ---------------------------------------------------------------------------
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: Colors.white,
-    appBar: _buildAppBar(),
-    // ✅ Add this
-    extendBody: false,
-    extendBodyBehindAppBar: false,
-    body: SafeArea(
-      bottom: true,
-      child: Stack(
-        children: [
-          _hasError ? _buildErrorView() : _buildWebView(),
-          if (_loadingProgress < 1.0)
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: LinearProgressIndicator(
-                value: _loadingProgress,
-                minHeight: 3,
-                backgroundColor: Colors.grey.shade200,
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-              ),
-            ),
-        ],
+  // ✅ CHANGE 2: wrap Scaffold with PopScope
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final canGoBack = await _webViewController?.canGoBack() ?? false;
+        if (canGoBack) {
+          await _webViewController?.goBack();
+        } else {
+          if (mounted) Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: _buildAppBar(),
+        extendBody: false,
+        extendBodyBehindAppBar: false,
+        body: SafeArea(
+          bottom: true,
+          child: Stack(
+            children: [
+              _hasError ? _buildErrorView() : _buildWebView(),
+              if (_loadingProgress < 1.0)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: LinearProgressIndicator(
+                    value: _loadingProgress,
+                    minHeight: 3,
+                    backgroundColor: Colors.grey.shade200,
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Colors.green,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
+  // ✅ CHANGE 3: add leading back arrow driven by _canGoBack
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
       foregroundColor: Colors.black,
       elevation: 1,
+      leading: _canGoBack
+          ? IconButton(
+              icon: const Icon(Icons.arrow_back),
+              tooltip: 'Back',
+              onPressed: () => _webViewController?.goBack(),
+            )
+          : null,
       title: Text(
         _pageTitle,
         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
@@ -192,70 +181,73 @@ Widget build(BuildContext context) {
   }
 
   Widget _buildWebView() {
-  return SafeArea(
-    bottom: true, // ✅ pushes content above Android nav bar
-    child: InAppWebView(
-      initialUrlRequest: URLRequest(
-        url: WebUri(_autoLoginUrl),
-        headers: {
-          'x-flutter-app': 'true',
-          'x-client-type': 'mobile',
+    return SafeArea(
+      bottom: true,
+      child: InAppWebView(
+        initialUrlRequest: URLRequest(
+          url: WebUri(_autoLoginUrl),
+          headers: {'x-flutter-app': 'true', 'x-client-type': 'mobile'},
+        ),
+        initialSettings: _webViewSettings,
+        onWebViewCreated: (controller) async {
+          _webViewController = controller;
+          if (widget.token.isNotEmpty) {
+            // ← only inject cookie for logged-in users
+            await _injectTokenCookie();
+          }
         },
-      ),
-      initialSettings: _webViewSettings,
-      onWebViewCreated: (controller) async {
-        _webViewController = controller;
-        await _injectTokenCookie();
-      },
-      onLoadStart: (controller, url) {
-        if (mounted)
-          setState(() {
-            _loadingProgress = 0.05;
-            _hasError = false;
-          });
-      },
-      onProgressChanged: (controller, progress) {
-        if (mounted) setState(() => _loadingProgress = progress / 100);
-      },
-      onLoadStop: (controller, url) async {
-        if (mounted) setState(() => _loadingProgress = 1.0);
-        final title = await controller.getTitle();
-        final host = url?.host ?? _cookieDomain;
-        if (mounted) {
-          setState(() {
-            _pageTitle =
-                (title != null &&
-                    title.isNotEmpty &&
-                    title != 'Bold Bullion' &&
-                    title != 'Logging you in securely…')
-                ? title
-                : host;
-          });
-        }
-      },
-      onReceivedError: (controller, request, error) {
-        if (request.isForMainFrame ?? false) {
+        onLoadStart: (controller, url) {
           if (mounted)
             setState(() {
-              _loadingProgress = 1.0;
-              _hasError = true;
+              _loadingProgress = 0.05;
+              _hasError = false;
             });
-          debugPrint('[BuyWebView] Error: ${error.description}');
-        }
-      },
-      shouldOverrideUrlLoading: (controller, navigationAction) async {
-        final uri = navigationAction.request.url;
-        if (uri == null) return NavigationActionPolicy.ALLOW;
-        final isAllowed = _allowedHosts.any(
-          (h) => uri.host == h || uri.host.endsWith('.$h'),
-        );
-        if (isAllowed) return NavigationActionPolicy.ALLOW;
-        debugPrint('[BuyWebView] External URL blocked: $uri');
-        return NavigationActionPolicy.CANCEL;
-      },
-    ),
-  );
-}
+        },
+        onProgressChanged: (controller, progress) {
+          if (mounted) setState(() => _loadingProgress = progress / 100);
+        },
+        onLoadStop: (controller, url) async {
+          if (mounted) setState(() => _loadingProgress = 1.0);
+          final title = await controller.getTitle();
+          final host = url?.host ?? _cookieDomain;
+          if (mounted) {
+            setState(() {
+              _pageTitle =
+                  (title != null &&
+                      title.isNotEmpty &&
+                      title != 'Bold Bullion' &&
+                      title != 'Securely signing you in…')
+                  ? title
+                  : host;
+            });
+          }
+        },
+        // ✅ CHANGE 4: track WebView history on every navigation
+        onUpdateVisitedHistory: (controller, url, isReload) async {
+          final canGoBack = await controller.canGoBack();
+          if (mounted) setState(() => _canGoBack = canGoBack);
+        },
+        onReceivedError: (controller, request, error) {
+          if (request.isForMainFrame ?? false) {
+            if (mounted)
+              setState(() {
+                _loadingProgress = 1.0;
+                _hasError = true;
+              });
+          }
+        },
+        shouldOverrideUrlLoading: (controller, navigationAction) async {
+          final uri = navigationAction.request.url;
+          if (uri == null) return NavigationActionPolicy.ALLOW;
+          final isAllowed = _allowedHosts.any(
+            (h) => uri.host == h || uri.host.endsWith('.$h'),
+          );
+          if (isAllowed) return NavigationActionPolicy.ALLOW;
+          return NavigationActionPolicy.CANCEL;
+        },
+      ),
+    );
+  }
 
   Widget _buildErrorView() {
     return Center(
